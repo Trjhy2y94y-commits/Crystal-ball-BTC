@@ -1014,10 +1014,10 @@ function rsiTest(d,I,kind,buy){const O=optimize(d,I,kind,buy),n=d.length,C=I.Cl,
 function optTable(O,kind,buy){
   const pP=P=>`seuil ${buy?'−':'+'}${P.th} · score ≥${P.min}${kind==='4h'?' · feu daily '+(P.gate?'oui':'non'):' · filtre tendance '+((buy?P.penRg:(P.penRgS??P.penRg))?'oui':'non')} · funding ${P.wFund?'oui':'non'}${P.rsiD?' · RSI '+(P.rsiD===2?'obligatoire':'bonus'):''}${P.rsiW?' · RSI hebdo '+(P.rsiW===2?'obligatoire':'bonus'):''}`;
   const cell=x=>x.n?`${pc0(x.hit)} <span style="color:var(--muted)">(${x.n})</span>`:'—';
-  const robust=r=>r.te.n>=5&&r.te.hit!=null&&r.te.hit>=O.ref.te.hit+.10; /* v9 : on compare au hasard, pas au passé (100 % sur 7 cas = en partie de la chance) */
+  const robust=r=>r.te.n>=5&&r.te.hit!=null&&O.ref.te.n>=5&&O.ref.te.hit!=null&&r.te.hit>=O.ref.te.hit+.10; /* Vert uniquement si l'échantillon test et sa référence sont suffisants, avec +10 points réels. */
   const row=(r,k)=>`<tr><td style="white-space:normal">${r.cur?'<b>Actuel</b> · ':''}${pP(r.P)}</td><td>${cell(r.tr)}</td><td class="${r.te.n?(robust(r)?'good':'bad'):''}">${cell(r.te)}</td><td>${r.cur?'':`<button type="button" class="apply" data-k="${kind}" data-p='${JSON.stringify(r.P)}'>OK</button>`}</td></tr>`;
   return `<table><tr><th>Réglage</th><th>Passé</th><th>Récent</th><th></th></tr>
-    <tr><td>Marché (référence)</td><td>${cell(O.ref.tr)}</td><td>${cell(O.ref.te)}</td><td></td></tr>
+    <tr><td>BTC sans signal (échantillon fixe)</td><td>${cell(O.ref.tr)}</td><td>${cell(O.ref.te)}</td><td></td></tr>
     ${row(O.cur)}${O.top.map(row).join('')}</table>`;}
 const eur=v=>v>=1000?(v/1000).toFixed(1).replace('.0','').replace('.',',')+'k':String(v);
 const pc1=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+'%';
@@ -1269,7 +1269,7 @@ async function renderProj(){
     <h2 style="font-size:12px">Ventes</h2>${optTable(RS,'1d',false)}</section>`;})()}
   ${(()=>{const O=optimize(d,I,'1d',true),OS=optimize(d,I,'1d',false);
     return `<section><h2>Optimiseur 1D<small>% juste à +${O.Hm} j · choisi avant le ${dS(O.cutT)}, vérifié après</small></h2>
-    <p>« Passé » = la période où l'optimiseur a cherché. « Récent » = la période qu'il n'a jamais vue : <b>c'est la seule colonne qui compte</b>. Vert = sur la période jamais vue, au moins 5 signaux et 10 points de mieux que le hasard. Rouge = il était juste collé au passé.</p>
+    <p>« Passé » = la période où l'optimiseur a cherché. « Récent » = la période qu'il n'a jamais vue : <b>c'est la seule colonne qui compte</b>. Vert = sur la période jamais vue, au moins 5 événements et 10 points de mieux que la référence BTC échantillonnée. Si la référence manque d'observations, aucun réglage ne peut être déclaré robuste. Rouge = pas d'avantage démontré.</p>
     <h2 style="font-size:12px">Achats</h2>${optTable(O,'1d',true)}
     <h2 style="font-size:12px">Ventes</h2>${optTable(OS,'1d',false)}
     <p class="note">${O.best100} réglage(s) font 100 % sur le passé avec 2 signaux ou plus. C'est le piège : avec si peu de cas, 100 % ne veut rien dire. On ne garde que ce qui tient sur la colonne « Récent ».</p>
