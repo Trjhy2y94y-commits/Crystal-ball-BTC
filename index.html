@@ -374,6 +374,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
     <button type="button" data-tf="1d" class="on" id="b1d">1D</button>
     <button type="button" data-tf="4h" id="b4h">4H</button>
     <button type="button" data-tf="1w" id="b1w">1W</button>
+    <button type="button" data-tf="1M" id="b1m">1M</button>
     <button type="button" id="b3m">3M</button>
     <span class="sp"></span>
     <button type="button" id="bZones" aria-label="Réglages">Réglages</button>
@@ -473,9 +474,9 @@ function compute(d,ctx){
      - pente de liquidité mesurée sur ~14 jours (et plus sur 2 bougies, trop bruité)
      - divergences WaveTrend (le cœur de Cipher B)
      - régime de tendance : SMA200 en 1D, MA50 semaine en 1W (pénalise les signaux contre‑tendance) */
-  const step=d.length>1?d[1].t-d[0].t:864e5,wk=step>3*864e5,intra=step<864e5,bpd=864e5/step;
-  const trendMA=wk?sma(Cl,50):intra?sma(Cl,Math.round(200*bpd)):sma200;
-  const kL=Math.max(2,Math.round(14*bpd)),lookDiv=wk?40:90;
+  const step=d.length>1?d[1].t-d[0].t:864e5,mo=step>25*864e5,wk=step>3*864e5&&!mo,intra=step<864e5,bpd=mo?30.4375:864e5/step;
+  const trendMA=mo?sma(Cl,20):wk?sma(Cl,50):intra?sma(Cl,Math.round(200*bpd)):sma200;
+  const kL=Math.max(2,Math.round(14*bpd)),lookDiv=mo?24:wk?40:90;
   const closedAt=i=>d[i].t+step<=Date.now();
   const regime=i=>{const m=trendMA[i];if(m==null)return 0;return Cl[i]>m*1.02?1:Cl[i]<m*0.98?-1:0;};
   const liqTrend=i=>{if(liq[i]==null||liq[i-kL]==null)return 0;const s=liq[i]-liq[i-kL];return s>0.02?1:s<-0.02?-1:0;};
@@ -500,16 +501,17 @@ function compute(d,ctx){
     const f=FU&&FU.f7[i],z=FU&&FU.fz[i];
     cands.push({i,buy,w,div,lt:liqTrend(i),rg:regime(i),mfT:mf[i]!=null&&mf[i-5]!=null?Math.sign(mf[i]-mf[i-5]):0,
       fneg:f!=null&&(f<0||(z!=null&&z<-1)),rD:rsiD[i],rW:rsiWk[i],gate:gateAt?gateAt(d[i].t+step,buy):1,prov:!closedAt(i)});});
-  const P=getParams(intra?'4h':wk?'1w':'1d');
+  const P=getParams(mo?'1m':intra?'4h':wk?'1w':'1d');
   const sig=scoreAll(cands,P,real),sig0=scoreAll(cands,{...P,wFund:0},real).filter(s=>!s.blocked);
   const lastClosed=(()=>{for(let i=d.length-1;i>=0;i--)if(closedAt(i))return i;return d.length-1;})();
   const rgA=d.map((_,i)=>regime(i)),ltA=d.map((_,i)=>liqTrend(i));
-  const out={O,H,L,Cl,wt1,wt2,mf,dots,cands,rsiD,rsiWk,P,sig,sig0,FU,liq,liqF,liqS,liqFut,liqEnd,real,ema50,sma200,trendMA,wk,intra,step,bpd,rgA,ltA,regime:regime(lastClosed),liqT:liqTrend(lastClosed),lastClosed};
+  const out={O,H,L,Cl,wt1,wt2,mf,dots,cands,divergences:cands.filter(c=>c.div),rsiD,rsiWk,P,sig,sig0,FU,liq,liqF,liqS,liqFut,liqEnd,real,ema50,sma200,trendMA,wk,mo,intra,step,bpd,rgA,ltA,regime:regime(lastClosed),liqT:liqTrend(lastClosed),lastClosed};
   out.model=modelSnapshot(d,out);return out;
 }
 /* ---------- réglages des signaux (par unité de temps) ---------- */
 const DEFP={'1d':{th:53,ext:60,min:3,strong:4,wExt:1,wDiv:1,wLiq:1,wMf:.5,wFund:1,penRg:0,penRgS:1,penLiq:1,gate:0,rsiD:0,rsiW:0}, /* v12 : ventes avec filtre tendance (33 % sans, 100 % avec) · v9 : filtre tendance retiré (optimiseur : 80 % sur 5 signaux jamais vus vs 54 % au hasard) */
   '1w':{th:53,ext:60,min:3,strong:4,wExt:1,wDiv:1,wLiq:1,wMf:.5,wFund:1,penRg:1,penLiq:1,gate:0,rsiD:0,rsiW:0},
+  '1m':{th:53,ext:60,min:2,strong:3,wExt:1,wDiv:1,wLiq:0,wMf:.5,wFund:0,penRg:1,penLiq:1,gate:0,rsiD:0,rsiW:0},
   '4h':{th:53,ext:60,min:2,strong:3,wExt:1,wDiv:1,wLiq:0,wMf:.5,wFund:1,penRg:0,penLiq:0,gate:1,rsiD:0,rsiW:0}};
 let userP=store.get('btcz_params_v13',{}); /* v13 : nouvelle clé → les anciens réglages sont oubliés automatiquement */
 function getParams(k){return{...DEFP[k],...(userP[k]||{})};}
@@ -618,20 +620,20 @@ async function loadLive(t){
     return{src:'Binance',rows:all};
   }catch(e){}
   if(t==='4h')throw new Error('4h indisponible hors Binance');
-  const g=t==='1w'?null:86400; /* Coinbase n'a pas de 1W : on agrège le 1D */
+  const g=(t==='1w'||t==='1M')?null:86400; /* agrégation des unités non disponibles chez Coinbase */
   const now=Math.floor(Date.now()/1000),rows=[];
   for(let k=0;k<4;k++){const end=now-k*300*86400,start=end-300*86400;
     const j=await fetchJSON(`https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=${new Date(start*1000).toISOString()}&end=${new Date(end*1000).toISOString()}`);
     j.forEach(c=>rows.push({t:c[0]*1000,l:c[1],h:c[2],o:c[3],c:c[4],v:+c[5]}));}
   const m=new Map();rows.forEach(r=>m.set(r.t,r));let out=[...m.values()].sort((a,b)=>a.t-b.t);
-  if(!g){const w=[];out.forEach(r=>{const d=new Date(r.t),wk=r.t-((d.getUTCDay()+6)%7)*864e5;const last=w[w.length-1];
-    if(last&&last.t===wk){last.h=Math.max(last.h,r.h);last.l=Math.min(last.l,r.l);last.c=r.c;}else w.push({t:wk,o:r.o,h:r.h,l:r.l,c:r.c});});out=w;}
+  if(!g){const w=[];out.forEach(r=>{const d=new Date(r.t),key=t==='1M'?Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1):r.t-((d.getUTCDay()+6)%7)*864e5;const last=w[w.length-1];
+    if(last&&last.t===key){last.h=Math.max(last.h,r.h);last.l=Math.min(last.l,r.l);last.c=r.c;last.v=(last.v||0)+(r.v||0);}else w.push({t:key,o:r.o,h:r.h,l:r.l,c:r.c,v:r.v||0});});out=w;}
   return{src:'Coinbase',rows:out};
 }
 function demo(t){ /* série simulée, uniquement si l'API est injoignable */
   let s=42;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647;};
-  const n=t==='1w'?260:800,step=t==='1w'?7*864e5:t==='4h'?4*36e5:864e5,rows=[];let p=30000;const t0=Date.now()-n*step;
-  for(let i=0;i<n;i++){const drift=Math.sin(i/(t==='1w'?40:180))*0.002+0.0012,vol=t==='1w'?0.07:0.028;
+  const n=t==='1M'?180:t==='1w'?260:800,step=t==='1M'?30.4375*864e5:t==='1w'?7*864e5:t==='4h'?4*36e5:864e5,rows=[];let p=30000;const t0=Date.now()-n*step;
+  for(let i=0;i<n;i++){const drift=Math.sin(i/(t==='1M'?18:t==='1w'?40:180))*0.002+0.0012,vol=t==='1M'?0.12:t==='1w'?0.07:0.028;
     const o=p,c=o*Math.exp(drift+(rnd()-.5)*2*vol),h=Math.max(o,c)*(1+rnd()*vol*.6),l=Math.min(o,c)*(1-rnd()*vol*.6);rows.push({t:t0+i*step,o,h,l,c,v:1000+rnd()*5000});p=c;}
   const k=77784/p;rows.forEach(r=>{r.o*=k;r.h*=k;r.l*=k;r.c*=k;});return{src:'Démo',rows};
 }
@@ -645,7 +647,7 @@ async function load(keep){
   if(curTab==='home')renderHome();
   if(curTab==='cal'&&!keep)renderCal();
   setBadge();lastFull=Date.now();if(!isDemo)connectWS();
-  if(!keep){view.right=data.length-1+4;view.bw=tf==='1w'?8:tf==='4h'?5:6;}updateHeader();draw();refreshPlan();
+  if(!keep){view.right=data.length-1+4;view.bw=tf==='1M'?2.5:tf==='1w'?8:tf==='4h'?5:6;}updateHeader();draw();refreshPlan();
 }
 
 /* ---------- vue ---------- */
@@ -736,6 +738,7 @@ function draw(){
   line(vis,ind.wt1,X,Y1,'#e8f0ff',1.2);line(vis,ind.wt2,X,Y1,COL.blue,1);
   ind.dots.forEach(o=>{if(o.i<first||o.i>last)return;ctx.fillStyle=o.t==='up'?'#3ddc84':COL.down;
     ctx.beginPath();ctx.arc(X(o.i),Y1(ind.wt2[o.i]),o.big?4:2.4,0,7);ctx.fill();});
+  (ind.divergences||[]).forEach(o=>{if(o.i<first||o.i>last||o.prov)return;const x=X(o.i),y=Y1(ind.wt2[o.i]);ctx.fillStyle=o.buy?'#30d158':'#ff453a';ctx.beginPath();ctx.moveTo(x,y+(o.buy?9:-9));ctx.lineTo(x-5,y+(o.buy?-1:1));ctx.lineTo(x+5,y+(o.buy?-1:1));ctx.closePath();ctx.fill();});
   ctx.restore();
   [100,0,-100].filter(v=>Math.abs(v)<mx).forEach(v=>axisTxt(Y1(v),String(v)));
   const lw=ind.wt2[data.length-1];if(lw!=null)tag(Y1(lw),lw.toFixed(1),COL.blue,p1);
@@ -744,7 +747,7 @@ function draw(){
     if(Y1(-60)<p1.y+p1.h-4)tagL('survente −60 · trop froid',Y1(-60)-8,COL.buy);
     nameAt(vis,ind.wt1,X,Y1,'vague rapide','#e8f0ff',p1,U);nameAt(vis,ind.wt2,X,Y1,'vague lente',COL.blue,p1,U);
     ctx.restore();}
-  label(p1,'Cipher B · élan du marché · ● = croisement',COL.muted);
+  label(p1,'Cipher B · ● croisement · ▲ divergence haussière · ▼ divergence baissière',COL.muted);
 
   /* ===== Liquidité composite ===== */
   const p2=P[2];const Y2=v=>p2.y+p2.h/2-v*(p2.h/2-6);
