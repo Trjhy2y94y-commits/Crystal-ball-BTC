@@ -1787,7 +1787,7 @@ function rsiDivergenceBacktestHTML(d,isDemo){
   if(isDemo)return '<section><h2>Fiabilité divergences RSI <small>backtest hors échantillon</small></h2><p>Mode démo : statistiques désactivées.</p></section>';
   const B=rsiDivergenceBacktest(d),pct=x=>x==null?'—':(x*100).toFixed(1)+' %',ret=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(2)+' %';
   const rows=B.stats.map(x=>'<tr><td>'+(x.dir>0?'Haussière':'Baissière')+'</td>'+x.horizons.map(h=>'<td>'+h.n+' cas<br><b>'+(h.win==null?'—':pct(h.win))+'</b>'+(h.ci?'<br><small>IC 95 % '+pct(h.ci[0])+'–'+pct(h.ci[1])+'</small>':'')+'<br><small>Moy. '+ret(h.avg)+'</small><br><small>Réf. tous jours '+pct(h.baseWin)+'</small><br><small>Écart taux '+ret(h.winEdge)+'</small><br><small>Écart moy. '+ret(h.excess)+'</small></td>').join('')+'</tr>').join('');
-  return '<section><h2>Fiabilité divergences RSI <small>test chronologique · daily</small></h2><table><thead><tr><th>Signal</th><th>+10 j</th><th>+30 j</th><th>+60 j</th></tr></thead><tbody>'+rows+'</tbody></table><p>RSI 14. Divergence haussière : plus bas du prix inférieur et RSI supérieur de plus de 2 points ; baissière : plus haut du prix supérieur et RSI inférieur de plus de 2 points. Pivot confirmé après 3 bougies ; entrée à la clôture de confirmation, jamais au pivot. Les rendements sont mesurés dans le sens du signal. « Référence » = tous les jours éligibles du segment test dans le même sens ; « écart taux » et « écart moy. » comparent les signaux à cette référence. Taux et intervalle de confiance de Wilson à 95 % affichés uniquement à partir de 20 cas. Les horizons incomplets sont exclus.</p><p class="note">'+B.events+' signaux dans le segment test (30 % les plus récents) · coupure au '+dS(d[B.cut]?.t||d[d.length-1].t)+'. Seuils fixes, aucun réglage optimisé sur le test. Ceci mesure un historique, pas une garantie de performance future.</p></section>';
+  return '<section><h2>Fiabilité divergences RSI <small>test chronologique · daily</small></h2><table><thead><tr><th>Signal</th><th>+10 j</th><th>+30 j</th><th>+60 j</th></tr></thead><tbody>'+rows+'</tbody></table><p>RSI 14. Divergence haussière : plus bas du prix inférieur et RSI supérieur de plus de 2 points ; baissière : plus haut du prix supérieur et RSI inférieur de plus de 2 points. Pivot confirmé après 3 bougies ; entrée à la clôture de confirmation, jamais au pivot. Les rendements sont mesurés dans le sens du signal. « Référence » = tous les jours éligibles du segment test dans le même sens ; « écart taux » et « écart moy. » comparent les signaux à cette référence. Taux et intervalle de confiance de Wilson à 95 % affichés uniquement à partir de 20 cas. Les horizons incomplets sont exclus.</p><p class="note">'+B.events+' signaux dans le segment test (30 % les plus récents) · coupure au '+dS(d[B.cut]?.t||d[d.length-1].t)+'. Seuils fixes, aucun réglage optimisé sur le test. Ceci mesure un historique, pas une garantie de performance future.</p><button type="button" class="apply" data-copy-rsi-report>Copier le rapport statistique</button><small data-rsi-copy-status aria-live="polite"></small></section>';
 }
 async function renderProj(){
   const el=$('proj');el.dataset.compact='0';const D=await getDaily(),d=D.rows,I=D.ind,now=Date.now();
@@ -2184,6 +2184,47 @@ document.querySelectorAll('[data-tf]').forEach(b=>b.addEventListener('click',()=
 /* vue « 3 mois » : ~2 mois d'historique + les 3 mois projetés */
 $('b3m').addEventListener('click',()=>{if(!data.length)return;const F=futBars(),back=tf==='1w'?13:tf==='4h'?120:60;view.bw=Math.max(1.5,(W-AX)/(F+back+2));view.right=data.length-1+F+1;view.cross=null;
   draw();});
+/* Export texte des statistiques RSI pour analyse externe, sans capture d'écran. */
+async function copyRsiStatisticsReport(button){
+  const status=$('proj').querySelector('[data-rsi-copy-status]');
+  const original=button.textContent;
+  try{
+    const D=await getDaily(),d=D.rows;
+    if(D.demo)throw new Error('Mode démo : aucun résultat réel à exporter.');
+    if(!d||d.length<100)throw new Error('Historique daily insuffisant.');
+    const B=rsiDivergenceBacktest(d),pct=x=>x==null?'—':(x*100).toFixed(2)+' %',ret=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(3)+' %';
+    const lines=[
+      'CRYSTAL BTC — RAPPORT DE FIABILITÉ DES DIVERGENCES RSI',
+      'Données : BTC daily | RSI 14 | pivots confirmés après 3 bougies',
+      'Test : derniers 30 % de l’historique, entrée à la clôture de confirmation',
+      'Date de coupure : '+dS(d[B.cut]?.t||d[d.length-1].t),
+      'Bougies daily disponibles : '+d.length,
+      'Signaux détectés dans le segment test : '+B.events,
+      'Définition : divergence haussière = prix plus bas + RSI supérieur de >2 points ; baissière = prix plus haut + RSI inférieur de >2 points.',
+      'Les rendements sont mesurés dans le sens du signal. Référence = tous les jours éligibles du segment test dans le même sens.',
+      'Taux et IC Wilson affichés uniquement si au moins 20 cas. Les horizons incomplets sont exclus.',
+      '',
+      'SIGNAL | HORIZON | N | GAGNANTS | TAUX | IC95% | RENDEMENT MOYEN | TAUX RÉFÉRENCE | ÉCART TAUX | RENDEMENT RÉF. | ÉCART RENDEMENT'
+    ];
+    for(const x of B.stats)for(const h of x.horizons){
+      lines.push([x.dir>0?'HAUSSIÈRE':'BAISSIÈRE','+'+h.h+'j',h.n,h.wins,pct(h.win),h.ci?pct(h.ci[0])+' à '+pct(h.ci[1]):'—',ret(h.avg),pct(h.baseWin),ret(h.winEdge),ret(h.base),ret(h.excess)].join(' | '));
+    }
+    lines.push('','Note : backtest historique, pas une garantie de performance future. Les résultats dépendent de la qualité et de la longueur de l’historique chargé.');
+    const report=lines.join('\n');
+    try{
+      if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(report);
+      else throw new Error('clipboard unavailable');
+    }catch(_){
+      const area=document.createElement('textarea');area.value=report;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();
+      const ok=document.execCommand('copy');area.remove();if(!ok)throw new Error('Copie bloquée par le navigateur');
+    }
+    button.textContent='✓ Rapport copié';if(status)status.textContent=' Colle-le directement dans ChatGPT.';
+    setTimeout(()=>{button.textContent=original;if(status)status.textContent='';},5000);
+  }catch(err){
+    button.textContent='Copie impossible';if(status)status.textContent=' '+(err.message||'Erreur');setTimeout(()=>{button.textContent=original;},4000);
+  }
+}
+$('proj').addEventListener('click',e=>{const b=e.target.closest('[data-copy-rsi-report]');if(b){e.preventDefault();copyRsiStatisticsReport(b);}});
 /* ---------- onglets ---------- */
 let curTab='home';
 function showTab(t){curTab=t;
