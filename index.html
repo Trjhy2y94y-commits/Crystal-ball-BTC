@@ -1092,7 +1092,8 @@ async function renderConfluence(){
   $('probNote').textContent='Biais '+(z.bias>1?'haussier':z.bias< -1?'baissier':'neutre')+' · RSI '+(z.rsi==null?'—':z.rsi.toFixed(0))+' · volume x'+z.volRatio.toFixed(1)+' · médianes et intervalles historiques conditionnés à la tendance. Effectifs : 30j '+z.probs[30].count+' / 90j '+z.probs[90].count+' / 12m '+z.probs[365].count+'.';
 }
 document.querySelectorAll('#overlayLegend [data-layer]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.layer;overlayLayers[k]=!overlayLayers[k];b.classList.toggle('on',overlayLayers[k]);renderConfluence();}));
-function updateHeader(){,d=data[n-1],p=data[n-2];$('px').textContent=fmt(d.c)+' $';
+function updateHeader(){
+  const n=data.length,d=data[n-1],p=data[n-2];$('px').textContent=fmt(d.c)+' '+String.fromCharCode(36);
   const ch=(d.c-p.c)/p.c*100,el=$('chg');el.textContent=`${ch>=0?'+':''}${fmt(d.c-p.c)} (${ch>=0?'+':''}${ch.toFixed(2)} %)`;el.className='chg '+(ch>=0?'up':'dn');
   const yr=data.slice(-(tf==='1w'?52:tf==='4h'?2190:365));$('hl').textContent=`H ${fmt(Math.max(...yr.map(x=>x.h)))} · L ${fmt(Math.min(...yr.map(x=>x.l)))}`;
   const w=ind.wt2[n-1],lv=ind.liq[n-1]??ind.liq[ind.lastClosed];
