@@ -477,7 +477,7 @@ function compute(d,ctx){
   const step=d.length>1?d[1].t-d[0].t:864e5,mo=step>25*864e5,wk=step>3*864e5&&!mo,intra=step<864e5,bpd=mo?1/30.4375:864e5/step;
   const trendMA=mo?sma(Cl,20):wk?sma(Cl,50):intra?sma(Cl,Math.round(200*bpd)):sma200;
   const kL=mo?14:Math.max(2,Math.round(14*bpd)),lookDiv=mo?24:wk?40:90;
-  const closedAt=i=>d[i].t+step<=Date.now();
+  const closedAt=i=>{if(mo){const z=new Date(d[i].t);return Date.UTC(z.getUTCFullYear(),z.getUTCMonth()+1,1)<=Date.now();}return d[i].t+step<=Date.now();};
   const regime=i=>{const m=trendMA[i];if(m==null)return 0;return Cl[i]>m*1.02?1:Cl[i]<m*0.98?-1:0;};
   const liqTrend=i=>{if(liq[i]==null||liq[i-kL]==null)return 0;const s=liq[i]-liq[i-kL];return s>0.02?1:s<-0.02?-1:0;};
   const trough=(i,dir)=>{let wi=i,pi=i;for(let j=Math.max(0,i-8);j<=i;j++){if(wt2[j]==null)continue;
