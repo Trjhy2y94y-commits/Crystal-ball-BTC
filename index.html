@@ -1530,11 +1530,13 @@ new ResizeObserver(resize).observe(stage);
 resize();load();
 /* ---------- temps réel : flux WebSocket Binance (bougie en cours 1D + 1W) ---------- */
 let ws=null,wsOk=false,wsRetry=0,lastFull=0,lastCalc=0,calcT=null,lastPlan=0,lastSimple=0,dailyDirty=false;
-function setBadge(){const b=$('badge');b.textContent=isDemo?'Démo · données simulées':wsOk?'Live · temps réel':'Live · 1 min';b.className='badge '+(isDemo?'demo':'live');}
+function setBadge(){const b=$('badge'),src=$('src')?.textContent||'';b.textContent=isDemo?'DÉMO · SIMULÉ':src==='Coinbase'?'COINBASE · 1 MIN':wsOk?'BINANCE · LIVE':'BINANCE · 1 MIN';b.className='badge '+(isDemo?'demo':'live');}
 function upd(rows,row){if(!rows||!rows.length)return false;const L=rows[rows.length-1];if(row.t===L.t){L.h=Math.max(L.h,row.h);L.l=Math.min(L.l,row.l);L.c=row.c;L.v=row.v??L.v;L.qv=row.qv??L.qv;L.trades=row.trades??L.trades;L.takerBuy=row.takerBuy??L.takerBuy;return true;}
   if(row.t>L.t){rows.push(row);return true;}return false;}
 function connectWS(){
-  if(isDemo||(ws&&ws.readyState<2))return;
+  /* Ne jamais mélanger le flux Binance avec un historique Coinbase ou une série de démonstration. */
+  if(isDemo||$('src')?.textContent!=='Binance'){if(ws&&ws.readyState<2){try{ws.close();}catch(e){}}wsOk=false;setBadge();return;}
+  if(ws&&ws.readyState<2)return;
   try{ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@kline_1d/btcusdt@kline_1w/btcusdt@kline_4h');}catch(e){return;}
   ws.onopen=()=>{wsOk=true;wsRetry=0;setBadge();};
   ws.onclose=()=>{wsOk=false;setBadge();if(document.visibilityState==='visible'){const dl=Math.min(30,2**wsRetry++)*1000;setTimeout(connectWS,dl);}};
