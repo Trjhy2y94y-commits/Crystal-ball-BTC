@@ -359,6 +359,58 @@ header{background:rgba(13,20,29,.94);border-bottom-color:var(--line);padding-top
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
+
+/* Refonte structurelle mobile : cockpit, lecture hiérarchisée et surfaces dédiées */
+.cockpit{padding:14px 14px calc(28px + env(safe-area-inset-bottom));gap:12px}
+.ck-top{display:flex;align-items:center;justify-content:space-between;padding:5px 2px 13px}
+.ck-brand{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.16em;color:var(--sub);font-weight:700}
+.ck-mark{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(145deg,#e8cb83,#a98743);color:#111820;font-size:19px;letter-spacing:0}
+.ck-brand b{color:var(--accent)}
+.ck-live{font-size:9px;letter-spacing:.1em;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ck-live i{width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 9px var(--up)}
+.ck-hero{padding:19px 18px 17px;border:1px solid #344353;border-radius:21px;background:radial-gradient(ellipse at 85% 0%,rgba(216,182,108,.13),transparent 55%),linear-gradient(145deg,#192635,#101821);box-shadow:0 15px 34px rgba(0,0,0,.2)}
+.ck-eyebrow,.ck-section-head{font-size:10px;font-weight:750;letter-spacing:.13em;color:var(--muted)}
+.ck-eyebrow span{padding:0 5px;color:var(--accent)}
+.ck-price-row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin:12px 0 11px}
+.ck-price{font-size:clamp(32px,9vw,43px);font-weight:750;letter-spacing:-.055em;line-height:1.05;color:var(--fg);font-variant-numeric:tabular-nums}
+.ck-price small{font-size:17px;color:var(--muted);font-weight:550}
+.ck-change{padding:7px 9px;border-radius:10px;font-size:12px;font-weight:750;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ck-change small{font-size:9px;opacity:.7;margin-left:3px}
+.ck-change.positive{color:var(--up);background:rgba(53,211,154,.11)}
+.ck-change.negative{color:var(--down);background:rgba(255,100,116,.11)}
+.ck-regime{display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.08em;color:var(--sub);padding-top:12px;border-top:1px solid var(--line)}
+.ck-regime-dot{width:7px;height:7px;border-radius:50%}
+.ck-sep{color:var(--line);margin:0 2px 0 5px}
+.ck-muted{color:var(--muted);font-size:10px;letter-spacing:0}
+.ck-decision,.ck-chart-card{padding:16px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(150deg,#151f2b,#101720)}
+.ck-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ck-tag{font-size:9px;color:var(--accent);border:1px solid rgba(216,182,108,.28);border-radius:20px;padding:4px 7px;letter-spacing:.09em}
+.ck-decision-main{display:flex;align-items:center;gap:13px;padding:17px 0 13px}
+.ck-decision-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:13px;background:rgba(216,182,108,.1);font-size:23px;font-weight:700}
+.ck-decision h2{font-size:16px;margin:0 0 4px;color:var(--fg);letter-spacing:-.02em}
+.ck-decision p{font-size:12px;line-height:1.45;margin:0;color:var(--muted)}
+.ck-decision-foot{padding-top:10px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)}
+.ck-forecast-head{padding:5px 2px 0}
+.ck-prob-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ck-prob{padding:14px;border:1px solid var(--line);border-radius:16px;background:#121c27;min-width:0}
+.ck-prob span,.ck-prob small{display:block;color:var(--muted);font-size:9px;letter-spacing:.1em}
+.ck-prob strong{display:block;font-size:27px;line-height:1.2;margin:8px 0 4px;color:var(--accent);font-variant-numeric:tabular-nums}
+.ck-prob small{font-size:10px;letter-spacing:0}
+.ck-chart-card .seg{margin:14px 0 7px;background:#0b121a;border:1px solid var(--line);border-radius:12px;padding:3px}
+.ck-chart-card .seg button{flex:1;min-height:34px;border:0;background:transparent;color:var(--muted);font-size:10px}
+.ck-chart-card .seg button.on{background:#263342;color:var(--accent);border-radius:9px}
+.ck-chart-card #orb{width:100%;height:175px;display:block;touch-action:pan-y}
+.ck-chart-hint{text-align:center;font-size:10px;color:var(--muted);padding-top:5px}
+.ck-readout{margin-top:-2px}
+.ck-factors{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#111a24}
+.ck-factor{display:flex;align-items:center;gap:10px;padding:12px 13px;border-bottom:1px solid var(--line);font-size:12px;color:var(--sub)}
+.ck-factor:last-child{border-bottom:0}
+.ck-factor-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:#202d3a;color:var(--accent);font-size:14px}
+.ck-factor b{margin-left:auto;font-size:11px}
+.ck-disclaimer{font-size:10px!important;line-height:1.5;color:var(--muted)!important;padding:2px 3px 0}
+.tabbar button{font-size:10px;letter-spacing:.01em}
+@media(min-width:600px){.cockpit{max-width:620px;margin:0 auto}.ck-prob strong{font-size:31px}}
+
 </style>
 
 <div class="app">
@@ -408,10 +460,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
   <section class="view" id="vStats" hidden><div class="proj page" id="proj"></div></section>
   <div class="toast" id="toast" hidden></div>
   <nav class="tabbar" aria-label="Navigation">
-    <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11" r="7"></circle><path d="M7 21h10M9 11a3 3 0 0 1 3-3"></path></svg>Boule</button>
-    <button type="button" data-tab="chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v16M16 4v16M5 8h6M13 14h6M5 16h6M13 6h6"></path></svg>Graphique</button>
-    <button type="button" data-tab="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Calendrier</button>
-    <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Stats</button>
+    <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11" r="7"></circle><path d="M7 21h10M9 11a3 3 0 0 1 3-3"></path></svg>Cockpit</button>
+    <button type="button" data-tab="chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v16M16 4v16M5 8h6M13 14h6M5 16h6M13 6h6"></path></svg>Analyse</button>
+    <button type="button" data-tab="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Cycle</button>
+    <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Fiabilité</button>
   </nav>
 </div>
 
@@ -1535,19 +1587,42 @@ async function renderHome(){
   const why=[['Tendance',K.rg>0?'Haussière':K.rg<0?'Baissière':'Neutre',K.rg>0?'var(--up)':K.rg<0?'var(--down)':'var(--sub)','↗','#0a84ff'],
     ['Liquidité',!m?'—':m.slope>0.01?'En hausse':m.slope<-0.01?'En baisse':'Stable',!m?'var(--sub)':m.slope>0.01?'var(--up)':m.slope<-0.01?'var(--down)':'var(--sub)','$','#5e5ce6'],
     ['Cipher B',wt==null?'—':wt<=-40?'Survente':wt>=40?'Surachat':'Neutre',wt==null?'var(--sub)':wt<=-40?'var(--up)':wt>=40?'var(--down)':'var(--sub)','≈','#bf5af2']];
+  const p30=pUp(K.q[30]),p90=pUp(K.q[90]);
+  const regime=K.rg>0?['HAUSSIER','var(--up)']:K.rg<0?['BAISSIER','var(--down)']:['NEUTRE','var(--accent)'];
+  const probLabel=p=>p==null?'—':Math.round(p*100)+' %';
+  const fmtProb=(p)=>p==null?'Données insuffisantes':p>=.6?'Biais haussier':p<=.4?'Biais baissier':'Pas d’avantage net';
+  const actionTitle=trig?'Zone d’achat atteinte':td&&td.amt?'Ordre d’achat en attente':td&&td.sc<0?'Patience : risque de sommet':'Attendre un repli';
+  const actionDetail=trig?act.s:td&&td.amt?act.s:nb?'Prochaine zone surveillée : '+fmt(nb.zone)+' $':'Aucune zone d’achat imminente';
   el.innerHTML=`
-  <div class="hdr"><div><div class="ttl">Bitcoin <span class="lv ${isDemo?'dm':''}">${isDemo?'DÉMO':'LIVE'}</span></div><div class="price">${fmt(last.c)} $</div></div>
-    <span class="pill" style="color:${ch>=0?'var(--up)':'var(--down)'};background:${ch>=0?'rgba(48,209,88,.15)':'rgba(255,69,58,.15)'}">${ch>=0?'+':''}${ch.toFixed(2)} %</span></div>
-  <div class="gl">
-    <div class="seg">${[[30,'1 mois'],[91,'3 mois'],[182,'6 mois'],[365,'1 an']].map(([h,t])=>`<button type="button" data-h="${h}" class="${h===HZ?'on':''}">${t}</button>`).join('')}</div>
+  <div class="ck-top"><div class="ck-brand"><span class="ck-mark">₿</span><span>CRISTAL <b>BTC</b></span></div><span class="ck-live"><i></i>${isDemo?'MODE DÉMO':'MARCHÉ · '+($('src')?.textContent||'LIVE')}</span></div>
+  <section class="ck-hero">
+    <div class="ck-eyebrow">BITCOIN / USD <span>·</span> VUE D’ENSEMBLE</div>
+    <div class="ck-price-row"><div class="ck-price">${fmt(last.c)} <small>$</small></div><span class="ck-change ${ch>=0?'positive':'negative'}">${ch>=0?'+':''}${ch.toFixed(2)} % <small>24 H</small></span></div>
+    <div class="ck-regime"><span class="ck-regime-dot" style="background:${regime[1]}"></span> RÉGIME <b style="color:${regime[1]}">${regime[0]}</b><span class="ck-sep">/</span><span class="ck-muted">Source : ${$('src')?.textContent||'—'}</span></div>
+  </section>
+  <section class="ck-decision">
+    <div class="ck-section-head"><span>LECTURE DU MARCHÉ</span><span class="ck-tag">SYNTHÈSE</span></div>
+    <div class="ck-decision-main"><div class="ck-decision-icon" style="color:${act.c}">${trig?'↗':td&&td.amt?'◎':td&&td.sc<0?'Ⅱ':'…'}</div><div><h2>${actionTitle}</h2><p>${actionDetail}</p></div></div>
+    <div class="ck-decision-foot">Décision indicative · pas un ordre automatique</div>
+  </section>
+  <div class="ck-section-head ck-forecast-head"><span>SCÉNARIOS HISTORIQUES</span><span class="ck-muted">Probabilité de clôturer plus haut</span></div>
+  <div class="ck-prob-grid">
+    <div class="ck-prob"><span>30 JOURS</span><strong>${probLabel(p30)}</strong><small>${fmtProb(p30)}</small></div>
+    <div class="ck-prob"><span>90 JOURS</span><strong>${probLabel(p90)}</strong><small>${fmtProb(p90)}</small></div>
+  </div>
+  <section class="ck-chart-card">
+    <div class="ck-section-head"><span>TRAJECTOIRE CONDITIONNELLE</span><span class="ck-muted">Fourchette historique</span></div>
+    <div class="seg">${[[30,'30 J'],[91,'90 J'],[182,'6 M'],[365,'1 AN']].map(([h,t])=>`<button type="button" data-h="${h}" class="${h===HZ?'on':''}">${t}</button>`).join('')}</div>
     <canvas id="orb"></canvas>
-    <div class="hint">Glisse le doigt sur la zone violette pour choisir une date</div></div>
-  <div class="sc" id="orbRead"></div>
-  <div class="gh">Aujourd'hui</div>
-  <div class="grp"><div class="row"><span class="ic" style="background:${actIc[1]}">${actIc[0]}</span><span class="rl"><b>${act.t}</b>${act.s?`<small>${act.s}</small>`:''}</span><span></span></div></div>
-  <div class="gh">Pourquoi</div>
-  <div class="grp">${why.map(([l,v,c,i,bg])=>`<div class="row"><span class="ic" style="background:${bg}">${i}</span><span class="rl"><b>${l}</b></span><span class="tag" style="color:${c}">${v}</span></div>`).join('')}</div>
-  <p class="foot">Le cône décrit des rendements historiques comparables. Son ajustement utilise des tests chronologiques qui se chevauchent ; la couverture affichée est indicative, pas une validation indépendante. Ce n’est ni une probabilité garantie ni une promesse de prix.<br>v23 · ${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</p>`;
+    <div class="ck-chart-hint">Touchez le graphique pour explorer une échéance</div>
+  </section>
+  <div class="sc ck-readout" id="orbRead"></div>
+  <div class="ck-section-head"><span>FACTEURS SUIVIS</span><span class="ck-muted">Dernières bougies clôturées</span></div>
+  <div class="ck-factors">
+    ${why.map(([l,v,c,i])=>`<div class="ck-factor"><span class="ck-factor-icon">${i}</span><span>${l}</span><b style="color:${c}">${v}</b></div>`).join('')}
+  </div>
+  <p class="ck-disclaimer">Les probabilités et fourchettes décrivent des observations historiques comparables. Elles ne constituent pas une prévision garantie. La qualité dépend des données et du régime de marché.</p>`;
+
   el.scrollTop=sc0;
   const c=$('orb'),read=k=>{const x=fut(k);if(!x){$('orbRead').innerHTML='';return;}
     const pu=Math.round(x.up*100),dt=new Date(T0+k*DAY).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:k>200?'numeric':undefined});
