@@ -19,46 +19,58 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Validate manifest
-        run: python -m json.tool manifest.webmanifest > /dev/null
-      - name: Check JavaScript syntax
-        shell: bash
+      - name: Validate PWA and local assets
         run: |
-          node --check service-worker.js
           python - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
+          from urllib.parse import urlsplit, unquote
           import json
           import re
           import subprocess
           import tempfile
 
-          manifest = json.loads(Path("manifest.webmanifest").read_text(encoding="utf-8"))
+          root = Path(".")
+          manifest = json.loads((root / "manifest.webmanifest").read_text(encoding="utf-8"))
+          if manifest.get("start_url") != "./" or manifest.get("scope") != "./":
+              raise SystemExit("Manifest start_url/scope must match the GitHub Pages subpath")
+          if manifest.get("display") != "standalone":
+              raise SystemExit("Manifest display must remain standalone")
           for icon in manifest.get("icons", []):
-              asset = Path(icon["src"].removeprefix("./"))
+              asset = root / unquote(urlsplit(icon["src"]).path).removeprefix("./")
               if not asset.is_file():
                   raise SystemExit(f"Manifest icon missing: {asset}")
-          sw = Path("service-worker.js").read_text(encoding="utf-8")
-          shell_match = re.search(r"const\s+SHELL\s*=\s*\[(.*?)\]", sw, re.S)
+
+          sw = (root / "service-worker.js").read_text(encoding="utf-8")
+          subprocess.run(["node", "--check", "service-worker.js"], check=True)
+          shell_match = re.search(r"const\\s+SHELL\\s*=\\s*\\[(.*?)\\]", sw, re.S)
           if not shell_match:
               raise SystemExit("Service worker shell list not found")
-          for asset in re.findall(r"['\"]([^'\"]+)['\"]", shell_match.group(1)):
-              local = Path(asset.removeprefix("./"))
-              if asset in ("./", "./index.html"):
-                  local = Path("index.html")
+          for asset in re.findall(r"['\\"]([^'\\"]+)['\\"]", shell_match.group(1)):
+              local = root / unquote(urlsplit(asset).path).removeprefix("./")
+              if asset == "./":
+                  local = root / "index.html"
               if not local.is_file():
                   raise SystemExit(f"Service worker precache asset missing: {local}")
 
-          class Scripts(HTMLParser):
+          class AuditHTML(HTMLParser):
               def __init__(self):
                   super().__init__()
+                  self.ids = []
+                  self.resources = []
                   self.active = False
                   self.current = []
-                  self.blocks = []
+                  self.scripts = []
 
               def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if attrs.get("id"):
+                      self.ids.append(attrs["id"])
+                  for key in ("src", "href"):
+                      value = attrs.get(key)
+                      if value:
+                          self.resources.append((tag, key, value))
                   if tag.lower() == "script":
-                      attrs = dict(attrs)
                       self.active = not attrs.get("src") and attrs.get("type", "text/javascript") in ("text/javascript", "application/javascript", "module", "")
                       self.current = []
 
@@ -69,18 +81,30 @@ jobs:
               def handle_endtag(self, tag):
                   if tag.lower() == "script":
                       if self.active:
-                          self.blocks.append("".join(self.current))
+                          self.scripts.append("".join(self.current))
                       self.active = False
                       self.current = []
 
-          parser = Scripts()
-          parser.feed(Path("index.html").read_text(encoding="utf-8"))
-          if not parser.blocks:
+          parser = AuditHTML()
+          parser.feed((root / "index.html").read_text(encoding="utf-8"))
+          duplicates = sorted({item for item in parser.ids if parser.ids.count(item) > 1})
+          if duplicates:
+              raise SystemExit(f"Duplicate HTML id(s): {', '.join(duplicates)}")
+
+          for tag, key, value in parser.resources:
+              parts = urlsplit(value)
+              if parts.scheme or value.startswith(("#", "//")):
+                  continue
+              local = root / unquote(parts.path).removeprefix("./")
+              if not parts.path or not local.is_file():
+                  raise SystemExit(f"Broken local {key} on <{tag}>: {value}")
+
+          if not parser.scripts:
               raise SystemExit("No inline JavaScript blocks found")
           with tempfile.TemporaryDirectory() as tmp:
-              for i, source in enumerate(parser.blocks):
+              for i, source in enumerate(parser.scripts):
                   path = Path(tmp) / f"inline-{i}.js"
                   path.write_text(source, encoding="utf-8")
                   subprocess.run(["node", "--check", str(path)], check=True)
-          print(f"Validated {len(parser.blocks)} inline JavaScript block(s)")
+          print(f"Validated PWA manifest, {len(parser.scripts)} inline JS block(s), service worker, local assets and unique HTML ids")
           PY
