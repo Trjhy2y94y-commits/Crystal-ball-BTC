@@ -1781,13 +1781,32 @@ function rsiDivergenceBacktest(d){
     return{h,n:rows.length,wins,win,ci:rows.length>=20?wilson(wins,rows.length):null,avg,base,baseWin,
       winEdge:win==null||baseWin==null?null:win-baseWin,excess:avg==null||base==null?null:avg-base};
   })}));
-  return{stats,events:events.length,cut};
+  return{stats,events:events.length,cut,rawEvents:events};
+}
+/* Audit des événements RSI : les signaux proches sont conservés dans le brut,
+   puis comparés à une série dédoublonnée (un signal/direction tous les 60 jours max). */
+function rsiDivergenceEventAudit(d,B){
+  const out=[1,-1].map(dir=>{
+    const events=B.rawEvents.filter(e=>e.dir===dir).slice().sort((a,b)=>a.known-b.known);
+    const kept=[];let last=-Infinity;
+    for(const e of events){if(e.known-last>=60){kept.push(e);last=e.known;}}
+    const horizons=[10,30,60].map(h=>{
+      const calc=list=>{const rows=list.filter(e=>e.known+h<d.length).map(e=>({r:(d[e.known+h].c/e.entry-1)*dir}));return{n:rows.length,w:rows.filter(x=>x.r>0).length,avg:rows.length?rows.reduce((a,x)=>a+x.r,0)/rows.length:null};};
+      const raw=calc(events),dedup=calc(kept);
+      const overlapped=events.filter(e=>events.some(o=>o!==e&&Math.abs(o.known-e.known)<h)).length;
+      return{h,raw,dedup,overlapped};
+    });
+    return{dir,events,kept,removed:events.length-kept.length,horizons};
+  });
+  return out;
 }
 function rsiDivergenceBacktestHTML(d,isDemo){
   if(isDemo)return '<section><h2>Fiabilité divergences RSI <small>backtest hors échantillon</small></h2><p>Mode démo : statistiques désactivées.</p></section>';
-  const B=rsiDivergenceBacktest(d),pct=x=>x==null?'—':(x*100).toFixed(1)+' %',ret=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(2)+' %';
+  const B=rsiDivergenceBacktest(d),A=rsiDivergenceEventAudit(d,B),pct=x=>x==null?'—':(x*100).toFixed(1)+' %',ret=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(2)+' %';
   const rows=B.stats.map(x=>'<tr><td>'+(x.dir>0?'Haussière':'Baissière')+'</td>'+x.horizons.map(h=>'<td>'+h.n+' cas<br><b>'+(h.win==null?'—':pct(h.win))+'</b>'+(h.ci?'<br><small>IC 95 % '+pct(h.ci[0])+'–'+pct(h.ci[1])+'</small>':'')+'<br><small>Moy. '+ret(h.avg)+'</small><br><small>Réf. tous jours '+pct(h.baseWin)+'</small><br><small>Écart taux '+ret(h.winEdge)+'</small><br><small>Écart moy. '+ret(h.excess)+'</small></td>').join('')+'</tr>').join('');
-  return '<section><h2>Fiabilité divergences RSI <small>test chronologique · daily</small></h2><table><thead><tr><th>Signal</th><th>+10 j</th><th>+30 j</th><th>+60 j</th></tr></thead><tbody>'+rows+'</tbody></table><p>RSI 14. Divergence haussière : plus bas du prix inférieur et RSI supérieur de plus de 2 points ; baissière : plus haut du prix supérieur et RSI inférieur de plus de 2 points. Pivot confirmé après 3 bougies ; entrée à la clôture de confirmation, jamais au pivot. Les rendements sont mesurés dans le sens du signal. « Référence » = tous les jours éligibles du segment test dans le même sens ; « écart taux » et « écart moy. » comparent les signaux à cette référence. Taux et intervalle de confiance de Wilson à 95 % affichés uniquement à partir de 20 cas. Les horizons incomplets sont exclus.</p><p class="note">'+B.events+' signaux dans le segment test (30 % les plus récents) · coupure au '+dS(d[B.cut]?.t||d[d.length-1].t)+'. Seuils fixes, aucun réglage optimisé sur le test. Ceci mesure un historique, pas une garantie de performance future.</p><button type="button" class="apply" data-copy-rsi-report>Copier le rapport statistique</button><small data-rsi-copy-status aria-live="polite"></small></section>';
+  const auditRows=A.map(x=>'<tr><td>'+(x.dir>0?'Haussière':'Baissière')+'</td><td>'+x.events.length+'</td><td>'+x.removed+'</td>'+x.horizons.map(h=>'<td>'+h.overlapped+' chevauchants<br><small>Brut '+h.raw.n+' cas · '+h.raw.w+' gagnants · '+ret(h.raw.avg)+'</small><br><small>Dédoublonné '+h.dedup.n+' cas · '+h.dedup.w+' gagnants · '+ret(h.dedup.avg)+'</small></td>').join('')+'</tr>').join('');
+  const eventRows=A.flatMap(x=>x.events.map(e=>'<tr><td>'+(x.dir>0?'Haussière':'Baissière')+'</td><td>'+dS(d[e.pivot].t)+'</td><td>'+dS(d[e.known].t)+'</td><td>'+e.entry.toLocaleString('en-US',{maximumFractionDigits:2})+'</td><td>'+(x.kept.includes(e)?'Retenu':'Écarté (<60 j)')+'</td></tr>')).join('');
+  return '<section><h2>Fiabilité divergences RSI <small>test chronologique · daily</small></h2><table><thead><tr><th>Signal</th><th>+10 j</th><th>+30 j</th><th>+60 j</th></tr></thead><tbody>'+rows+'</tbody></table><p>RSI 14. Divergence haussière : plus bas du prix inférieur et RSI supérieur de plus de 2 points ; baissière : plus haut du prix supérieur et RSI inférieur de plus de 2 points. Pivot confirmé après 3 bougies ; entrée à la clôture de confirmation, jamais au pivot. Les rendements sont mesurés dans le sens du signal. « Référence » = tous les jours éligibles du segment test dans le même sens. Taux et IC Wilson à 95 % affichés uniquement à partir de 20 cas. Les horizons incomplets sont exclus.</p><p class="note">'+B.events+' signaux détectés dans le segment test. Début du test : '+dS(d[B.cut]?.t||d[d.length-1].t)+' (70 % de l’historique utilisé pour l’apprentissage chronologique). Seuils fixes, aucun réglage optimisé sur le test.</p><h3>Audit des chevauchements</h3><p>Un événement est marqué chevauchant si un autre signal de même direction apparaît à moins de l’horizon considéré. Analyse de sensibilité dédoublonnée : on conserve le premier signal de chaque direction, puis on ignore les suivants pendant 60 bougies daily. Le brut reste affiché pour comparaison ; ce filtre n’est pas présenté comme une stratégie optimisée.</p><table><thead><tr><th>Signal</th><th>Brut</th><th>Écartés</th><th>+10 j</th><th>+30 j</th><th>+60 j</th></tr></thead><tbody>'+auditRows+'</tbody></table><h3>Journal des signaux</h3><table><thead><tr><th>Type</th><th>Date pivot</th><th>Date entrée</th><th>Prix entrée</th><th>Audit 60 j</th></tr></thead><tbody>'+eventRows+'</tbody></table><button type="button" class="apply" data-copy-rsi-report>Copier le rapport statistique complet</button><small data-rsi-copy-status aria-live="polite"></small></section>';
 }
 async function renderProj(){
   const el=$('proj');el.dataset.compact='0';const D=await getDaily(),d=D.rows,I=D.ind,now=Date.now();
@@ -2197,7 +2216,7 @@ async function copyRsiStatisticsReport(button){
       'CRYSTAL BTC — RAPPORT DE FIABILITÉ DES DIVERGENCES RSI',
       'Données : BTC daily | RSI 14 | pivots confirmés après 3 bougies',
       'Test : derniers 30 % de l’historique, entrée à la clôture de confirmation',
-      'Date de coupure : '+dS(d[B.cut]?.t||d[d.length-1].t),
+      'Début du segment test (70 % apprentissage) : '+dS(d[B.cut]?.t||d[d.length-1].t),
       'Bougies daily disponibles : '+d.length,
       'Signaux détectés dans le segment test : '+B.events,
       'Définition : divergence haussière = prix plus bas + RSI supérieur de >2 points ; baissière = prix plus haut + RSI inférieur de >2 points.',
@@ -2208,6 +2227,13 @@ async function copyRsiStatisticsReport(button){
     ];
     for(const x of B.stats)for(const h of x.horizons){
       lines.push([x.dir>0?'HAUSSIÈRE':'BAISSIÈRE','+'+h.h+'j',h.n,h.wins,pct(h.win),h.ci?pct(h.ci[0])+' à '+pct(h.ci[1]):'—',ret(h.avg),pct(h.baseWin),ret(h.winEdge),ret(h.base),ret(h.excess)].join(' | '));
+    }
+    const audit=rsiDivergenceEventAudit(d,B);
+    lines.push('','AUDIT DES CHEVAUCHEMENTS','Règle de sensibilité : conserver le premier signal par direction, puis ignorer les suivants pendant 60 bougies daily.');
+    for(const x of audit){
+      lines.push((x.dir>0?'HAUSSIÈRE':'BAISSIÈRE')+' | signaux bruts '+x.events.length+' | écartés '+x.removed);
+      for(const h of x.horizons)lines.push('+'+h.h+'j | chevauchants '+h.overlapped+' | brut '+h.raw.n+' cas, '+h.raw.w+' gagnants, moy. '+ret(h.raw.avg)+' | dédoublonné '+h.dedup.n+' cas, '+h.dedup.w+' gagnants, moy. '+ret(h.dedup.avg));
+      for(const e of x.events)lines.push('ÉVÉNEMENT '+(x.dir>0?'HAUSSIER':'BAISSIER')+' | pivot '+dS(d[e.pivot].t)+' | entrée '+dS(d[e.known].t)+' | prix '+e.entry+' | '+(x.kept.includes(e)?'retenu':'écarté par filtre 60 j'));
     }
     lines.push('','Note : backtest historique, pas une garantie de performance future. Les résultats dépendent de la qualité et de la longueur de l’historique chargé.');
     const report=lines.join('\n');
