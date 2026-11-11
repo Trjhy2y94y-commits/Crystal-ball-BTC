@@ -1796,11 +1796,56 @@ function buildCone(D,maxH=92){
 /* Audit de précision du prix : chaque prévision historique est recalculée avec les seules données connues à sa date.
    Le modèle conditionne sur tendance, régime de liquidité M2 (si disponible), momentum et volatilité.
    Les rendements d'apprentissage sont tous arrivés à maturité avant l'origine du test. */
+/* Reconstitution causale des signaux FVG + Volume Profile.
+   Chaque snapshot ne lit que les bougies disponibles à la date i. */
+function historicalStructureFeatures(rows,i){
+  const end=Math.min(i,rows.length-1),price=rows[end]?.c;if(!price||end<365)return{fvg:0,vp:0};
+  const daily=rows.slice(Math.max(0,end-364),end+1),aggregate=(unit)=>{
+    const out=[];let key=null,last=null;
+    daily.forEach(r=>{const dt=new Date(r.t),k=unit==='1W'?Date.UTC(dt.getUTCFullYear(),dt.getUTCMonth(),dt.getUTCDate()-((dt.getUTCDay()+6)%7)):Date.UTC(dt.getUTCFullYear(),dt.getUTCMonth(),1);
+      if(k!==key){last={t:k,o:r.o,h:r.h,l:r.l,c:r.c,v:r.v||0};out.push(last);key=k;}
+      else{last.h=Math.max(last.h,r.h);last.l=Math.min(last.l,r.l);last.c=r.c;last.v+=(r.v||0);}
+    });
+    return out.filter(r=>{const d=new Date(r.t),next=unit==='1W'?r.t+7*864e5:Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,1);return next<=rows[end].t+864e5;});
+  };
+  const fvgZones=[];
+  [['1D',daily.slice(-180)],['1W',aggregate('1W').slice(-60)],['1M',aggregate('1M').slice(-24)]].forEach(([tf,bars])=>{
+    for(let k=2;k<bars.length;k++){
+      const a=bars[k-2],c=bars[k],bull=c.l>a.h,bear=c.h<a.l;if(!bull&&!bear)continue;
+      const lo=bull?a.h:c.h,hi=bull?c.l:a.l;if((hi-lo)/c.c<.001)continue;
+      let filled=false,mit=0;
+      for(let z=k+1;z<bars.length;z++){const r=bars[z];
+        if(bull){if(r.l<=lo){filled=true;break;}if(r.l<hi)mit=Math.max(mit,(hi-r.l)/(hi-lo));}
+        else{if(r.h>=hi){filled=true;break;}if(r.h>lo)mit=Math.max(mit,(r.h-lo)/(hi-lo));}
+      }
+      if(!filled){const mid=(lo+hi)/2,dist=(price-mid)/price;
+        if((bull&&hi<price)||(bear&&lo>price))fvgZones.push({tf,bull,dist,mit});}
+    }
+  });
+  const tfWeight={'1D':1,'1W':1.6,'1M':2.2};
+  let below=0,above=0;
+  fvgZones.forEach(z=>{const v=Math.exp(-Math.abs(z.dist)*35)*tfWeight[z.tf]*(1-z.mit*.65);if(z.bull)below+=v;else above+=v;});
+  const fv=below+above?Math.max(-1,Math.min(1,(below-above)/(below+above))):0;
+  const fvg=fv>.15?1:fv<-.15?-1:0;
+  const vpCalc=(lookback)=>{
+    const sample=daily.slice(-lookback),lo=Math.min(...sample.map(r=>r.l)),hi=Math.max(...sample.map(r=>r.h));
+    if(!(hi>lo))return null;const bins=48,step=(hi-lo)/bins,vol=new Float64Array(bins);
+    sample.forEach(r=>{const v=Number(r.v)||0;if(v<=0)return;const a=Math.max(0,Math.min(bins-1,Math.floor((r.l-lo)/step))),b=Math.max(0,Math.min(bins-1,Math.floor((r.h-lo)/step)));
+      if(a===b)vol[a]+=v;else{const share=v/(b-a+1);for(let z=a;z<=b;z++)vol[z]+=share;}});
+    const total=vol.reduce((a,b)=>a+b,0);if(!total)return null;let poc=0;for(let z=1;z<bins;z++)if(vol[z]>vol[poc])poc=z;
+    let left=poc,right=poc,covered=vol[poc];while(covered<total*.70&&(left>0||right<bins-1)){
+      const lv=left>0?vol[left-1]:-1,rv=right<bins-1?vol[right+1]:-1;if(rv>lv){right++;covered+=vol[right];}else{left--;covered+=vol[left];}}
+    return{poc:lo+(poc+.5)*step,vah:lo+(right+1)*step,val:lo+left*step};
+  };
+  const p=vpCalc(90)||vpCalc(30);if(!p)return{fvg,vp:0};
+  const vv=price>p.vah?.65:price<p.val?-.65:price>p.poc?.25:price<p.poc?-.25:0;
+  return{fvg,vp:vv>.1?1:vv<-.1?-1:0};
+}
 function priceForecastAudit(D){
   const d=D.rows,I=D.ind,C=I.Cl||d.map(x=>x.c),n=Math.min(C.length,I.lastClosed??C.length-1),R=I.rgA||[],LT=I.ltA||[];
   if(D.demo||n<1200)return{demo:!!D.demo,rows:[],reason:D.demo?'Mode démo : audit réel suspendu.':'Historique insuffisant pour valider les horizons longs.'};
-  const hs=[30,90,365],out=[],mom=I.wt2||[];
-  // Volatilité réalisée 30 j et percentile causal : aucun seuil ne regarde le futur.
+  const hs=[30,90,365],out=[],mom=I.wt2||[],featureCache=new Map();
+  const features=i=>{if(!featureCache.has(i))featureCache.set(i,historicalStructureFeatures(d,i));return featureCache.get(i);};
   const rv=new Array(n).fill(null),volBucket=new Array(n).fill(1),sortedVol=[];
   for(let i=30;i<n;i++){let sum=0,sum2=0,cnt=0;for(let k=i-29;k<=i;k++){if(C[k]>0&&C[k-1]>0){const x=Math.log(C[k]/C[k-1]);sum+=x;sum2+=x*x;cnt++;}}
     if(cnt<25)continue;const m=sum/cnt,v=Math.sqrt(Math.max(0,sum2/cnt-m*m)*365);rv[i]=v;
@@ -1810,52 +1855,47 @@ function priceForecastAudit(D){
   const momBucket=i=>mom[i]==null?0:mom[i]<=-40?-1:mom[i]>=40?1:0;
   const q=(a,p)=>{if(!a.length)return null;const v=a.slice().sort((x,y)=>x-y);return qs(v,p);};
   const metrics=a=>{if(!a.length)return{n:0,mae:null,h5:null,h10:null,h20:null,dir:null,cov:null};
-    const n=a.length;return{n,mae:a.reduce((s,x)=>s+x.err,0)/n,
-      h5:a.filter(x=>x.err<=.05).length/n,h10:a.filter(x=>x.err<=.10).length/n,
-      h20:a.filter(x=>x.err<=.20).length/n,dir:a.filter(x=>x.dir).length/n,
-      cov:a.filter(x=>x.cover).length/n};};
+    const count=a.length;return{n:count,mae:a.reduce((s,x)=>s+x.err,0)/count,h5:a.filter(x=>x.err<=.05).length/count,
+      h10:a.filter(x=>x.err<=.10).length/count,h20:a.filter(x=>x.err<=.20).length/count,
+      dir:a.filter(x=>x.dir).length/count,cov:a.filter(x=>x.cover).length/count};};
   hs.forEach(h=>{
     const stride=h===30?7:h===90?14:30,first=Math.max(900,Math.floor(n*.45)),last=n-h-1;
-    const model=[],base=[];let macroUsed=0,origins=0;
+    const enhanced=[],core=[],base=[];let macroUsed=0,fullUsed=0,origins=0;
     for(let i=first;i<=last;i+=stride){
       const train=[],uncond=[];
-      // Aucune observation dont le rendement à h jours n'était pas déjà connu à la date i.
-      for(let j=Math.max(220,Math.floor(n*.08));j+h<=i;j++){
-        const ret=Math.log(C[j+h]/C[j]);if(!Number.isFinite(ret))continue;
-        uncond.push(ret);
-        if(R[j]===R[i])train.push({r:ret,j,mom:momBucket(j),vol:volBucket[j],liq:LT[j]});
+      // Échantillonnage hebdomadaire des origines d'apprentissage : snapshots causaux réutilisables.
+      const firstJ=Math.max(220,Math.floor(n*.08));
+      for(let j=firstJ+((7-firstJ%7)%7);j+h<=i;j+=7){
+        const ret=Math.log(C[j+h]/C[j]);if(!Number.isFinite(ret))continue;uncond.push(ret);
+        if(R[j]===R[i]){const ft=features(j);train.push({r:ret,j,mom:momBucket(j),vol:volBucket[j],liq:LT[j],fvg:ft.fvg,vp:ft.vp});}
       }
-      // Premier choix : mêmes régimes de tendance, momentum et volatilité, puis filtre M2 réel.
       const sameState=train.filter(x=>x.mom===momBucket(i)&&x.vol===volBucket[i]);
       let chosen=sameState.length>=60?sameState:train,condition=sameState.length>=60?'tendance + momentum + volatilité':'tendance';
-      if(I.real&&LT[i]!=null){
-        const both=chosen.filter(x=>x.liq===LT[i]);
-        if(both.length>=60){chosen=both;condition+=' + M2';macroUsed++;}
-      }
+      if(I.real&&LT[i]!=null){const both=chosen.filter(x=>x.liq===LT[i]);if(both.length>=60){chosen=both;condition+=' + M2';macroUsed++;}}
       if(chosen.length<60){chosen=uncond.map(r=>({r}));condition='historique complet';}
       if(chosen.length<60||uncond.length<60)continue;
-      const a=chosen.map(x=>x.r),b=uncond;
-      const p10=q(a,.1),p50=q(a,.5),p90=q(a,.9),b50=q(b,.5);
+      const a=chosen.map(x=>x.r),b=uncond,p10=q(a,.1),p50=q(a,.5),p90=q(a,.9),b50=q(b,.5);
+      const ft=features(i),fullSet=chosen.filter(x=>x.fvg===ft.fvg&&x.vp===ft.vp),useFull=fullSet.length>=60;
+      const full=useFull?fullSet:chosen,fa=full.map(x=>x.r),fp10=q(fa,.1),fp50=q(fa,.5),fp90=q(fa,.9);
+      if(useFull)fullUsed++;
       const actual=Math.log(C[i+h]/C[i]),priceActual=C[i]*Math.exp(actual);
-      const pred=C[i]*Math.exp(p50),basePred=C[i]*Math.exp(b50);
-      const err=Math.abs(pred/priceActual-1),baseErr=Math.abs(basePred/priceActual-1);
-      const dir=Math.sign(p50)===Math.sign(actual),baseDir=Math.sign(b50)===Math.sign(actual);
-      model.push({err,dir,cover:actual>=p10&&actual<=p90});
-      base.push({err:baseErr,dir:baseDir,cover:actual>=q(b,.1)&&actual<=q(b,.9)});
-      origins++;
+      const make=(median,lo,hi)=>({err:Math.abs((C[i]*Math.exp(median))/priceActual-1),dir:Math.sign(median)===Math.sign(actual),cover:actual>=lo&&actual<=hi});
+      core.push(make(p50,p10,p90));enhanced.push(make(fp50,fp10,fp90));
+      base.push(make(b50,q(b,.1),q(b,.9)));origins++;
     }
-    out.push({h,model:metrics(model),base:metrics(base),macroUsed,origins});
+    out.push({h,model:metrics(enhanced),core:metrics(core),base:metrics(base),macroUsed,fullUsed,origins});
   });
-  return{demo:false,rows:out,macro:I.real&&!!I.liq,source:I.real?'Composite M2/liquidité décalée':'M2 indisponible · modèle sans filtre macro'};
+  return{demo:false,rows:out,macro:I.real&&!!I.liq,source:I.real?'Composite M2/liquidité décalée':'M2 indisponible · modèle sans filtre macro',
+    features:'FVG daily/weekly/monthly + Volume Profile 90D · reconstruction causale sur historique'};
 }
 function priceAuditTable(A){
   if(A.demo||!A.rows.length)return '<p class="note">'+(A.reason||'Pas assez de prévisions historiques indépendantes pour calculer un taux fiable.')+'</p>';
   const pc=x=>x==null?'—':(x*100).toFixed(1)+' %',err=x=>x==null?'—':(x*100).toFixed(2)+' %';
-  const rows=A.rows.map(x=>{const a=x.model,b=x.base;return '<tr><td>J+'+x.h+'</td><td><b>'+pc(a.h5)+'</b><small>±5 %</small></td><td>'+pc(a.h10)+'<small>±10 %</small></td><td>'+err(a.mae)+'</td><td>'+pc(a.dir)+'</td><td>'+pc(a.cov)+'</td><td>'+pc(b.h5)+'</td><td>'+err(b.mae)+'</td><td>'+a.n+'</td></tr>';}).join('');
+  const rows=A.rows.map(x=>{const a=x.model,c=x.core,b=x.base;return '<tr><td>J+'+x.h+'</td><td><b>'+pc(a.h5)+'</b></td><td>'+pc(c.h5)+'</td><td>'+((a.h5==null||c.h5==null)?'—':(a.h5-c.h5>=0?'+':'')+((a.h5-c.h5)*100).toFixed(1)+' pts')+'</td><td>'+err(a.mae)+'</td><td>'+pc(a.dir)+'</td><td>'+pc(a.cov)+'</td><td>'+pc(b.h5)+'</td><td>'+a.n+'</td><td>'+x.fullUsed+'/'+x.origins+'</td></tr>';}).join('');
   const macro=A.rows.reduce((s,x)=>s+x.macroUsed,0),total=A.rows.reduce((s,x)=>s+x.origins,0);
-  return '<p><b>'+A.source+'</b> · M2 effectivement utilisée dans '+macro+'/'+total+' prévisions conditionnelles.</p>'+
-    '<table><tr><th>Horizon</th><th>Prix à ±5 %</th><th>Prix à ±10 %</th><th>Erreur médiane P50*</th><th>Direction juste</th><th>Couverture P10–P90</th><th>Réf. ±5 %</th><th>Réf. erreur*</th><th>N</th></tr>'+rows+'</table>'+
-    '<p class="note">*Erreur moyenne absolue relative du prix médian prévu face au prix réellement observé. « Prix à ±5/10 % » = part des prévisions dont le prix P50 termine dans cette marge. Direction juste = hausse/baisse correctement anticipée. Couverture = part des prix réels dans la fourchette P10–P90 (cible théorique 80 %). Référence = distribution historique BTC sans filtre de régime. Prévisions testées chronologiquement, apprentissage limité aux rendements déjà connus à chaque date. Les horizons se chevauchent : les observations ne sont pas indépendantes et les taux ne sont pas des garanties. FVG et Volume Profile sont visibles dans la confluence actuelle, mais ne sont pas encore injectés dans cet audit historique faute de séries de signaux historiques reconstruites.</p>';
+  return '<p><b>'+A.source+'</b> · '+A.features+' · M2 utilisée dans '+macro+'/'+total+' prévisions de base.</p>'+
+    '<table><tr><th>Horizon</th><th>Full stack ±5 %</th><th>Modèle socle ±5 %</th><th>Gain/perte</th><th>Erreur full*</th><th>Direction</th><th>Couverture</th><th>Réf. ±5 %</th><th>N</th><th>FVG+VP actifs</th></tr>'+rows+'</table>'+
+    '<p class="note">Full stack = modèle socle (tendance, momentum, volatilité et M2 si disponible) conditionné en plus par les états FVG multi-unités et Volume Profile 90 jours. Le modèle socle est affiché en parallèle sur les mêmes dates pour isoler l’apport du filtre structurel. « FVG+VP actifs » indique les origines où au moins 60 observations historiques comparables étaient disponibles ; sinon le full stack retombe explicitement sur le socle. *Erreur absolue relative moyenne du prix médian prévu. Direction = hausse/baisse correctement anticipée. Couverture = part des prix réels dans P10–P90 (cible théorique 80 %). Référence = distribution historique BTC sans filtre. Tous les signaux sont reconstruits avec les seules bougies disponibles à chaque date ; les rendements futurs ne servent jamais à fabriquer les variables. Les échantillons sont espacés de 7 jours, mais les horizons se chevauchent : les observations ne sont pas indépendantes et les taux ne sont pas des garanties. Le Volume Profile est une approximation OHLCV, pas un profil tick-by-tick.</p>';
 }
 function calibrate(C,R,HS,lastClosed=C.length-1){const n=C.length,end=Math.min(n-1,lastClosed);
   return HS.map(h=>{const tests=[];
