@@ -1013,19 +1013,21 @@ function walkForward(d,I,kind,buy){
     if(I.intra){P.gate=a;P.wFund=b;}else{if(buy)P.penRg=a;else P.penRgS=a;P.wFund=b;}
     grid.push(P);
   }))));
-  const ev=(idx,lo,hi)=>{const chosen=[];let last=-Infinity;
+  const ev=(idx,lo,hi,detail=false)=>{const chosen=[];let last=-Infinity;
     [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{
       if(i>=lo&&i<hi&&i+1<hi&&i+hm<hi&&i-last>=hm){chosen.push(i);last=i;}
     });
-    const v=chosen.map(i=>(I.Cl[i+hm]/d[i+1].o-1)*(buy?1:-1)).filter(Number.isFinite);
+    const events=chosen.map(i=>({i,regime:I.rgA&&I.rgA[i]===1?1:I.rgA&&I.rgA[i]===-1?-1:0,
+      ret:(I.Cl[i+hm]/d[i+1].o-1)*(buy?1:-1)})).filter(x=>Number.isFinite(x.ret));
+    const v=events.map(x=>x.ret);
     return{n:v.length,hit:v.length?v.filter(x=>x>0).length/v.length:null,
-      avg:v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+      avg:v.length?v.reduce((a,b)=>a+b,0)/v.length:null,...(detail?{events}: {})};
   };
   const refIdx=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(bpd))===0);
   /* Calculer les signaux de chaque réglage une seule fois : limite le travail sur mobile. */
   const candidates=grid.map(P=>({P,idx:scoreAll(I.cands,P,I.real)
     .filter(x=>!x.blocked&&!x.prov&&x.t===(buy?'buy':'sell')).map(x=>x.i)}));
-  const pool={n:0,wins:0,sum:0,refN:0,refWins:0,refSum:0};
+  const pool={n:0,wins:0,sum:0,refN:0,refWins:0,refSum:0,regime:{},referenceRegime:{}};
   for(let k=0;k<5;k++){
     const lo=initial+k*block,hi=k===4?n:Math.min(n,lo+block);
     if(hi-lo<=hm+1)continue;
@@ -1034,22 +1036,33 @@ function walkForward(d,I,kind,buy){
     ranked.sort((a,b)=>b.tr.hit-a.tr.hit||b.tr.avg-a.tr.avg);
     const chosen=ranked[0];
     if(!chosen) {folds.push({k:k+1,lo,hi,trained:0,test:null,ref:null,P:null});continue;}
-    const test=ev(chosen.idx,lo,hi),ref=ev(refIdx,lo,hi);
+    const test=ev(chosen.idx,lo,hi,true),ref=ev(refIdx,lo,hi,true);
     folds.push({k:k+1,lo,hi,trained:chosen.tr.n,test,ref,P:chosen.P});
     if(test.n){pool.n+=test.n;pool.wins+=test.hit*test.n;pool.sum+=test.avg*test.n;}
     if(ref.n){pool.refN+=ref.n;pool.refWins+=ref.hit*ref.n;pool.refSum+=ref.avg*ref.n;}
+    test.events.forEach(x=>{const z=pool.regime[x.regime]||(pool.regime[x.regime]={n:0,wins:0,sum:0});
+      z.n++;if(x.ret>0)z.wins++;z.sum+=x.ret;});
+    ref.events.forEach(x=>{const z=pool.referenceRegime[x.regime]||(pool.referenceRegime[x.regime]={n:0,wins:0,sum:0});
+      z.n++;if(x.ret>0)z.wins++;z.sum+=x.ret;});
   }
+  const metrics=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,{n:v.n,hit:v.n?v.wins/v.n:null,avg:v.n?v.sum/v.n:null}]));
   return{folds,pool:{n:pool.n,hit:pool.n?pool.wins/pool.n:null,avg:pool.n?pool.sum/pool.n:null,
-    refN:pool.refN,refHit:pool.refN?pool.refWins/pool.refN:null,refAvg:pool.refN?pool.refSum/pool.refN:null},Hm,initial,block,minN};
+    refN:pool.refN,refHit:pool.refN?pool.refWins/pool.refN:null,refAvg:pool.refN?pool.refSum/pool.refN:null,
+    byRegime:metrics(pool.regime),referenceByRegime:metrics(pool.referenceRegime)},Hm,initial,block,minN};
 }
 function walkForwardTable(O){
   const pc=x=>x==null?'—':Math.round(x*100)+'%',avg=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(1)+'%';
   const p=x=>x?('seuil '+x.th+' · score ≥'+x.min):'Aucun réglage avec assez de cas';
   const rows=O.folds.map(f=>`<tr><td>Test ${f.k}</td><td>${f.trained||'—'}</td><td>${f.test?pc(f.test.hit)+' ('+f.test.n+')':'—'}</td><td>${f.ref?pc(f.ref.hit)+' ('+f.ref.n+')':'—'}</td><td>${p(f.P)}</td></tr>`).join('');
   const z=O.pool,ok=z.n>=10&&z.refN>=10&&z.hit!=null&&z.refHit!=null&&z.hit>=z.refHit+.05;
+  const regimes=[[-1,'Baissier'],[0,'Neutre'],[1,'Haussier']];
+  const regimeRows=regimes.map(([k,label])=>{const a=z.byRegime[k]||{n:0},b=z.referenceByRegime[k]||{n:0};
+    return `<tr><td>${label}</td><td>${a.n?pc(a.hit)+' ('+a.n+')':'—'}</td><td>${b.n?pc(b.hit)+' ('+b.n+')':'—'}</td><td>${avg(a.avg)}</td></tr>`;}).join('');
   return `<table><tr><th>Fenêtre</th><th>N apprent.</th><th>Signal · % favorable</th><th>BTC réf. · % favorable</th><th>Réglage choisi avant test</th></tr>${rows}
     <tr><td><b>Total tests</b></td><td>—</td><td class="${ok?'good':z.n?'bad':''}"><b>${pc(z.hit)} (${z.n})</b></td><td><b>${pc(z.refHit)} (${z.refN})</b></td><td>Rend. moyen signal ${avg(z.avg)} · réf. ${avg(z.refAvg)}</td></tr></table>
-    <p class="note">5 tests chronologiques successifs. À chaque test, le réglage est choisi uniquement sur les données antérieures, puis gelé pendant le test. Entrée à l'ouverture suivante, horizon ${O.Hm} j, fenêtres sans chevauchement. Vert seulement si ≥10 événements signal et référence et +5 points de taux favorable. Hors frais, spread, slippage, funding et gestion réelle : ce n'est pas un P&amp;L exécutable. Si les historiques sont trop courts, les résultats restent insuffisants.</p>`;
+    <h2 style="font-size:12px">Résultats hors apprentissage · par régime</h2>
+    <table><tr><th>Régime au signal</th><th>Signal · % favorable</th><th>BTC réf. · % favorable</th><th>Rend. moyen signal</th></tr>${regimeRows}</table>
+    <p class="note">5 tests chronologiques successifs. À chaque test, le réglage est choisi uniquement sur les données antérieures, puis gelé pendant le test. Entrée à l'ouverture suivante, horizon ${O.Hm} j, fenêtres sans chevauchement. Le régime est celui connu à la clôture du signal (MA causale). Vert seulement si ≥10 événements signal et référence et +5 points de taux favorable. Hors frais, spread, slippage, funding et gestion réelle : ce n'est pas un P&amp;L exécutable. Si les historiques sont trop courts, les résultats restent insuffisants.</p>`;
 }
 /* test dédié : le réglage actuel avec / sans RSI (jour, hebdo), en bonus ou obligatoire */
 function rsiTest(d,I,kind,buy){const O=optimize(d,I,kind,buy),n=d.length,C=I.Cl,hm=Math.round(O.Hm*(I.bpd||1)),cut=Math.floor(n*.7),base=getParams(kind);
