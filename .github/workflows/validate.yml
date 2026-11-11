@@ -161,6 +161,8 @@ jobs:
               page.locator('.tabbar button[data-tab="chart"]').click()
               assert page.locator("#vChart").is_visible(), "Chart tab did not open"
               assert page.locator("#cv").is_visible(), "Chart canvas is not visible"
+              assert page.locator("#quantTerminal").is_visible(), "Crystal Quant Terminal is missing from the chart view"
+              assert page.locator("#qtPrice").is_visible(), "Quant terminal price field is missing"
 
               page.locator('.tabbar button[data-tab="cal"]').click()
               assert page.locator("#vCal").is_visible(), "Calendar tab did not open"
