@@ -622,7 +622,7 @@ async function loadLive(t){
   if(t==='4h')throw new Error('4h indisponible hors Binance');
   const g=(t==='1w'||t==='1M')?null:86400; /* agrégation des unités non disponibles chez Coinbase */
   const now=Math.floor(Date.now()/1000),rows=[];
-  for(let k=0;k<4;k++){const end=now-k*300*86400,start=end-300*86400;
+  for(let k=0;k<8;k++){const end=now-k*300*86400,start=end-300*86400;
     const j=await fetchJSON(`https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=${new Date(start*1000).toISOString()}&end=${new Date(end*1000).toISOString()}`);
     j.forEach(c=>rows.push({t:c[0]*1000,l:c[1],h:c[2],o:c[3],c:c[4],v:+c[5]}));}
   const m=new Map();rows.forEach(r=>m.set(r.t,r));let out=[...m.values()].sort((a,b)=>a.t-b.t);
