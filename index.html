@@ -936,11 +936,11 @@ function cycleInfo(d){if(!d||!d.length)return null;const after=d.filter(r=>r.t>=
 function mkGrp(d,C,bpd,Hm,Hl){const n=d.length,hm=Math.max(1,Math.round(Hm*bpd)),hl=Math.max(1,Math.round(Hl*bpd));
   // Un signal calculé à la clôture n'est exécutable qu'à l'ouverture de la bougie suivante.
   const entry=i=>d[i+1]&&d[i+1].o>0?d[i+1].o:null;
-  const fwd=(i,h,buy)=>i+h<n&&entry(i)!=null?(C[i+h]/entry(i)-1)*(buy?1:-1):null;
+  const fwd=(i,h,buy)=>i+1+h<n&&entry(i)!=null?(C[i+1+h]/entry(i)-1)*(buy?1:-1):null;
   /* Écarte les fenêtres qui se chevauchent : les observations ne sont plus comptées comme indépendantes à tort. */
-  const spaced=(idx,h)=>{const out=[];let last=-Infinity;[...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=0&&i+h<n&&entry(i)!=null&&i-last>=h){out.push(i);last=i;}});return out;};
+  const spaced=(idx,h)=>{const out=[];let last=-Infinity;[...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=0&&i+1+h<n&&entry(i)!=null&&i-last>=h+1){out.push(i);last=i;}});return out;};
   /* Excursion adverse positive depuis l'entrée réellement simulée : baisse après achat, hausse après vente. */
-  const adverse=(i,h,buy)=>{const e=entry(i);let x=buy?Infinity:-Infinity;for(let j=i+1;j<=i+h;j++)x=buy?Math.min(x,d[j].l):Math.max(x,d[j].h);return buy?e/x-1:x/e-1;};
+  const adverse=(i,h,buy)=>{const e=entry(i);let x=buy?Infinity:-Infinity;for(let j=i+1;j<=i+1+h;j++)x=buy?Math.min(x,d[j].l):Math.max(x,d[j].h);return buy?e/x-1:x/e-1;};
   return(name,idx,buy)=>{const a30=spaced(idx,hm),a90=spaced(idx,hl),vm=a30.map(i=>fwd(i,hm,buy)),vl=a90.map(i=>fwd(i,hl,buy));
     const r={name,buy,n:vm.length,n90:vl.length,signals:idx.length};
     r.avg30=vm.length?vm.reduce((s,x)=>s+x,0)/vm.length:null;r.hit30=vm.length?vm.filter(x=>x>0).length/vm.length:null;
@@ -994,8 +994,8 @@ function optimize(d,I,kind,buy){
   // Sépare strictement les fenêtres d'apprentissage et de test : aucun rendement du train ne traverse cut.
   // Signal à la clôture, entrée à l'ouverture suivante, événements non chevauchants.
   const ev=(idx,lo,hi)=>{const chosen=[];let last=-Infinity;
-    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=lo&&i<hi&&i+1<hi&&i+hm<hi&&i-last>=hm){chosen.push(i);last=i;}});
-    const v=chosen.map(i=>(C[i+hm]/d[i+1].o-1)*(buy?1:-1)).filter(Number.isFinite);
+    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=lo&&i<hi&&i+1<hi&&i+1+hm<hi&&i-last>=hm+1){chosen.push(i);last=i;}});
+    const v=chosen.map(i=>(C[i+1+hm]/d[i+1].o-1)*(buy?1:-1)).filter(Number.isFinite);
     return{n:v.length,hit:v.length?v.filter(x=>x>0).length/v.length:null,avg:v.length?v.reduce((s,x)=>s+x,0)/v.length:null};};
   const refIdx=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(bpd))===0);
   const ref={tr:ev(refIdx,0,cut),te:ev(refIdx,cut,n)};
@@ -1024,10 +1024,10 @@ function walkForward(d,I,kind,buy){
   }))));
   const ev=(idx,lo,hi,detail=false)=>{const chosen=[];let last=-Infinity;
     [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{
-      if(i>=lo&&i<hi&&i+1<hi&&i+hm<hi&&i-last>=hm){chosen.push(i);last=i;}
+      if(i>=lo&&i<hi&&i+1<hi&&i+1+hm<hi&&i-last>=hm+1){chosen.push(i);last=i;}
     });
     const events=chosen.map(i=>({i,regime:I.rgA&&I.rgA[i]===1?1:I.rgA&&I.rgA[i]===-1?-1:0,
-      ret:(I.Cl[i+hm]/d[i+1].o-1)*(buy?1:-1)})).filter(x=>Number.isFinite(x.ret));
+      ret:(I.Cl[i+1+hm]/d[i+1].o-1)*(buy?1:-1)})).filter(x=>Number.isFinite(x.ret));
     const v=events.map(x=>x.ret);
     return{n:v.length,hit:v.length?v.filter(x=>x>0).length/v.length:null,
       avg:v.length?v.reduce((a,b)=>a+b,0)/v.length:null,...(detail?{events}: {})};
@@ -1086,8 +1086,8 @@ function walkForwardTable(O){
 /* test dédié : le réglage actuel avec / sans RSI (jour, hebdo), en bonus ou obligatoire */
 function rsiTest(d,I,kind,buy){const O=optimize(d,I,kind,buy),n=d.length,C=I.Cl,hm=Math.round(O.Hm*(I.bpd||1)),cut=Math.floor(n*.7),base=getParams(kind);
   const ev=(idx,lo,hi)=>{const chosen=[];let last=-Infinity;
-    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=lo&&i<hi&&i+1<hi&&i+hm<hi&&i-last>=hm){chosen.push(i);last=i;}});
-    const v=chosen.map(i=>(C[i+hm]/d[i+1].o-1)*(buy?1:-1)).filter(Number.isFinite);
+    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=lo&&i<hi&&i+1<hi&&i+1+hm<hi&&i-last>=hm+1){chosen.push(i);last=i;}});
+    const v=chosen.map(i=>(C[i+1+hm]/d[i+1].o-1)*(buy?1:-1)).filter(Number.isFinite);
     return{n:v.length,hit:v.length?v.filter(x=>x>0).length/v.length:null};};
   const V=[[0,0],[1,0],[2,0],[0,1],[0,2],[1,1]].map(([a,b])=>{const P={...base,rsiD:a,rsiW:b};
     const idx=scoreAll(I.cands,P,I.real).filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);
