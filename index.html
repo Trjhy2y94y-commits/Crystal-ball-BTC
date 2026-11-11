@@ -1745,6 +1745,47 @@ function patternReliabilityHTML(d,isDemo){
   const rows=B.stats.map(x=>'<tr><td>'+x.name+'</td>'+x.horizons.map(h=>'<td>'+h.n+'<br><b>'+pct(h.win)+'</b><br><small>'+ret(h.avg)+'</small></td>').join('')+'</tr>').join('');
   return '<section><h2>Fiabilité des figures <small>cassure confirmée · daily</small></h2><table><thead><tr><th>Figure</th><th>+10 j<br>n / réussite / moy.</th><th>+30 j<br>n / réussite / moy.</th><th>+60 j<br>n / réussite / moy.</th></tr></thead><tbody>'+rows+'</tbody></table><p>Signaux des 30 % les plus récents de l’historique. Un pivot n’est validé qu’après 3 bougies supplémentaires ; l’entrée est au cours de clôture de la cassure. Réussite = rendement dans le sens du signal. Les horizons incomplets sont exclus. Le taux et le rendement moyen ne s’affichent qu’à partir de 20 cas par horizon.</p><p class="note">'+B.events+' cassures détectées sur l’historique ; coupure chronologique au '+dS(d[B.cut]?.t||d[d.length-1].t)+'. Seuils fixes, non optimisés sur la période testée.</p></section>';
 }
+/* Backtest RSI divergences : pivots confirmés après 3 clôtures, entrée à la clôture de confirmation.
+   Test chronologique sur les 30 % les plus récents ; aucun réglage optimisé sur ce segment. */
+function rsiDivergenceBacktest(d){
+  const n=d.length,cut=Math.floor(n*.7),C=d.map(x=>x.c),R=rsi(C,14),prev={H:null,L:null},events=[];
+  const maxGap=90;
+  for(let known=6;known<n;known++){
+    const p=known-3;let ph=true,pl=true;
+    for(let k=1;k<=3;k++){
+      if(d[p].h<=d[p-k].h||d[p].h<d[p+k].h)ph=false;
+      if(d[p].l>=d[p-k].l||d[p].l>d[p+k].l)pl=false;
+    }
+    const check=(t,price,dir)=>{
+      const rv=R[p],old=prev[t];
+      if(rv==null)return;
+      if(old&&p-old.p>=3&&p-old.p<=maxGap&&known>=cut){
+        const ok=dir>0?price<old.price&&rv>old.rsi+2:price>old.price&&rv<old.rsi-2;
+        if(ok)events.push({dir,known,entry:C[known],rsi:rv,pivot:p});
+      }
+      prev[t]={p,price,rsi:rv};
+    };
+    if(pl)check('L',d[p].l,1);
+    if(ph)check('H',d[p].h,-1);
+  }
+  const horizons=[10,30,60];
+  const wilson=(w,n)=>{if(!n)return null;const z=1.96,p=w/n,z2=z*z,den=1+z2/n,mid=(p+z2/(2*n))/den,rad=z*Math.sqrt((p*(1-p)+z2/(4*n))/n)/den;return[Math.max(0,mid-rad),Math.min(1,mid+rad)];};
+  const stats=[1,-1].map(dir=>({dir,horizons:horizons.map(h=>{
+    const rows=events.filter(e=>e.dir===dir&&e.known+h<n).map(e=>{
+      const market=C[e.known+h]/e.entry-1;
+      return{ret:market*dir,market:market*dir};
+    });
+    const wins=rows.filter(x=>x.ret>0).length,avg=rows.length?rows.reduce((a,x)=>a+x.ret,0)/rows.length:null,base=rows.length?rows.reduce((a,x)=>a+x.market,0)/rows.length:null;
+    return{h,n:rows.length,wins,win:rows.length>=20?wins/rows.length:null,ci:rows.length>=20?wilson(wins,rows.length):null,avg,base,excess:avg==null||base==null?null:avg-base};
+  })}));
+  return{stats,events:events.length,cut};
+}
+function rsiDivergenceBacktestHTML(d,isDemo){
+  if(isDemo)return '<section><h2>Fiabilité divergences RSI <small>backtest hors échantillon</small></h2><p>Mode démo : statistiques désactivées.</p></section>';
+  const B=rsiDivergenceBacktest(d),pct=x=>x==null?'—':(x*100).toFixed(1)+' %',ret=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(2)+' %';
+  const rows=B.stats.map(x=>'<tr><td>'+(x.dir>0?'Haussière':'Baissière')+'</td>'+x.horizons.map(h=>'<td>'+h.n+' cas<br><b>'+(h.win==null?'—':pct(h.win))+'</b>'+(h.ci?'<br><small>IC 95 % '+pct(h.ci[0])+'–'+pct(h.ci[1])+'</small>':'')+'<br><small>Moy. '+ret(h.avg)+'</small><br><small>Marché '+ret(h.base)+'</small><br><small>Surperf. '+ret(h.excess)+'</small></td>').join('')+'</tr>').join('');
+  return '<section><h2>Fiabilité divergences RSI <small>test chronologique · daily</small></h2><table><thead><tr><th>Signal</th><th>+10 j</th><th>+30 j</th><th>+60 j</th></tr></thead><tbody>'+rows+'</tbody></table><p>RSI 14. Divergence haussière : plus bas du prix inférieur et RSI supérieur de plus de 2 points ; baissière : plus haut du prix supérieur et RSI inférieur de plus de 2 points. Pivot confirmé après 3 bougies ; entrée à la clôture de confirmation, jamais au pivot. Les rendements sont mesurés dans le sens du signal. « Marché » = rendement BTC directionnel sur les mêmes dates ; « surperf. » = différence entre stratégie et marché. Taux et intervalle de confiance de Wilson à 95 % affichés uniquement à partir de 20 cas. Les horizons incomplets sont exclus.</p><p class="note">'+B.events+' signaux dans le segment test (30 % les plus récents) · coupure au '+dS(d[B.cut]?.t||d[d.length-1].t)+'. Seuils fixes, aucun réglage optimisé sur le test. Ceci mesure un historique, pas une garantie de performance future.</p></section>';
+}
 async function renderProj(){
   const el=$('proj');el.dataset.compact='0';const D=await getDaily(),d=D.rows,I=D.ind,now=Date.now();
   const P=buildPlan(D,16);
@@ -1774,6 +1815,7 @@ async function renderProj(){
   ${D.demo?'<p class="note">Mode démo : calculs faits sur des données simulées. Ils seront réels quand l\'appli sera en Live.</p>':''}
   ${(()=>{const M=I.model||{score:50,parts:[],coverage:0};const color=M.score>=60?'var(--buy)':M.score<=40?'var(--down)':'var(--muted)';return `<section><h2>Modèle multi-facteurs V22<small>biais directionnel · pas une probabilité</small></h2><div class="k"><span>Score directionnel</span><span style="font-size:20px;font-weight:800;color:${color}">${M.score}/100</span><span>Couverture des données</span><span>${M.coverage}%</span><span>Volatilité annualisée 30 j</span><span>${M.vol==null?'—':(M.vol*100).toFixed(1)+' %'}</span></div><p>${M.parts.map(x=>`<span class="chip">${x.name} : ${x.value>0?'+':''}${x.value.toFixed(2)}</span>`).join(' ')||'Données insuffisantes.'}</p><p class="note">Score synthétique de tendance, momentum, liquidité, dérivés et volume spot. Ce score n’est pas une probabilité de hausse. Les facteurs indisponibles sont exclus.</p></section>`;})()}
   ${patternReliabilityHTML(d,D.demo)}
+  ${rsiDivergenceBacktestHTML(d,D.demo)}
   ${tf==='4h'&&ind&&ind.intra?(()=>{const B=backtest4h(data,ind,D),O=optimize(data,ind,'4h',true);
     return `<section><h2>Backtest 4h<small>${dS(data[0].t)} → ${dS(data[data.length-1].t)}</small></h2>${btTable(B,['+7j','+30j'])}
     <p>Le 4h n'a de l'intérêt que si « 4h filtré daily » bat « 1D seul » et la référence. Tant que ce n'est pas le cas, l'appli n'affiche pas de flèches en 4H.</p></section>
