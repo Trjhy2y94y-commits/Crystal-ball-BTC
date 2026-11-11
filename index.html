@@ -542,7 +542,7 @@ header{border-color:#263646;background:rgba(10,16,23,.94)}
 .overlay-legend{position:absolute;right:8px;top:8px;z-index:2;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:74%;pointer-events:auto}
 .overlay-legend button{border:1px solid var(--line);border-radius:999px;padding:4px 7px;background:rgba(20,20,22,.9);color:var(--muted);font:600 10px var(--cond)}
 .overlay-legend button.on{color:#090d12;border-color:transparent}
-.overlay-legend [data-layer=wyckoff].on{background:#ff9f0a}.overlay-legend [data-layer=smc].on{background:#0a84ff}.overlay-legend [data-layer=elliott].on{background:#bf5af2}.overlay-legend [data-layer=patterns].on{background:#30d158}
+.overlay-legend [data-layer=wyckoff].on{background:#ff9f0a}.overlay-legend [data-layer=smc].on{background:#0a84ff}.overlay-legend [data-layer=elliott].on{background:#bf5af2}.overlay-legend [data-layer=patterns].on{background:#30d158}.overlay-legend [data-layer=rsiDiv].on{background:#64d2ff}
 .probability-panel{flex:0 0 auto;max-height:190px;overflow:auto;background:#111114;border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));display:grid;gap:7px;font-family:var(--cond)}
 .prob-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.prob-head strong{font-size:13px}.prob-head small,.prob-note{font-size:10px;color:var(--muted)}
 .prob-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.prob-cell{background:var(--panel);border-radius:9px;padding:7px;min-width:0}.prob-cell span{display:block;font-size:10px;color:var(--muted)}.prob-cell b{display:block;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}.scenario-values{display:grid;gap:2px;margin-top:5px}.scenario-values i{font-style:normal;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}.scenario-values b{font-size:14px!important;color:var(--fg)}.scenario-legend{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);padding:0 2px}.scenario-grid .prob-cell{padding:6px 7px}.prob-agreement{font-size:10px;font-weight:700;letter-spacing:.035em;padding:5px 7px;border-radius:7px;background:var(--panel);border:1px solid var(--line);color:var(--fg);font-variant-numeric:tabular-nums}.prob-layers{display:flex;gap:5px;flex-wrap:wrap}.prob-layer{font-size:10px;padding:4px 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--sub)}.prob-layer b{color:var(--fg)}
@@ -584,7 +584,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
   <div class="stage" id="stage">
     <canvas id="cv"></canvas>
     <div class="overlay-legend" id="overlayLegend" aria-label="Couches d'analyse">
-      <button type="button" data-layer="wyckoff" class="on">Wyckoff</button><button type="button" data-layer="smc" class="on">SMC</button><button type="button" data-layer="elliott" class="on">Elliott</button><button type="button" data-layer="patterns" class="on">Figures</button>
+      <button type="button" data-layer="wyckoff" class="on">Wyckoff</button><button type="button" data-layer="smc" class="on">SMC</button><button type="button" data-layer="elliott" class="on">Elliott</button><button type="button" data-layer="patterns" class="on">Figures</button><button type="button" data-layer="rsiDiv" class="on">RSI div.</button>
     </div>
     <div class="tip" id="tip" hidden></div>
     <div class="sheet" id="sheet" hidden>
@@ -872,9 +872,9 @@ const fmt=v=>v>=1000?Math.round(v).toLocaleString('fr-FR'):v.toFixed(2);
 const fmtD=t=>{const d=new Date(t);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'2-digit'});};
 
 function drawStructureOverlays(p0,vis,first,last,X,Y,cw,bw){
-  const keys=overlayLayers;if(!keys.wyckoff&&!keys.smc&&!keys.elliott&&!keys.patterns)return;
+  const keys=overlayLayers;if(!keys.wyckoff&&!keys.smc&&!keys.elliott&&!keys.patterns&&!keys.rsiDiv)return;
   // Pivot affiché à sa bougie de confirmation (3 clôtures après le pivot), jamais dans le passé.
-  const start=Math.max(3,first-3,last-153),end=Math.min(data.length-4,last-3);
+  const start=Math.max(3,first-(keys.rsiDiv?90:3),last-153),end=Math.min(data.length-4,last-3);
   const piv=[];
   for(let i=start;i<=end;i++){
     let ph=true,pl=true;
@@ -884,11 +884,23 @@ function drawStructureOverlays(p0,vis,first,last,X,Y,cw,bw){
     if(pl)piv.push({i:known,pivotI:i,v:data[i].l,t:'L'});
   }
   piv.sort((a,b)=>a.i-b.i);
+  const rsiDivs=[];
+  if(keys.rsiDiv&&ind?.rsiD){const prev={H:null,L:null},maxGap=ind.mo?24:ind.wk?40:90;
+    for(const q of piv){const r=ind.rsiD[q.pivotI],p=prev[q.t];if(r==null)continue;
+      if(p&&q.pivotI-p.pivotI>=3&&q.pivotI-p.pivotI<=maxGap){
+        const bull=q.t==='L'&&q.v<p.v&&r>p.r+2;
+        const bear=q.t==='H'&&q.v>p.v&&r<p.r-2;
+        if(bull||bear)rsiDivs.push({a:p,b:q,bull});
+      }
+      prev[q.t]={...q,r};
+    }
+  }
   const swings=[];for(const q of piv){const z=swings[swings.length-1];if(z&&z.t===q.t){if((q.t==='H'&&q.v>z.v)||(q.t==='L'&&q.v<z.v))swings[swings.length-1]=q;}else swings.push(q);}
   const lastSw=swings.slice(-8),price=data[data.length-1].c;
   ctx.save();ctx.beginPath();ctx.rect(0,p0.y,cw,p0.h);ctx.clip();
   const hline=(q,color,label,dash=[5,4])=>{if(!q)return;const y=Y(q.v);ctx.strokeStyle=color;ctx.globalAlpha=.8;ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(X(q.i),y);ctx.lineTo(Math.min(cw,X(last)+bw),y);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;ctx.font=`600 9px ${MONO}`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillStyle=color;ctx.fillText(label,Math.max(4,X(q.i)+3),y-2);};
   const mark=(q,label,color,above)=>{const x=X(q.i),y=Y(q.v);ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();ctx.font=`600 9px ${MONO}`;ctx.textAlign='center';ctx.textBaseline=above?'bottom':'top';ctx.fillText(label,x,y+(above?-6:6));};
+  if(keys.rsiDiv&&rsiDivs.length){for(const z of rsiDivs){if(z.b.i<first||z.a.i>last)continue;const color=z.bull?'#64d2ff':'#ff6b6b';ctx.strokeStyle=color;ctx.lineWidth=2;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(X(z.a.i),Y(z.a.v));ctx.lineTo(X(z.b.i),Y(z.b.v));ctx.stroke();ctx.setLineDash([]);mark(z.b,z.bull?'RSI +':'RSI −',color,z.bull);}}
   if(keys.smc&&lastSw.length>=2){
     const highs=lastSw.filter(q=>q.t==='H'),lows=lastSw.filter(q=>q.t==='L'),rh=highs[highs.length-1],rl=lows[lows.length-1];
     if(rh&&price>rh.v){hline(rh,'#0a84ff','BOS ↑');}
@@ -1146,7 +1158,7 @@ function area(vis,a,X,Y,c){const z=Y(0);ctx.fillStyle=c;ctx.beginPath();let st=n
 
 
 // ===== Confluence chartiste + probabilités empiriques =====
-const overlayLayers={wyckoff:true,smc:true,elliott:true,patterns:true};
+const overlayLayers={wyckoff:true,smc:true,elliott:true,patterns:true,rsiDiv:true};
 const money=v=>v==null?'—':Math.round(v).toLocaleString('fr-FR')+' '+String.fromCharCode(36);
 function confluenceSnapshot(D){
   const d=D.rows,I=D.ind;if(!d||d.length<220||!I)return null;
