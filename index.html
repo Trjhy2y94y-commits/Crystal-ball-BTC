@@ -2910,7 +2910,7 @@ drawOrb=function(c,d,K,PL,HZ,sel,Iarg){
  const x0=X(t1),gr=g.createLinearGradient(x0,0,w-padR,0);gr.addColorStop(0,'rgba(66,188,255,.20)');gr.addColorStop(1,'rgba(66,188,255,.055)');band('p10','p90',gr);
  const gr2=g.createLinearGradient(x0,0,w-padR,0);gr2.addColorStop(0,'rgba(66,188,255,.22)');gr2.addColorStop(1,'rgba(66,188,255,.07)');band('p25','p75',gr2);
  /* chemins individuels : nuage de scénarios, non une ligne prédictive unique */
- paths.forEach((p,i)=>{if(i%2)return;const rank=i/(paths.length-1),col=rank<.2?'rgba(255,91,119,.42)':rank>.8?'rgba(74,231,166,.42)':'rgba(111,193,225,.22)';
+ paths.forEach((p,i)=>{const rank=i/(paths.length-1),col=rank<.2?'rgba(255,91,119,.42)':rank>.8?'rgba(74,231,166,.42)':'rgba(111,193,225,.22)';
    g.strokeStyle=col;g.lineWidth=.85;g.beginPath();p.vals.forEach((v,k)=>{const x=X(t1+k*DAY),y=Y(v);k?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();});
  const drawPath=(p,col,width,glow)=>{if(!p)return;g.save();g.strokeStyle=col;g.lineWidth=width;g.lineJoin='round';g.lineCap='round';if(glow){g.shadowColor=col;g.shadowBlur=glow;}g.beginPath();p.vals.forEach((v,k)=>{const x=X(t1+k*DAY),y=Y(v);k?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();g.restore();};
  drawPath(lowPath,'#ff607b',2.1,9);drawPath(midPath,'#5cddff',2.7,14);drawPath(highPath,'#5ce7a5',2.1,9);
