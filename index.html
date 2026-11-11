@@ -1146,10 +1146,10 @@ function portfolioSimulation(d,I,roundTripCost){
     const equity=position?units*d[j].c*(1-fee):cash; // valeur liquidative, frais de sortie inclus même si position encore ouverte
     curve.push(equity);peak=Math.max(peak,equity);maxDD=Math.max(maxDD,peak>0?1-equity/peak:0);
   }
-  const end=curve[curve.length-1],days=Math.max(1,(d[n-1].t-d[0].t)/864e5),cagr=end>0?Math.pow(end,365.25/days)-1:null;
+  const finalEquity=curve[curve.length-1],days=Math.max(1,(d[n-1].t-d[0].t)/864e5),cagr=finalEquity>0?Math.pow(finalEquity,365.25/days)-1:null;
   const bhUnits=(1-fee)/d[1].o,bhEnd=bhUnits*d[n-1].c*(1-fee);
   const avg=tradeCount?tradeSum/tradeCount:null;
-  return{end,ret:end-1,dd:maxDD,cagr,exposure:exposed/n,trades:tradeCount,win:tradeCount?wins/tradeCount:null,avgTrade:avg,open:position,curve,bhEnd,bhRet:bhEnd-1};
+  return{end:finalEquity,ret:finalEquity-1,dd:maxDD,cagr,exposure:exposed/n,trades:tradeCount,win:tradeCount?wins/tradeCount:null,avgTrade:avg,open:position,curve,bhEnd,bhRet:bhEnd-1};
 }
 function portfolioTable(d,I){
   const costs=[.002,.005,.01],rows=costs.map(c=>({cost:c,sim:portfolioSimulation(d,I,c)}));
