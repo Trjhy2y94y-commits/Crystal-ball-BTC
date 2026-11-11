@@ -906,13 +906,42 @@ function drawStructureOverlays(p0,vis,first,last,X,Y,cw,bw){
   }
   if(keys.patterns&&lastSw.length>=4){
     const hs=lastSw.filter(q=>q.t==='H'),ls=lastSw.filter(q=>q.t==='L');
-    const near=(a,b)=>a&&b&&Math.abs(a.v-b.v)/Math.max(a.v,b.v)<.018;
+    const near=(a,b,t=.018)=>a&&b&&Math.abs(a.v-b.v)/Math.max(a.v,b.v)<t;
+    const seg=(a,b,color,label)=>{if(!a||!b)return;ctx.strokeStyle=color;ctx.globalAlpha=.9;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(X(a.i),Y(a.v));ctx.lineTo(X(b.i),Y(b.v));ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;if(label){ctx.fillStyle=color;ctx.font=`600 9px ${MONO}`;ctx.fillText(label,Math.max(6,X(a.i)),Math.max(p0.y+12,Y(a.v)-5));}};
+    const seq=lastSw.slice(-5),green='#30d158',red='#ff453a',gold='#ff9f0a';
     const a=hs[hs.length-2],b=hs[hs.length-1],c=ls[ls.length-2],d=ls[ls.length-1];
-    if(near(a,b)){hline(a,'#30d158','DOUBLE TOP · zone');hline(b,'#30d158','');}
-    else if(near(c,d)){hline(c,'#30d158','DOUBLE BOTTOM · zone');hline(d,'#30d158','');}
+    if(near(a,b)){hline(a,green,'DOUBLE TOP · zone');}
+    else if(near(c,d)){hline(c,green,'DOUBLE BOTTOM · zone');}
     else if(hs.length>=2&&ls.length>=2&&b.i>a.i&&d.i>c.i&&b.v<a.v&&d.v>c.v){
-      ctx.strokeStyle='#30d158';ctx.globalAlpha=.85;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(X(a.i),Y(a.v));ctx.lineTo(X(b.i),Y(b.v));ctx.moveTo(X(c.i),Y(c.v));ctx.lineTo(X(d.i),Y(d.v));ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
-      ctx.fillStyle='#30d158';ctx.font=`600 9px ${MONO}`;ctx.fillText('TRIANGLE / COMPRESSION',Math.max(6,X(a.i)),p0.y+14);
+      seg(a,b,green,'TRIANGLE · compression');seg(c,d,green,'');
+    }
+    // Épaules-tête-épaules : trois sommets alternant avec deux creux (détection structurelle).
+    if(seq.length===5&&seq[0].t==='H'&&seq[1].t==='L'&&seq[2].t==='H'&&seq[3].t==='L'&&seq[4].t==='H'&&seq[2].v>seq[0].v*1.025&&seq[2].v>seq[4].v*1.025&&near(seq[0],seq[4],.035)){
+      seg(seq[0],seq[2],red,'ÉPAULE-TÊTE-ÉPAULE');seg(seq[2],seq[4],red,'');seg(seq[1],seq[3],gold,'NECKLINE');
+      if(price<Math.min(seq[1].v,seq[3].v))mark({i:data.length-1,v:price},'NECKLINE CASSÉE',red,false);
+    }
+    // Épaule-tête-épaule inversée.
+    if(seq.length===5&&seq[0].t==='L'&&seq[1].t==='H'&&seq[2].t==='L'&&seq[3].t==='H'&&seq[4].t==='L'&&seq[2].v<seq[0].v*.975&&seq[2].v<seq[4].v*.975&&near(seq[0],seq[4],.035)){
+      seg(seq[0],seq[2],green,'E-T-E INVERSÉE');seg(seq[2],seq[4],green,'');seg(seq[1],seq[3],gold,'NECKLINE');
+      if(price>Math.max(seq[1].v,seq[3].v))mark({i:data.length-1,v:price},'NECKLINE CASSÉE',green,true);
+    }
+    // Biseaux : deux lignes convergentes construites sur les trois derniers pivots de chaque côté.
+    if(hs.length>=3&&ls.length>=3){
+      const H=hs.slice(-3),L=ls.slice(-3),fallH=H[2].v<H[0].v, riseH=H[2].v>H[0].v, riseL=L[2].v>L[0].v, fallL=L[2].v<L[0].v;
+      const converge=(H[2].v-H[0].v)*(L[2].v-L[0].v)<0&&Math.abs(H[2].v-L[2].v)<Math.abs(H[0].v-L[0].v);
+      if(converge&&fallH&&fallL){seg(H[0],H[2],gold,'Biseau descendant');seg(L[0],L[2],gold,'');}
+      else if(converge&&riseH&&riseL){seg(H[0],H[2],gold,'Biseau ascendant');seg(L[0],L[2],gold,'');}
+    }
+    // Drapeau / fanion : impulsion suivie d'une consolidation, cassure confirmée par volume.
+    if(data.length>35){
+      const n=data.length-1,base=n-20,impulse=data[base].c?data[base+8].c/data[base].c-1:0;
+      const cons=data.slice(n-10,n),top=Math.max(...cons.map(x=>x.h)),bot=Math.min(...cons.map(x=>x.l));
+      const avgV=data.slice(n-30,n-10).reduce((v,x)=>v+(x.v||0),0)/20,cur=data[n],vr=avgV?cur.v/avgV:0;
+      const tight=(top-bot)/Math.max(1,(top+bot)/2)<.055,up=impulse>.08&&cur.c>top&&vr>=1.5,down=impulse<-.08&&cur.c<bot&&vr>=1.5;
+      if(tight&&(Math.abs(impulse)>.08||up||down)){
+        ctx.strokeStyle=up?green:down?red:gold;ctx.globalAlpha=.8;ctx.setLineDash([3,3]);ctx.strokeRect(X(n-10),Y(top),Math.max(8,X(n)-X(n-10)),Math.max(8,Y(bot)-Y(top)));ctx.setLineDash([]);ctx.globalAlpha=1;
+        ctx.fillStyle=up?green:down?red:gold;ctx.font=`600 9px ${MONO}`;ctx.fillText(up?'DRAPEAU · CASSURE + VOLUME':down?'DRAPEAU · CASSURE + VOLUME':'CONSOLIDATION · À CONFIRMER',Math.max(6,X(n-10)),Math.max(p0.y+12,Y(top)-5));
+      }
     }
   }
   ctx.restore();
