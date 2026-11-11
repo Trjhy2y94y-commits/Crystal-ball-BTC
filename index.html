@@ -501,6 +501,41 @@ header{border-color:#263646;background:rgba(10,16,23,.94)}
 @media(max-width:390px){#vChart header{padding-left:12px;padding-right:12px;gap:7px}#vChart header .meta{min-width:84px;font-size:9px}#vCal .proj,#vStats .proj{padding-left:11px;padding-right:11px}#vCal .proj>section,#vStats .proj>section{padding:12px}#vCal .proj .weeks{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:600px){#vCal .proj,#vStats .proj{max-width:760px;width:100%;margin:0 auto;box-sizing:border-box}#vChart header,#vChart .toolbar{padding-left:max(18px,calc((100vw - 760px)/2));padding-right:max(18px,calc((100vw - 760px)/2))}}
 
+
+
+/* Vues secondaires simplifiées : priorité à l'information utile */
+#vChart header{min-height:76px;padding-top:11px;padding-bottom:10px}
+#vChart header .meta{display:flex;align-items:flex-end;gap:0;min-width:0}
+#vChart #hl,#vChart #wtNow,#vChart #lastSig{display:none!important}
+#vChart header .px{font-size:clamp(27px,7vw,36px);letter-spacing:-.045em}
+#vChart .toolbar{display:flex;gap:5px;padding:7px 10px;overflow-x:auto;scrollbar-width:none}
+#vChart .toolbar::-webkit-scrollbar{display:none}
+#vChart .toolbar button{flex:0 0 auto;min-width:35px;min-height:32px;padding:5px 9px;border-radius:9px;font-size:10px}
+#vChart #bZones{margin-left:auto}
+#vChart .stage{height:min(61vh,560px);min-height:350px}
+#vCal .proj.hm{gap:10px;padding-top:12px}
+#vCal .proj.hm>.lt{font-size:19px;letter-spacing:-.03em;margin:0 2px 2px}
+#vCal .proj.hm>.card{padding:12px;border-radius:14px;gap:9px}
+#vCal .proj.hm .why{font-size:10px;line-height:1.4}
+#vCal .proj.hm details.more{margin-top:0;border:1px solid #29394a;border-radius:13px;background:#111b26;padding:0 12px}
+#vCal .proj.hm details.more>summary{padding:13px 2px;font-size:12px;font-weight:700;color:var(--accent);cursor:pointer;list-style:none}
+#vCal .proj.hm details.more>summary::-webkit-details-marker{display:none}
+#vCal .proj.hm details.more>summary:after{content:'＋';float:right;color:var(--muted)}
+#vCal .proj.hm details.more[open]>summary:after{content:'−'}
+#vCal .proj.hm .morein{padding-bottom:10px;display:grid;gap:10px}
+#vStats .proj{gap:10px}
+#vStats .proj>section{padding:13px;border-radius:14px}
+#vStats .proj>section h2{font-size:10px;letter-spacing:.09em}
+#vStats .proj>section p{font-size:10px;line-height:1.45}
+#vStats .proj .stats-more{border:1px solid #29394a;border-radius:14px;background:#101a25;padding:0 12px}
+#vStats .proj .stats-more>summary{padding:14px 2px;color:var(--accent);font-size:12px;font-weight:750;cursor:pointer;list-style:none}
+#vStats .proj .stats-more>summary::-webkit-details-marker{display:none}
+#vStats .proj .stats-more>summary:after{content:'＋';float:right;color:var(--muted)}
+#vStats .proj .stats-more[open]>summary:after{content:'−'}
+#vStats .proj .stats-more-in{display:grid;gap:10px;padding-bottom:12px}
+#vStats .proj .stats-more-in>section{min-width:0}
+@media(max-width:390px){#vChart .stage{height:56vh;min-height:320px}#vChart header .px{font-size:27px}}
+
 </style>
 
 <div class="app">
@@ -794,7 +829,7 @@ async function load(keep){
   await Promise.all([loadMacro(),loadFut()]);
   if(tf==='4h'&&!isDemo){try{await getDaily();}catch(e){}}
   data=res.rows;ind=compute(data,tf==='4h'?daily:null);$('src').textContent=res.src;if(tf==='1d'){daily={rows:data,ind,demo:isDemo};dailyAt=Date.now();}
-  if(curTab==='stats')renderProj();
+  if(curTab==='stats')renderProj().then(()=>{compactStats();});
   if(curTab==='home')renderHome();
   if(curTab==='cal'&&!keep)renderCal();
   setBadge();lastFull=Date.now();if(!isDemo)connectWS();
@@ -1491,6 +1526,21 @@ function calibrate(C,R,HS,lastClosed=C.length-1){const n=C.length,end=Math.min(n
     return{h,raw,s,cal:cov(s),n:tests.length};});}
 let plan=null,cone=null;
 async function refreshPlan(){try{const D=await getDaily();plan=buildPlan(D,16);cone=buildCone(D,365);}catch(e){plan=null;cone=null;}draw();}
+
+function compactStats(){
+  const el=$('proj');if(!el||el.dataset.compact==='1')return;
+  const sections=[...el.querySelectorAll(':scope > section')];if(sections.length<3)return;
+  const main=sections.find(x=>x.querySelector('h2')?.textContent.includes('Modèle multi-facteurs'));
+  const current=sections.find(x=>x.querySelector('h2')?.textContent.includes('Lecture actuelle'));
+  if(!main||!current)return;
+  const more=document.createElement('details');more.className='stats-more';
+  const summary=document.createElement('summary');summary.textContent='Analyses détaillées & backtests';
+  const inner=document.createElement('div');inner.className='stats-more-in';
+  more.append(summary,inner);
+  sections.filter(x=>x!==main&&x!==current).forEach(x=>inner.appendChild(x));
+  main.before(current);current.after(more);el.dataset.compact='1';
+}
+
 async function renderProj(){
   const el=$('proj');const D=await getDaily(),d=D.rows,I=D.ind,now=Date.now();
   const P=buildPlan(D,16);
@@ -1890,7 +1940,7 @@ function showTab(t){curTab=t;
   [['home','vHome'],['chart','vChart'],['cal','vCal'],['stats','vStats']].forEach(([k,id])=>{$(id).hidden=k!==t;});
   document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t==='chart')requestAnimationFrame(resize);
-  if(t==='home')renderHome();if(t==='cal')renderCal();if(t==='stats'){$('proj').innerHTML='<p>Calcul…</p>';renderProj();}}
+  if(t==='home')renderHome();if(t==='cal')renderCal();if(t==='stats'){$('proj').innerHTML='<p>Calcul…</p>';$('proj').dataset.compact='0';renderProj().then(()=>{compactStats();});}}
 document.querySelectorAll('.tabbar button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 $('bZones').addEventListener('click',()=>{$('zR').value=zones.r;$('zS').value=zones.s;$('zX').value=(zones.x||[]).join(', ');$('lUrl').value=liqCfg.url||'';$('lLag').value=liqCfg.lag;$('lMode').value=liqCfg.mode||'mix';$('sheet').hidden=false;});
 $('zCancel').addEventListener('click',()=>{$('sheet').hidden=true;});
