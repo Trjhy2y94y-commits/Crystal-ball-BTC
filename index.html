@@ -606,7 +606,7 @@ function buildFund(d){
   return{f7:A,fz:Z,start:days[0],days:days.length};}
 
 /* ---------- données ---------- */
-let data=[],ind=null,isDemo=false,daily=null;
+let data=[],ind=null,isDemo=false,daily=null,dailyAt=0;
 async function fetchJSON(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json();}
 async function loadLive(t){
   try{
@@ -640,7 +640,7 @@ async function load(keep){
   let res;try{res=await loadLive(tf);isDemo=false;}catch(e){res=demo(tf);isDemo=true;}
   await Promise.all([loadMacro(),loadFut()]);
   if(tf==='4h'&&!isDemo){try{await getDaily();}catch(e){}}
-  data=res.rows;ind=compute(data,tf==='4h'?daily:null);$('src').textContent=res.src;if(tf==='1d'){daily={rows:data,ind,demo:isDemo};}
+  data=res.rows;ind=compute(data,tf==='4h'?daily:null);$('src').textContent=res.src;if(tf==='1d'){daily={rows:data,ind,demo:isDemo};dailyAt=Date.now();}
   if(curTab==='stats')renderProj();
   if(curTab==='home')renderHome();
   if(curTab==='cal'&&!keep)renderCal();
@@ -1045,9 +1045,14 @@ function rhythm(T,now){
   let last=T[T.length-1],a=last+lo*DAY,b=last+hi*DAY,shift=false;
   while(b<now){a+=med*DAY;b+=med*DAY;shift=true;}
   return{last,med,a,b,shift,hits,tot,n:T.length};}
-async function getDaily(){if(daily)return daily;await Promise.all([loadMacro(),loadFut()]);
-  try{const r=await loadLive('1d');const I=compute(r.rows);daily={rows:r.rows,ind:I,demo:false};}catch(e){const r=demo('1d');daily={rows:r.rows,ind:compute(r.rows),demo:true};}
-  return daily;}
+async function getDaily(){
+  /* Une démo n'est jamais figée : on retente la source réelle après 60 s pour récupérer d'une panne réseau. */
+  if(daily&&(!daily.demo||Date.now()-dailyAt<60000))return daily;
+  await Promise.all([loadMacro(),loadFut()]);
+  try{const r=await loadLive('1d');const I=compute(r.rows);daily={rows:r.rows,ind:I,demo:false};}
+  catch(e){const r=demo('1d');daily={rows:r.rows,ind:compute(r.rows),demo:true};}
+  dailyAt=Date.now();return daily;
+}
 /* ---- plan semaine par semaine (partagé entre l'onglet Projection et le graphe) ---- */
 function buildPlan(D,nW){
   const d=D.rows,I=D.ind,now=Date.now();
