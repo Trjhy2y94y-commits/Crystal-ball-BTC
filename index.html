@@ -1815,6 +1815,7 @@ function buildTrajectory(D,K,count=1200){
    for(let k=1;k<=len;k++){const j=origin+k;if(j>end)break;price*=C[j]/C[j-1];peak=Math.max(peak,price);maxDD=Math.max(maxDD,1-price/peak);day++;if(hs.includes(day))samples[day].push(price);}
   }if(maxDD>=.20)dd20++;if(price>=K.base*1.2)up20++;ddSum+=maxDD;
  }
+ if(hs.some(h=>samples[h].length!==count))return{n:0,reason:'Simulation incomplète : échantillons de trajectoires non conformes'};
  const q=(a,p)=>{if(!a.length)return null;a.sort((x,y)=>x-y);const x=(a.length-1)*p,i=Math.floor(x);return a[i]+(a[Math.min(i+1,a.length-1)]-a[i])*(x-i);};
  return{n:count,blockDays:7,pool:pool.length,rows:hs.map(h=>({h,n:samples[h].length,p10:q(samples[h],.1),p50:q(samples[h],.5),p90:q(samples[h],.9)})),probDD20:dd20/count,probUp20:up20/count,avgMaxDD:ddSum/count};
 }
