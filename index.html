@@ -1125,15 +1125,22 @@ function buildCone(D,maxH=92){
   const Q=memo('cone',key,()=>{
     // Conditionnement sur la volatilité réalisée 30 j, en plus du régime de tendance/liquidité.
     const rv=new Array(n).fill(null);for(let i=30;i<n;i++){let a=0,b=0,c=0;for(let j=i-29;j<=i;j++){if(C[j]>0&&C[j-1]>0){const x=Math.log(C[j]/C[j-1]);a+=x;b+=x*x;c++;}}if(c>=25){const m=a/c;rv[i]=Math.sqrt(Math.max(0,b/c-m*m)*365);}}
-    const valid=rv.slice(30,I.lastClosed+1).filter(x=>x!=null).sort((a,b)=>a-b),pct=x=>valid.length?valid.filter(v=>v<=x).length/valid.length:.5;
-    const curVol=rv[I.lastClosed],curPct=curVol==null?.5:pct(curVol),bucket=curPct<.33?0:curPct>.67?2:1;
-    const volBucket=i=>rv[i]==null?1:(pct(rv[i])<.33?0:pct(rv[i])>.67?2:1);
-    const all=[...Array(Math.max(0,n-1)).keys()],sameTrend=all.filter(i=>R[i]===rg),sameTrendLiq=sameTrend.filter(i=>LT[i]===lt),sameTrendVol=sameTrend.filter(i=>volBucket(i)===bucket);
+    // Classement causal : chaque volatilité est comparée uniquement aux valeurs déjà observées à cette date.
+    // Une distribution globale ferait fuiter des informations futures dans les régimes historiques.
+    const sortedVol=[],volBucketAt=new Array(n).fill(1);let curPct=.5;
+    for(let i=30;i<=I.lastClosed;i++){const v=rv[i];if(v==null)continue;
+      let lo=0,hi=sortedVol.length;while(lo<hi){const m=(lo+hi)>>1;if(sortedVol[m]<v)lo=m+1;else hi=m;}
+      sortedVol.splice(lo,0,v);const p=(lo+.5)/sortedVol.length;
+      volBucketAt[i]=p<.33?0:p>.67?2:1;if(i===I.lastClosed)curPct=p;}
+    const curVol=rv[I.lastClosed],bucket=curVol==null?1:volBucketAt[I.lastClosed];
+    const volBucket=i=>volBucketAt[i]??1;
+    // Seules les bougies closes et les rendements entièrement observés entrent dans l'échantillon.
+    const all=[...Array(Math.max(0,I.lastClosed)).keys()],sameTrend=all.filter(i=>R[i]===rg),sameTrendLiq=sameTrend.filter(i=>LT[i]===lt),sameTrendVol=sameTrend.filter(i=>volBucket(i)===bucket);
     let idx=sameTrendLiq.filter(i=>volBucket(i)===bucket),cond='tendance + liquidité + volatilité';
     if(idx.length<180){idx=sameTrendVol;cond='tendance + volatilité';}
     if(idx.length<180){idx=sameTrend;cond='tendance de fond';}
     if(idx.length<180){idx=all;cond='historique complet';}
-    const out=[null];for(let h=1;h<=maxH;h++){const v=[];idx.forEach(i=>{if(i+h<n)v.push(Math.log(C[i+h]/C[i]));});
+    const out=[null];for(let h=1;h<=maxH;h++){const v=[];idx.forEach(i=>{if(i+h<=I.lastClosed)v.push(Math.log(C[i+h]/C[i]));});
       if(v.length<60){out.push(out[h-1]);continue;}v.sort((x,y)=>x-y);
       out.push({p10:qs(v,.1),p25:qs(v,.25),p50:qs(v,.5),p75:qs(v,.75),p90:qs(v,.9),n:v.length});}
     /* lissage des courbes de quantiles (moyenne glissante ±7 j) : moins de dents de scie sur les longs horizons */
@@ -1145,7 +1152,8 @@ function buildCone(D,maxH=92){
   /* application du facteur d'élargissement (interpolé entre 3, 6 et 12 mois) */
   let q2=Q.q;if(Q.cal){const S=Q.cal.map(c=>[c.h,c.s]);const sAt=h=>{if(h<=S[0][0])return S[0][1];for(let k=1;k<S.length;k++)if(h<=S[k][0]){const [h0,s0]=S[k-1],[h1,s1]=S[k];return s0+(s1-s0)*(h-h0)/(h1-h0);}return S[S.length-1][1];};
     q2=Q.q.map((x,h)=>{if(!x)return x;const s=sAt(h),m=x.p50,f=v=>m+(v-m)*s;return{...x,p10:f(x.p10),p25:f(x.p25),p75:f(x.p75),p90:f(x.p90)};});}
-  return{q:q2,cond:Q.cond,rg,lt,base:C[n-1],t0:D.rows[n-1].t,n:Q.n,cal:Q.cal,curVol:Q.curVol,volPct:Q.volPct,bucket:Q.bucket,at:Date.now()};}
+  const lc=I.lastClosed;
+  return{q:q2,cond:Q.cond,rg,lt,base:C[lc],t0:D.rows[lc].t,n:Q.n,cal:Q.cal,curVol:Q.curVol,volPct:Q.volPct,bucket:Q.bucket,at:Date.now()};}
 function calibrate(C,R,HS){const n=C.length;
   return HS.map(h=>{const tests=[];
     for(let j=Math.max(700,h+300);j+h<n;j+=14){const v=[];for(let i=0;i+h<=j;i++)if(R[i]===R[j])v.push(Math.log(C[i+h]/C[i]));
