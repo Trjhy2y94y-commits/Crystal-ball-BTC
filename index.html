@@ -1542,7 +1542,7 @@ function compactStats(){
 }
 
 async function renderProj(){
-  const el=$('proj');const D=await getDaily(),d=D.rows,I=D.ind,now=Date.now();
+  const el=$('proj');el.dataset.compact='0';const D=await getDaily(),d=D.rows,I=D.ind,now=Date.now();
   const P=buildPlan(D,16);
   const {top,topPx,cy,ht,tb,botA,botB,inBot,afterBot,px,lowD,earlyLow,distLow,RT,RP}=P;
   const SYM={cycle:'◆',retest:'◇',creux:'▲',sommet:'▼',liqup:'↗',liqdn:'↘'};
