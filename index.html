@@ -2022,10 +2022,9 @@ setInterval(()=>{if(isDemo||document.visibilityState!=='visible')return;if(!wsOk
   </body>
 </html>
 ;
-function confluenceSnapshot(){
-  const D=(tf==='4h'&&daily)?daily:{rows:data,ind};
+function confluenceSnapshot(D){
   const d=D.rows,I=D.ind;if(!d||d.length<220||!I)return null;
-  const n=Math.min(I.lastClosed??d.length-1,d.length-1),p=d[n].c,ma=I.sma200?.[n],r=I.rsi?.[n];
+  const n=Math.min(I.lastClosed??d.length-1,d.length-1),p=d[n].c,ma=I.sma200?.[n],r=I.rsiD?.[n];
   const trend=ma==null?0:p>ma?1:-1;
   const hi=Math.max(...d.slice(Math.max(0,n-30),n+1).map(x=>x.h)),lo=Math.min(...d.slice(Math.max(0,n-30),n+1).map(x=>x.l));
   const prevHi=Math.max(...d.slice(Math.max(0,n-90),Math.max(1,n-30)).map(x=>x.h)),prevLo=Math.min(...d.slice(Math.max(0,n-90),Math.max(1,n-30)).map(x=>x.l));
@@ -2047,9 +2046,9 @@ function confluenceSnapshot(){
   });
   return {p,trend,bias,labels,probs,volRatio,rsi:r,breakout};
 }
-function renderConfluence(){
+async function renderConfluence(){
   const panel=$('probabilityPanel');if(!panel)return;
-  const z=confluenceSnapshot();if(!z){$('probConfidence').textContent='Historique insuffisant';return;}
+  const D=await getDaily();const z=confluenceSnapshot(D);if(!z){$('probConfidence').textContent='Historique insuffisant';return;}
   [30,90,365].forEach(h=>{const q=z.probs[h];$('prob'+h).textContent=q&&q.mid?money(q.mid):'—';});
   const minN=Math.min(...[30,90,365].map(h=>z.probs[h].count));
   $('probConfidence').textContent=minN>=100?'Échantillon historique · robuste':minN>=40?'Échantillon limité':'Confiance faible · peu de cas comparables';
