@@ -1011,6 +1011,26 @@ function rsiTest(d,I,kind,buy){const O=optimize(d,I,kind,buy),n=d.length,C=I.Cl,
     const idx=scoreAll(I.cands,P,I.real).filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);
     return{P,tr:ev(idx,0,cut),te:ev(idx,cut,n),cur:a===(base.rsiD||0)&&b===(base.rsiW||0)};});
   return{...O,top:V.filter(v=>!v.cur),cur:V.find(v=>v.cur)};}
+/* Étude par régime : paramètres actuels figés, rendement directionnel et événements espacés.
+   Diagnostic rétrospectif sur tout l'historique, pas un test indépendant ni une simulation de portefeuille. */
+function regimeStudy(d,I){
+  const H=I.intra?7:30,grp=mkGrp(d,I.Cl,I.bpd||1,H,H*3),n=d.length;
+  const regimes=[{v:1,label:'Haussier'},{v:0,label:'Neutre'},{v:-1,label:'Baissier'}];
+  const ref=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(I.bpd||1))===0),out=[];
+  for(const buy of [true,false]){
+    const signals=I.sig.filter(x=>!x.prov&&!x.blocked&&x.t===(buy?'buy':'sell')).map(x=>x.i);
+    regimes.forEach(r=>{
+      const eligible=i=>I.rgA&&I.rgA[i]===r.v;
+      out.push({buy,regime:r.label,base:grp('BTC sans signal',ref.filter(eligible),buy),
+        sig:grp(buy?'Achats actuels':'Ventes actuelles',signals.filter(eligible),buy)});
+    });
+  }
+  return out;
+}
+function regimeStudyTable(rows){
+  const cell=x=>x.n?pc0(x.hit)+' ('+x.n+')':'—';
+  return `<table><tr><th>Régime</th><th>Type</th><th>BTC réf. · % favor.</th><th>Signal · % favor.</th><th>Rend. moyen signal</th></tr>${rows.map(r=>`<tr><td>${r.regime}</td><td>${r.buy?'Achat':'Vente'}</td><td>${cell(r.base)}</td><td>${cell(r.sig)}</td><td>${pc1(r.sig.avg30)}</td></tr>`).join('')}</table><p class="note">Régime classé à la bougie du signal (MA causale). Entrée à l'ouverture suivante, fenêtres de 30 j sans chevauchement. Étude rétrospective sur tout l'historique, pas une validation indépendante. Hors frais et slippage.</p>`;
+}
 function optTable(O,kind,buy){
   const pP=P=>`seuil ${buy?'−':'+'}${P.th} · score ≥${P.min}${kind==='4h'?' · feu daily '+(P.gate?'oui':'non'):' · filtre tendance '+((buy?P.penRg:(P.penRgS??P.penRg))?'oui':'non')} · funding ${P.wFund?'oui':'non'}${P.rsiD?' · RSI '+(P.rsiD===2?'obligatoire':'bonus'):''}${P.rsiW?' · RSI hebdo '+(P.rsiW===2?'obligatoire':'bonus'):''}`;
   const cell=x=>x.n?`${pc0(x.hit)} <span style="color:var(--muted)">(${x.n})</span>`:'—';
@@ -1275,6 +1295,7 @@ async function renderProj(){
     <p class="note">${O.best100} réglage(s) font 100 % sur le passé avec 2 signaux ou plus. C'est le piège : avec si peu de cas, 100 % ne veut rien dire. On ne garde que ce qui tient sur la colonne « Récent ».</p>
     <div class="row" style="display:flex;gap:8px"><button type="button" class="apply" data-k="1d" data-p="reset">Réglages d'origine 1D</button></div></section>`;})()}
 
+  ${(()=>{const R=regimeStudy(d,I);return `<section><h2>Signaux selon le régime<small>haussier · neutre · baissier</small></h2>${regimeStudyTable(R)}</section>`;})()}
   <section><h2>Rythme Cipher B<small>creux &lt; −53</small></h2>${rt(RT,'creux')}</section>
   <section><h2>Rythme Cipher B<small>sommets &gt; +53</small></h2>${rt(RP,'sommet')}</section>
   ${I.real?(()=>{const f=I.liqFut.filter(x=>x.v!=null),cur=I.liq[I.liq.length-1],end=f.length?f[f.length-1]:null,mx=f.reduce((m,x)=>x.v>m.v?x:m,f[0]||{v:-9}),mn=f.reduce((m,x)=>x.v<m.v?x:m,f[0]||{v:9});
