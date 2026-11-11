@@ -411,6 +411,96 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .tabbar button{font-size:10px;letter-spacing:.01em}
 @media(min-width:600px){.cockpit{max-width:620px;margin:0 auto}.ck-prob strong{font-size:31px}}
 
+
+/* CRISTAL UI REFRESH — harmonisation de toutes les vues */
+:root{
+ --bg:#080d13;--panel:#111a24;--panel2:#172331;--grid:#202d3b;--line:#263646;
+ --fg:#edf3f8;--muted:#91a0af;--sub:#bdc8d2;--accent:#d9b66c;
+ --up:#35d39a;--down:#ff6878;--buy:#35d39a;
+}
+body{background:var(--bg);background-image:radial-gradient(ellipse at 50% -20%,rgba(67,94,120,.18),transparent 55%);}
+.app{background:transparent}
+.view{background:transparent}
+.tabbar{background:rgba(8,13,19,.96);border-top:1px solid #263646;backdrop-filter:blur(18px);padding-top:8px}
+.tabbar button{font-size:10px;letter-spacing:.04em;gap:4px;color:#8493a2}
+.tabbar button.on{color:var(--accent)}
+.tabbar svg{width:21px;height:21px}
+.proj{gap:13px;padding-top:16px;padding-bottom:30px;background:transparent;font-size:13px;line-height:1.55}
+.proj>section,.proj>div>section{
+ background:linear-gradient(145deg,rgba(21,33,46,.96),rgba(14,23,32,.96));
+ border:1px solid #263747;border-radius:16px;padding:14px;
+ box-shadow:0 8px 22px rgba(0,0,0,.12);min-width:0;
+}
+.proj h2{font-size:11px;letter-spacing:.12em;color:#e0c17e;line-height:1.4}
+.proj h2 small{display:block;margin:3px 0 0;font-size:11px;letter-spacing:.01em;color:#8fa0b0}
+.proj p{font-size:12px;line-height:1.55;color:#9eacba}
+.proj .k{gap:7px 12px;font-size:12px}
+.proj .k span:nth-child(even){text-align:right;color:#e1e8ef;font-weight:600}
+.proj table{display:block;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;border-collapse:separate;border-spacing:0;font-size:11px;white-space:nowrap;scrollbar-width:thin;scrollbar-color:#526477 transparent}
+.proj th,.proj td{padding:9px 10px;border-bottom:1px solid rgba(123,147,169,.16)}
+.proj th{position:sticky;top:0;background:#172432;color:#aebdca;font-size:10px;letter-spacing:.04em}
+.proj td{color:#dce5ed}
+.proj th:first-child,.proj td:first-child{position:sticky;left:0;background:#14212d;z-index:1}
+.proj .apply,.toolbar button,.sheet button,footer button{border-radius:10px;min-height:38px;padding:8px 12px;border-color:#34495d;background:#14212d;color:#d5e0e9}
+.proj .apply{color:var(--accent);border-color:rgba(217,182,108,.5)}
+.toolbar{background:rgba(10,16,23,.96);border-color:#263646;padding-top:8px;padding-bottom:8px;gap:7px}
+.toolbar button{font-size:11px;letter-spacing:.02em}
+.toolbar button.on{background:var(--accent);color:#101820;border-color:var(--accent)}
+header{border-color:#263646;background:rgba(10,16,23,.94)}
+.toast{white-space:normal;max-width:calc(100vw - 28px);width:max-content;text-align:center;line-height:1.35;font-size:12px;letter-spacing:.025em;padding:10px 14px;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.ck-hero,.ck-decision,.ck-chart-card,.ck-prob,.ck-factors{box-shadow:0 10px 28px rgba(0,0,0,.16)}
+#vChart .proj,.proj{scrollbar-width:thin;scrollbar-color:#34485b transparent}
+.proj button{touch-action:manipulation}
+.proj input,.proj select{max-width:100%;border-radius:9px}
+@media(max-width:430px){
+ .proj{padding-left:12px;padding-right:12px;gap:11px}
+ .proj>section,.proj>div>section{padding:12px;border-radius:14px}
+ .proj .k{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:6px 9px}
+ .proj table{font-size:10px}
+ .proj th,.proj td{padding:8px 9px}
+ .toolbar{overflow-x:auto;scrollbar-width:none}
+ .toolbar::-webkit-scrollbar{display:none}
+ .toast{top:8px;font-size:11px}
+}
+@media(min-width:700px){.proj{max-width:760px;width:100%;margin:0 auto}.toolbar{justify-content:center}}
+
+
+
+/* Refonte UI v2 — Analyse, Cycle et Fiabilité : lisibilité mobile prioritaire */
+#vChart{background:radial-gradient(ellipse at 50% -12%,rgba(35,55,75,.38),transparent 52%),var(--bg)}
+#vChart header{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px 13px;background:rgba(13,20,29,.96);border-bottom:1px solid var(--line);min-height:94px}
+#vChart header .sym{font-size:10px;color:var(--muted);font-weight:750;letter-spacing:.12em}
+#vChart header .px{font-size:clamp(25px,7vw,34px);font-weight:780;line-height:1.12;margin:5px 0}
+#vChart header .chg{font-size:11px;font-weight:650}
+#vChart header .meta{display:grid;justify-items:end;gap:5px;min-width:100px;font-size:10px;color:var(--muted)}
+#vChart header .badge{font-size:9px}
+#vChart .toolbar{position:relative;gap:6px;padding:9px 12px;background:#0d151f;border-bottom:1px solid var(--line)}
+#vChart .toolbar button{min-width:38px;min-height:34px;padding:6px 10px;font-size:10px;font-weight:700}
+#vChart .stage{background:#090f16}
+#vChart .tip{border:1px solid var(--line);border-radius:10px;background:rgba(15,24,34,.96);color:var(--fg);box-shadow:0 8px 22px rgba(0,0,0,.3)}
+#vCal .proj,#vStats .proj{padding:17px 14px calc(34px + env(safe-area-inset-bottom));gap:13px}
+#vCal .proj>section,#vStats .proj>section{display:grid;gap:11px;min-width:0;padding:15px;border:1px solid #29394a;border-radius:17px;background:linear-gradient(150deg,rgba(23,35,49,.98),rgba(14,22,31,.98));box-shadow:0 8px 22px rgba(0,0,0,.16)}
+#vCal .proj h2,#vStats .proj h2{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:9px;border-bottom:1px solid rgba(130,147,164,.17);font-size:11px;letter-spacing:.12em;line-height:1.35}
+#vCal .proj h2 small,#vStats .proj h2 small{font-size:10px}
+#vCal .proj p,#vStats .proj p{font-size:11px;line-height:1.55}
+#vCal .proj .k,#vStats .proj .k{gap:7px 12px;font-size:11px;line-height:1.45}
+#vCal .proj table,#vStats .proj table{display:block;width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;border-collapse:separate;border-spacing:0;font-size:10px;scrollbar-width:thin;scrollbar-color:#405267 transparent}
+#vCal .proj th,#vStats .proj th{position:sticky;top:0;background:#172331;color:#aebdca;font-size:9px;font-weight:700;letter-spacing:.04em}
+#vCal .proj th,#vCal .proj td,#vStats .proj th,#vStats .proj td{padding:9px 8px;border-bottom:1px solid rgba(130,147,164,.15)}
+#vCal .proj td:first-child,#vCal .proj th:first-child,#vStats .proj td:first-child,#vStats .proj th:first-child{padding-left:10px}
+#vCal .proj .weeks{gap:6px}
+#vCal .proj .wk{border-radius:9px;padding:8px 4px;background:#111d29;border-color:#2b3b4c}
+#vCal .proj .wk b{font-size:11px}#vCal .proj .wk i{font-size:9px}
+#vCal .proj button,#vStats .proj button{min-height:36px;border-radius:10px;padding:8px 12px;font-weight:650}
+#vCal .proj .apply,#vStats .proj .apply{border-radius:9px;background:rgba(216,182,108,.08)}
+#vStats .proj .legend,#vCal .proj .legend{gap:8px 12px;font-size:10px}
+#vStats .proj .good,#vCal .proj .good,#vStats .proj .bad,#vCal .proj .bad{font-weight:700}
+#vStats .proj .wk,#vCal .proj .wk{min-width:0}
+.toast{left:50%;right:auto;transform:translateX(-50%);width:calc(100% - 28px);max-width:390px;box-sizing:border-box;padding:10px 13px;font-size:12px;line-height:1.35;border:1px solid rgba(130,147,164,.25);border-left:3px solid var(--accent);border-radius:13px;letter-spacing:0;overflow-wrap:anywhere}
+.toast.buy{border-left-color:var(--up)}.toast.sell{border-left-color:var(--down)}
+@media(max-width:390px){#vChart header{padding-left:12px;padding-right:12px;gap:7px}#vChart header .meta{min-width:84px;font-size:9px}#vCal .proj,#vStats .proj{padding-left:11px;padding-right:11px}#vCal .proj>section,#vStats .proj>section{padding:12px}#vCal .proj .weeks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:600px){#vCal .proj,#vStats .proj{max-width:760px;width:100%;margin:0 auto;box-sizing:border-box}#vChart header,#vChart .toolbar{padding-left:max(18px,calc((100vw - 760px)/2));padding-right:max(18px,calc((100vw - 760px)/2))}}
+
 </style>
 
 <div class="app">
