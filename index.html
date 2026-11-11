@@ -1760,7 +1760,7 @@ function buildPlan(D,nW){
 const qs=(b,p)=>{const k=(b.length-1)*p,f=Math.floor(k);return b[f]+(b[Math.min(f+1,b.length-1)]-b[f])*(k-f);};
 function buildCone(D,maxH=92){
   const I=D.ind,C=I.Cl,n=C.length,rg=I.regime,lt=I.liqT,R=I.rgA||[],LT=I.ltA||[];
-  const key=n+':'+D.rows[0].t+':'+D.rows[I.lastClosed].t+':'+Math.round(C[n-1]/250)+':'+Math.round((I.model?.vol||0)*1000)+':'+rg+':'+lt+':'+maxH+':'+(I.real?1:0)+':'+(I.liqEnd||0);
+  const key=n+':'+D.rows[0].t+':'+D.rows[I.lastClosed].t+':'+Math.round(C[n-1]/250)+':'+Math.round((I.model?.vol||0)*1000)+':'+rg+':'+lt+':'+maxH+':'+(I.real?1:0)+':'+(I.liqEnd||0)+':'+(I.wt2?.[I.lastClosed]??'na');
   const Q=memo('cone',key,()=>{
     // Conditionnement sur la volatilité réalisée 30 j, en plus du régime de tendance/liquidité.
     const rv=new Array(n).fill(null);for(let i=30;i<n;i++){let a=0,b=0,c=0;for(let j=i-29;j<=i;j++){if(C[j]>0&&C[j-1]>0){const x=Math.log(C[j]/C[j-1]);a+=x;b+=x*x;c++;}}if(c>=25){const m=a/c;rv[i]=Math.sqrt(Math.max(0,b/c-m*m)*365);}}
@@ -1774,8 +1774,12 @@ function buildCone(D,maxH=92){
     const curVol=rv[I.lastClosed],bucket=curVol==null?1:volBucketAt[I.lastClosed];
     const volBucket=i=>volBucketAt[i]??1;
     // Seules les bougies closes et les rendements entièrement observés entrent dans l'échantillon.
-    const all=[...Array(Math.max(0,I.lastClosed)).keys()],sameTrend=all.filter(i=>R[i]===rg),sameTrendLiq=sameTrend.filter(i=>LT[i]===lt),sameTrendVol=sameTrend.filter(i=>volBucket(i)===bucket);
-    let idx=sameTrendLiq.filter(i=>volBucket(i)===bucket),cond='tendance + liquidité + volatilité';
+    const mom=I.wt2||[],momBucket=i=>mom[i]==null?0:mom[i]<=-40?-1:mom[i]>=40?1:0,currentMom=momBucket(I.lastClosed);
+    const all=[...Array(Math.max(0,I.lastClosed)).keys()],sameTrend=all.filter(i=>R[i]===rg),sameTrendLiq=sameTrend.filter(i=>LT[i]===lt),sameTrendVol=sameTrend.filter(i=>volBucket(i)===bucket),sameTrendMom=sameTrend.filter(i=>momBucket(i)===currentMom);
+    // Le momentum est ajouté comme condition de contexte, mais jamais au prix d'un échantillon trop étroit.
+    // Les seuils sont fixes et causaux ; le repli vers des groupes plus larges évite le sur-apprentissage.
+    let idx=sameTrendLiq.filter(i=>volBucket(i)===bucket&&momBucket(i)===currentMom),cond='tendance + liquidité + volatilité + momentum';
+    if(idx.length<180){idx=sameTrendVol.filter(i=>momBucket(i)===currentMom);cond='tendance + volatilité + momentum';}
     if(idx.length<180){idx=sameTrendVol;cond='tendance + volatilité';}
     if(idx.length<180){idx=sameTrend;cond='tendance de fond';}
     if(idx.length<180){idx=all;cond='historique complet';}
