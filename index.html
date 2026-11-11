@@ -1151,17 +1151,18 @@ function buildCone(D,maxH=92){
     const K5=['p10','p25','p50','p75','p90'],sm=out.map((x,h)=>{if(!x||h<8)return x;const o={...x};K5.forEach(k=>{let s=0,c=0;
       for(let j=Math.max(1,h-7);j<=Math.min(maxH,h+7);j++)if(out[j]){s+=out[j][k];c++;}o[k]=s/c;});return o;});
     out.splice(0,out.length,...sm);
-    const cal=maxH>=180?calibrate(C,R,[91,182,365].filter(h=>h<=maxH)):null;
+    const cal=maxH>=180?calibrate(C,R,[91,182,365].filter(h=>h<=maxH),I.lastClosed):null;
     return{q:out,cond,n:idx.length,cal,curVol,volPct:curPct,bucket};});
   /* application du facteur d'élargissement (interpolé entre 3, 6 et 12 mois) */
   let q2=Q.q;if(Q.cal){const S=Q.cal.map(c=>[c.h,c.s]);const sAt=h=>{if(h<=S[0][0])return S[0][1];for(let k=1;k<S.length;k++)if(h<=S[k][0]){const [h0,s0]=S[k-1],[h1,s1]=S[k];return s0+(s1-s0)*(h-h0)/(h1-h0);}return S[S.length-1][1];};
     q2=Q.q.map((x,h)=>{if(!x)return x;const s=sAt(h),m=x.p50,f=v=>m+(v-m)*s;return{...x,p10:f(x.p10),p25:f(x.p25),p75:f(x.p75),p90:f(x.p90)};});}
   // Le point d'ancrage est le dernier prix observable (bougie en cours incluse) ; l'apprentissage reste limité aux bougies closes.
   return{q:q2,cond:Q.cond,rg,lt,base:C[n-1],t0:D.rows[n-1].t,n:Q.n,cal:Q.cal,curVol:Q.curVol,volPct:Q.volPct,bucket:Q.bucket,at:Date.now()};}
-function calibrate(C,R,HS){const n=C.length;
+function calibrate(C,R,HS,lastClosed=C.length-1){const n=C.length,end=Math.min(n-1,lastClosed);
   return HS.map(h=>{const tests=[];
-    for(let j=Math.max(700,h+300);j+h<n;j+=14){const v=[];for(let i=0;i+h<=j;i++)if(R[i]===R[j])v.push(Math.log(C[i+h]/C[i]));
+    for(let j=Math.max(700,h+300);j+h<=end;j+=14){const v=[];for(let i=0;i+h<=j;i++)if(R[i]===R[j])v.push(Math.log(C[i+h]/C[i]));
       if(v.length<150){v.length=0;for(let i=0;i+h<=j;i++)v.push(Math.log(C[i+h]/C[i]));}
+      if(v.length<60)continue;
       v.sort((x,y)=>x-y);tests.push({m:qs(v,.5),lo:qs(v,.1),hi:qs(v,.9),a:Math.log(C[j+h]/C[j])});}
     const cov=s=>tests.length?tests.filter(t=>t.a>=t.m+(t.lo-t.m)*s&&t.a<=t.m+(t.hi-t.m)*s).length/tests.length:null;
     const raw=cov(1);let s=1;for(const x of [1,1.1,1.2,1.35,1.5,1.75,2,2.5]){s=x;if(cov(x)>=.8)break;}
