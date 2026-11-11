@@ -2604,7 +2604,7 @@ function pUp(qq){if(!qq)return null;if(Number.isFinite(qq.pUp))return qq.pUp;con
   for(let k=1;k<5;k++)if(0<=P[k][0]){const [x0,c0]=P[k-1],[x1,c1]=P[k];return 1-(c0+(c1-c0)*(0-x0)/(x1-x0));}return .5;}
 async function renderHome(){
   const el=$('home');let D;try{D=await getDaily();}catch(e){return;}const d=D.rows,I=D.ind,n=d.length,last=d[n-1];
-  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,last.c,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH;
+  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH;
   const prev=d[n-2],ch=(last.c-prev.c)/prev.c*100,T0=new Date().setHours(0,0,0,0);
   const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),buyZones=PL.days.filter(c=>c.amt&&c.a>=T0).slice(0,4),trig=!!(td&&td.amt&&last.c<=td.zone);
   if(trig&&!isDemo){const key='buy:'+T0;if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='▲ ACHAT DÉCLENCHÉ · '+td.amt.toLocaleString('fr-FR')+' € · BTC ≤ '+fmt(td.zone)+' $';t.className='toast buy';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}}
