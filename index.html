@@ -2740,7 +2740,13 @@ function updateQuantTerminal(){
   const price=liveSpotPrice>0?liveSpotPrice:(data&&data.length?data[data.length-1].c:NaN);
   const p=$('qtPrice'),ch=$('qtChange'),feed=$('qtFeed'),src=$('src')?.textContent||'—';
   const hp=$('homeQtPrice'),hc=$('homeQtChange'),hf=$('homeQtFeed');
-  const priceText=Number.isFinite(price)&&price>0?'
+  const priceText=Number.isFinite(price)&&price>0?String.fromCharCode(36)+Math.round(price).toLocaleString('en-US'):'—';
+  if(p)p.textContent=priceText;if(hp)hp.textContent=priceText;
+  let delta=null;
+  if(data&&data.length>1){delta=(data[data.length-1].c/data[data.length-2].c-1)*100;const deltaText=(delta>=0?'+':'')+delta.toFixed(2)+'% · 24H';if(ch){ch.textContent=deltaText;ch.style.color=delta>=0?'var(--up)':'var(--down)';}if(hc){hc.textContent=deltaText;hc.style.color=delta>=0?'#42f2aa':'#ff6680';}}
+  const idx=ind?.lastClosed??(ind?.rsiD?.length-1),wt=ind?.wt2?.[idx],rsi=ind?.rsiD?.[idx];
+  const w=$('qtWT'),r=$('qtRSI'),bias=$('qtBias'),source=$('qtSource');
+  const hw=$('homeQtWT'),hr=$('homeQtRSI'),hb=$('homeQtBias'),hs=$('homeQtSource');
   if(w){w.textContent=Number.isFinite(wt)?wt.toFixed(1):'—';w.className=Number.isFinite(wt)?(wt<=-40?'pos':wt>=40?'neg':'neu'):'neu';}
   if(r){r.textContent=Number.isFinite(rsi)?rsi.toFixed(1):'—';r.className=Number.isFinite(rsi)?(rsi<35?'pos':rsi>65?'neg':'neu'):'neu';}
   const trend=idx!=null&&ind?.sma200?.[idx]!=null&&data?.length?data[Math.min(idx,data.length-1)].c>ind.sma200[idx]?'HAUSSE':'BAISSE':'NEUTRE';
