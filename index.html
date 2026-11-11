@@ -1291,8 +1291,7 @@ function idxParts(I,i,ls,lsT,t,week){
   const P=[];
   if(ls){const a=(t-lsT)/DAY;if(a>=0&&a<=30){const v=25*(1-a/30)*(ls.t==='buy'?1:-1);P.push([v,ls.t==='buy'?'signal d\'achat récent':'signal de vente récent']);}}
   const w=I.wt2[i];if(w!=null){const v=-Math.max(-1,Math.min(1,w/60))*12;P.push([v,w<=-40?'marché en survente':w>=40?'marché en surchauffe':'élan neutre']);}
-  /* v14 : la M2 pèse jusqu'à ±20 points. Elle est décalée de 70 j, donc sa valeur « dans 30 j » est DÉJÀ connue aujourd'hui :
-     c'est la partie qui regarde vers l'avant (pente sur le mois à venir) + son niveau actuel. Sans M2 réelle : ±6 sur le proxy. */
+  /* v14 : la M2 pèse jusqu'à ±20 points. La pente à 30 j futurs n'est utilisée que si le décalage de publication la rend déjà observable ; sinon, pente passée. Sans M2 réelle : proxy momentum ±6. */
   const m2=m2Read(I,i);
   if(m2){const v=Math.max(-1,Math.min(1,m2.slope/0.08))*14+Math.max(-1,Math.min(1,m2.lvl))*6;
     if(Math.abs(v)>=1)P.push([v,m2.slope>0.01?(m2.forward?'M2 en hausse sur le mois à venir':'M2 en hausse sur 30 j passés'):m2.slope<-0.01?(m2.forward?'M2 en baisse sur le mois à venir':'M2 en baisse sur 30 j passés'):(m2.lvl>0?'M2 élevée':'M2 faible')]);}
