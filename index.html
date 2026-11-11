@@ -1771,12 +1771,15 @@ function rsiDivergenceBacktest(d){
   const horizons=[10,30,60];
   const wilson=(w,n)=>{if(!n)return null;const z=1.96,p=w/n,z2=z*z,den=1+z2/n,mid=(p+z2/(2*n))/den,rad=z*Math.sqrt((p*(1-p)+z2/(4*n))/n)/den;return[Math.max(0,mid-rad),Math.min(1,mid+rad)];};
   const stats=[1,-1].map(dir=>({dir,horizons:horizons.map(h=>{
-    const rows=events.filter(e=>e.dir===dir&&e.known+h<n).map(e=>{
-      const market=C[e.known+h]/e.entry-1;
-      return{ret:market*dir,market:market*dir};
-    });
-    const wins=rows.filter(x=>x.ret>0).length,avg=rows.length?rows.reduce((a,x)=>a+x.ret,0)/rows.length:null,base=rows.length?rows.reduce((a,x)=>a+x.market,0)/rows.length:null;
-    return{h,n:rows.length,wins,win:rows.length>=20?wins/rows.length:null,ci:rows.length>=20?wilson(wins,rows.length):null,avg,base,excess:avg==null||base==null?null:avg-base};
+    const rows=events.filter(e=>e.dir===dir&&e.known+h<n).map(e=>({ret:(C[e.known+h]/e.entry-1)*dir}));
+    const baseline=[];for(let i=cut;i+h<n;i++)baseline.push((C[i+h]/C[i]-1)*dir);
+    const wins=rows.filter(x=>x.ret>0).length,baseWins=baseline.filter(x=>x>0).length;
+    const avg=rows.length?rows.reduce((a,x)=>a+x.ret,0)/rows.length:null;
+    const base=baseline.length?baseline.reduce((a,x)=>a+x,0)/baseline.length:null;
+    const baseWin=baseline.length?baseWins/baseline.length:null;
+    const win=rows.length>=20?wins/rows.length:null;
+    return{h,n:rows.length,wins,win,ci:rows.length>=20?wilson(wins,rows.length):null,avg,base,baseWin,
+      winEdge:win==null||baseWin==null?null:win-baseWin,excess:avg==null||base==null?null:avg-base};
   })}));
   return{stats,events:events.length,cut};
 }
@@ -1784,7 +1787,7 @@ function rsiDivergenceBacktestHTML(d,isDemo){
   if(isDemo)return '<section><h2>Fiabilité divergences RSI <small>backtest hors échantillon</small></h2><p>Mode démo : statistiques désactivées.</p></section>';
   const B=rsiDivergenceBacktest(d),pct=x=>x==null?'—':(x*100).toFixed(1)+' %',ret=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(2)+' %';
   const rows=B.stats.map(x=>'<tr><td>'+(x.dir>0?'Haussière':'Baissière')+'</td>'+x.horizons.map(h=>'<td>'+h.n+' cas<br><b>'+(h.win==null?'—':pct(h.win))+'</b>'+(h.ci?'<br><small>IC 95 % '+pct(h.ci[0])+'–'+pct(h.ci[1])+'</small>':'')+'<br><small>Moy. '+ret(h.avg)+'</small><br><small>Marché '+ret(h.base)+'</small><br><small>Surperf. '+ret(h.excess)+'</small></td>').join('')+'</tr>').join('');
-  return '<section><h2>Fiabilité divergences RSI <small>test chronologique · daily</small></h2><table><thead><tr><th>Signal</th><th>+10 j</th><th>+30 j</th><th>+60 j</th></tr></thead><tbody>'+rows+'</tbody></table><p>RSI 14. Divergence haussière : plus bas du prix inférieur et RSI supérieur de plus de 2 points ; baissière : plus haut du prix supérieur et RSI inférieur de plus de 2 points. Pivot confirmé après 3 bougies ; entrée à la clôture de confirmation, jamais au pivot. Les rendements sont mesurés dans le sens du signal. « Marché » = rendement BTC directionnel sur les mêmes dates ; « surperf. » = différence entre stratégie et marché. Taux et intervalle de confiance de Wilson à 95 % affichés uniquement à partir de 20 cas. Les horizons incomplets sont exclus.</p><p class="note">'+B.events+' signaux dans le segment test (30 % les plus récents) · coupure au '+dS(d[B.cut]?.t||d[d.length-1].t)+'. Seuils fixes, aucun réglage optimisé sur le test. Ceci mesure un historique, pas une garantie de performance future.</p></section>';
+  return '<section><h2>Fiabilité divergences RSI <small>test chronologique · daily</small></h2><table><thead><tr><th>Signal</th><th>+10 j</th><th>+30 j</th><th>+60 j</th></tr></thead><tbody>'+rows+'</tbody></table><p>RSI 14. Divergence haussière : plus bas du prix inférieur et RSI supérieur de plus de 2 points ; baissière : plus haut du prix supérieur et RSI inférieur de plus de 2 points. Pivot confirmé après 3 bougies ; entrée à la clôture de confirmation, jamais au pivot. Les rendements sont mesurés dans le sens du signal. « Référence » = tous les jours éligibles du segment test dans le même sens ; « écart taux » et « écart moy. » comparent les signaux à cette référence. Taux et intervalle de confiance de Wilson à 95 % affichés uniquement à partir de 20 cas. Les horizons incomplets sont exclus.</p><p class="note">'+B.events+' signaux dans le segment test (30 % les plus récents) · coupure au '+dS(d[B.cut]?.t||d[d.length-1].t)+'. Seuils fixes, aucun réglage optimisé sur le test. Ceci mesure un historique, pas une garantie de performance future.</p></section>';
 }
 async function renderProj(){
   const el=$('proj');el.dataset.compact='0';const D=await getDaily(),d=D.rows,I=D.ind,now=Date.now();
