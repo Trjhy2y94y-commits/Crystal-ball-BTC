@@ -1022,19 +1022,19 @@ function walkForward(d,I,kind,buy){
       avg:v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
   };
   const refIdx=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(bpd))===0);
+  /* Calculer les signaux de chaque réglage une seule fois : limite le travail sur mobile. */
+  const candidates=grid.map(P=>({P,idx:scoreAll(I.cands,P,I.real)
+    .filter(x=>!x.blocked&&!x.prov&&x.t===(buy?'buy':'sell')).map(x=>x.i)}));
   const pool={n:0,wins:0,sum:0,refN:0,refWins:0,refSum:0};
   for(let k=0;k<5;k++){
     const lo=initial+k*block,hi=k===4?n:Math.min(n,lo+block);
     if(hi-lo<=hm+1)continue;
-    const ranked=grid.map(P=>{
-      const idx=scoreAll(I.cands,P,I.real).filter(x=>!x.blocked&&!x.prov&&x.t===(buy?'buy':'sell')).map(x=>x.i);
-      return{P,tr:ev(idx,0,lo)};
-    }).filter(x=>x.tr.n>=minN&&x.tr.hit!=null);
+    const ranked=candidates.map(x=>({P:x.P,idx:x.idx,tr:ev(x.idx,0,lo)}))
+      .filter(x=>x.tr.n>=minN&&x.tr.hit!=null);
     ranked.sort((a,b)=>b.tr.hit-a.tr.hit||b.tr.avg-a.tr.avg);
     const chosen=ranked[0];
     if(!chosen) {folds.push({k:k+1,lo,hi,trained:0,test:null,ref:null,P:null});continue;}
-    const idx=scoreAll(I.cands,chosen.P,I.real).filter(x=>!x.blocked&&!x.prov&&x.t===(buy?'buy':'sell')).map(x=>x.i);
-    const test=ev(idx,lo,hi),ref=ev(refIdx,lo,hi);
+    const test=ev(chosen.idx,lo,hi),ref=ev(refIdx,lo,hi);
     folds.push({k:k+1,lo,hi,trained:chosen.tr.n,test,ref,P:chosen.P});
     if(test.n){pool.n+=test.n;pool.wins+=test.hit*test.n;pool.sum+=test.avg*test.n;}
     if(ref.n){pool.refN+=ref.n;pool.refWins+=ref.hit*ref.n;pool.refSum+=ref.avg*ref.n;}
