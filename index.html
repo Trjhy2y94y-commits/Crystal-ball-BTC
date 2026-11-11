@@ -1546,7 +1546,7 @@ function connectWS(){
   /* Ne jamais mélanger le flux Binance avec un historique Coinbase ou une série de démonstration. */
   if(isDemo||$('src')?.textContent!=='Binance'){if(ws&&ws.readyState<2){try{ws.close();}catch(e){}}wsOk=false;setBadge();return;}
   if(ws&&ws.readyState<2)return;
-  try{ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@kline_1d/btcusdt@kline_1w/btcusdt@kline_4h');}catch(e){return;}
+  try{ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@kline_1d/btcusdt@kline_1w/btcusdt@kline_4h/btcusdt@kline_1M');}catch(e){return;}
   ws.onopen=()=>{wsOk=true;wsRetry=0;setBadge();};
   ws.onclose=()=>{wsOk=false;setBadge();if(document.visibilityState==='visible'){const dl=Math.min(30,2**wsRetry++)*1000;setTimeout(connectWS,dl);}};
   ws.onerror=()=>{try{ws.close();}catch(e){}};
