@@ -1827,6 +1827,34 @@ function historicalStructureFeatures(rows,i){
   fvgZones.forEach(z=>{const v=Math.exp(-Math.abs(z.dist)*35)*tfWeight[z.tf]*(1-z.mit*.65);if(z.bull)below+=v;else above+=v;});
   const fv=below+above?Math.max(-1,Math.min(1,(below-above)/(below+above))):0;
   const fvg=fv>.15?1:fv<-.15?-1:0;
+  // SMC causal: sweep/reclaim et clôture au-delà des extrêmes antérieurs (BOS).
+  const w=daily.slice(-90),cur=w[w.length-1],prior=w.slice(0,-1),range20=prior.slice(-20);
+  const prevHi=Math.max(...range20.map(x=>x.h)),prevLo=Math.min(...range20.map(x=>x.l));
+  const avgVol=range20.reduce((a,x)=>a+(Number(x.v)||0),0)/Math.max(1,range20.length),vr=avgVol?(Number(cur.v)||0)/avgVol:1;
+  const sweepLow=cur.l<prevLo&&cur.c>prevLo,sweepHigh=cur.h>prevHi&&cur.c<prevHi;
+  const bosUp=cur.c>prevHi&&cur.c>cur.o,bosDown=cur.c<prevLo&&cur.c<cur.o;
+  const smc=sweepLow?1:sweepHigh?-1:bosUp?1:bosDown?-1:0;
+  // Wyckoff proxy : spring/upthrust avec réintégration et confirmation relative du volume.
+  const spring=sweepLow&&vr>=1.15&&cur.c>cur.o,upthrust=sweepHigh&&vr>=1.15&&cur.c<cur.o;
+  const wyckoff=spring?1:upthrust?-1:0;
+  // Proxy Elliott : pivots confirmés à droite (2 bougies), alternance et séquence des 5 derniers swings.
+  const pivots=[];let lastType=0,lastPrice=0;
+  for(let k=2;k<w.length-2;k++){
+    const x=w[k],isHigh=x.h>w[k-1].h&&x.h>=w[k-2].h&&x.h>=w[k+1].h&&x.h>w[k+2].h,
+      isLow=x.l<w[k-1].l&&x.l<=w[k-2].l&&x.l<=w[k+1].l&&x.l<w[k+2].l;
+    const type=isHigh?1:isLow?-1:0;if(!type)continue;
+    const px=type===1?x.h:x.l;
+    if(type===lastType){if((type===1&&px>lastPrice)||(type===-1&&px<lastPrice)){pivots[pivots.length-1]={type,px};lastPrice=px;}continue;}
+    if(!lastType||Math.abs(px/lastPrice-1)>=.012){pivots.push({type,px});lastType=type;lastPrice=px;}
+  }
+  const last5=pivots.slice(-5);let elliott=0;
+  if(last5.length===5){
+    const up=last5[0].type===-1&&last5[1].type===1&&last5[2].type===-1&&last5[3].type===1&&last5[4].type===-1,
+      down=last5[0].type===1&&last5[1].type===-1&&last5[2].type===1&&last5[3].type===-1&&last5[4].type===1;
+    if(up&&last5[2].px>last5[0].px&&last5[3].px>last5[1].px&&last5[4].px>last5[2].px)elliott=1;
+    if(down&&last5[2].px<last5[0].px&&last5[3].px<last5[1].px&&last5[4].px<last5[2].px)elliott=-1;
+  }
+  const flowRaw=smc+wyckoff+elliott,flow=flowRaw>=2?1:flowRaw<=-2?-1:0;
   const vpCalc=(lookback)=>{
     const sample=daily.slice(-lookback),lo=Math.min(...sample.map(r=>r.l)),hi=Math.max(...sample.map(r=>r.h));
     if(!(hi>lo))return null;const bins=48,step=(hi-lo)/bins,vol=new Float64Array(bins);
@@ -1837,9 +1865,9 @@ function historicalStructureFeatures(rows,i){
       const lv=left>0?vol[left-1]:-1,rv=right<bins-1?vol[right+1]:-1;if(rv>lv){right++;covered+=vol[right];}else{left--;covered+=vol[left];}}
     return{poc:lo+(poc+.5)*step,vah:lo+(right+1)*step,val:lo+left*step};
   };
-  const p=vpCalc(90)||vpCalc(30);if(!p)return{fvg,vp:0};
+  const p=vpCalc(90)||vpCalc(30);if(!p)return{fvg,vp:0,smc,wyckoff,elliott,flow};
   const vv=price>p.vah ? .65 : price<p.val ? -.65 : price>p.poc ? .25 : price<p.poc ? -.25 : 0;
-  return{fvg,vp:vv>.1?1:vv<-.1?-1:0};
+  return{fvg,vp:vv>.1?1:vv<-.1?-1:0,smc,wyckoff,elliott,flow};
 }
 function priceForecastAudit(D){
   const d=D.rows,I=D.ind,C=I.Cl||d.map(x=>x.c),n=Math.min(C.length,I.lastClosed??C.length-1),R=I.rgA||[],LT=I.ltA||[];
@@ -1860,14 +1888,14 @@ function priceForecastAudit(D){
       dir:a.filter(x=>x.dir).length/count,cov:a.filter(x=>x.cover).length/count};};
   hs.forEach(h=>{
     const stride=h===30?7:h===90?14:30,first=Math.max(900,Math.floor(n*.45)),last=n-h-1;
-    const enhanced=[],core=[],base=[];let macroUsed=0,fullUsed=0,origins=0;
+    const enhanced=[],advancedModel=[],core=[],base=[];let macroUsed=0,fullUsed=0,advancedUsed=0,origins=0;
     for(let i=first;i<=last;i+=stride){
       const train=[],uncond=[];
       // Échantillonnage hebdomadaire des origines d'apprentissage : snapshots causaux réutilisables.
       const firstJ=Math.max(220,Math.floor(n*.08));
       for(let j=firstJ+((7-firstJ%7)%7);j+h<=i;j+=7){
         const ret=Math.log(C[j+h]/C[j]);if(!Number.isFinite(ret))continue;uncond.push(ret);
-        if(R[j]===R[i]){const ft=features(j);train.push({r:ret,j,mom:momBucket(j),vol:volBucket[j],liq:LT[j],fvg:ft.fvg,vp:ft.vp});}
+        if(R[j]===R[i]){const ft=features(j);train.push({r:ret,j,mom:momBucket(j),vol:volBucket[j],liq:LT[j],fvg:ft.fvg,vp:ft.vp,flow:ft.flow});}
       }
       const sameState=train.filter(x=>x.mom===momBucket(i)&&x.vol===volBucket[i]);
       let chosen=sameState.length>=60?sameState:train,condition=sameState.length>=60?'tendance + momentum + volatilité':'tendance';
@@ -1878,24 +1906,26 @@ function priceForecastAudit(D){
       const ft=features(i),fullSet=chosen.filter(x=>x.fvg===ft.fvg&&x.vp===ft.vp),useFull=fullSet.length>=60;
       const full=useFull?fullSet:chosen,fa=full.map(x=>x.r),fp10=q(fa,.1),fp50=q(fa,.5),fp90=q(fa,.9);
       if(useFull)fullUsed++;
+      const proSet=full.filter(x=>x.flow===ft.flow),usePro=useFull&&proSet.length>=60,pro=usePro?proSet:full,pa=pro.map(x=>x.r),pp10=q(pa,.1),pp50=q(pa,.5),pp90=q(pa,.9);
+      if(usePro)advancedUsed++;
       const actual=Math.log(C[i+h]/C[i]),priceActual=C[i]*Math.exp(actual);
       const make=(median,lo,hi)=>({err:Math.abs((C[i]*Math.exp(median))/priceActual-1),dir:Math.sign(median)===Math.sign(actual),cover:actual>=lo&&actual<=hi});
-      core.push(make(p50,p10,p90));enhanced.push(make(fp50,fp10,fp90));
+      core.push(make(p50,p10,p90));enhanced.push(make(fp50,fp10,fp90));advancedModel.push(make(pp50,pp10,pp90));
       base.push(make(b50,q(b,.1),q(b,.9)));origins++;
     }
-    out.push({h,model:metrics(enhanced),core:metrics(core),base:metrics(base),macroUsed,fullUsed,origins});
+    out.push({h,model:metrics(enhanced),advanced:metrics(advancedModel),core:metrics(core),base:metrics(base),macroUsed,fullUsed,advancedUsed,origins});
   });
   return{demo:false,rows:out,macro:I.real&&!!I.liq,source:I.real?'Composite M2/liquidité décalée':'M2 indisponible · modèle sans filtre macro',
-    features:'FVG daily/weekly/monthly + Volume Profile 90D · reconstruction causale sur historique'};
+    features:'FVG multi-unités + Volume Profile 90D + proxies SMC (BOS/sweeps), Wyckoff (spring/upthrust) et Elliott (pivots confirmés)'};
 }
 function priceAuditTable(A){
   if(A.demo||!A.rows.length)return '<p class="note">'+(A.reason||'Pas assez de prévisions historiques indépendantes pour calculer un taux fiable.')+'</p>';
   const pc=x=>x==null?'—':(x*100).toFixed(1)+' %',err=x=>x==null?'—':(x*100).toFixed(2)+' %';
-  const rows=A.rows.map(x=>{const a=x.model,c=x.core,b=x.base;return '<tr><td>J+'+x.h+'</td><td><b>'+pc(a.h5)+'</b></td><td>'+pc(c.h5)+'</td><td>'+((a.h5==null||c.h5==null)?'—':(a.h5-c.h5>=0?'+':'')+((a.h5-c.h5)*100).toFixed(1)+' pts')+'</td><td>'+err(a.mae)+'</td><td>'+pc(a.dir)+'</td><td>'+pc(a.cov)+'</td><td>'+pc(b.h5)+'</td><td>'+a.n+'</td><td>'+x.fullUsed+'/'+x.origins+'</td></tr>';}).join('');
+  const rows=A.rows.map(x=>{const a=x.model,p=x.advanced,c=x.core,b=x.base;return '<tr><td>J+'+x.h+'</td><td><b>'+pc(p.h5)+'</b></td><td>'+pc(a.h5)+'</td><td>'+pc(c.h5)+'</td><td>'+err(p.mae)+'</td><td>'+pc(p.dir)+'</td><td>'+pc(p.cov)+'</td><td>'+pc(b.h5)+'</td><td>'+p.n+'</td><td>'+x.advancedUsed+'/'+x.origins+'</td></tr>';}).join('');
   const macro=A.rows.reduce((s,x)=>s+x.macroUsed,0),total=A.rows.reduce((s,x)=>s+x.origins,0);
   return '<p><b>'+A.source+'</b> · '+A.features+' · M2 utilisée dans '+macro+'/'+total+' prévisions de base.</p>'+
-    '<table><tr><th>Horizon</th><th>Full stack ±5 %</th><th>Modèle socle ±5 %</th><th>Gain/perte</th><th>Erreur full*</th><th>Direction</th><th>Couverture</th><th>Réf. ±5 %</th><th>N</th><th>FVG+VP actifs</th></tr>'+rows+'</table>'+
-    '<p class="note">Full stack = modèle socle (tendance, momentum, volatilité et M2 si disponible) conditionné en plus par les états FVG multi-unités et Volume Profile 90 jours. Le modèle socle est affiché en parallèle sur les mêmes dates pour isoler l’apport du filtre structurel. « FVG+VP actifs » indique les origines où au moins 60 observations historiques comparables étaient disponibles ; sinon le full stack retombe explicitement sur le socle. *Erreur absolue relative moyenne du prix médian prévu. Direction = hausse/baisse correctement anticipée. Couverture = part des prix réels dans P10–P90 (cible théorique 80 %). Référence = distribution historique BTC sans filtre. Tous les signaux sont reconstruits avec les seules bougies disponibles à chaque date ; les rendements futurs ne servent jamais à fabriquer les variables. Les échantillons sont espacés de 7 jours, mais les horizons se chevauchent : les observations ne sont pas indépendantes et les taux ne sont pas des garanties. Le Volume Profile est une approximation OHLCV, pas un profil tick-by-tick.</p>';
+    '<table><tr><th>Horizon</th><th>SMC/Wyckoff/Elliott ±5 %</th><th>FVG+VP ±5 %</th><th>Socle ±5 %</th><th>Erreur avancée*</th><th>Direction</th><th>Couverture</th><th>Réf. ±5 %</th><th>N</th><th>Stack avancé actif</th></tr>'+rows+'</table>'+
+    '<p class="note">Le modèle avancé ajoute au socle les états FVG multi-unités, Volume Profile 90 jours et un consensus causal SMC/Wyckoff/Elliott. SMC = sweep/reclaim ou break of structure sur 20 jours ; Wyckoff = spring/upthrust avec volume relatif ; Elliott = proxy de séquence de pivots confirmés, et non un décompte subjectif de vagues. Les colonnes comparent le modèle avancé, FVG+VP et le socle sur les mêmes dates. « Stack avancé actif » indique les origines où au moins 60 observations historiques comparables étaient disponibles ; sinon le modèle retombe sur FVG+VP ou le socle. *Erreur absolue relative moyenne du prix médian prévu. Direction = hausse/baisse correctement anticipée. Couverture = part des prix réels dans P10–P90 (cible théorique 80 %). Référence = distribution historique BTC sans filtre. Tous les signaux sont reconstruits avec les seules bougies disponibles à chaque date ; les rendements futurs ne servent jamais à fabriquer les variables. Les échantillons sont espacés de 7 jours, mais les horizons se chevauchent : les observations ne sont pas indépendantes et les taux ne sont pas des garanties. Le Volume Profile est une approximation OHLCV, pas un profil tick-by-tick.</p>';
 }
 function calibrate(C,R,HS,lastClosed=C.length-1){const n=C.length,end=Math.min(n-1,lastClosed);
   return HS.map(h=>{const tests=[];
