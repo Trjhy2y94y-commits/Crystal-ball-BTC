@@ -1539,7 +1539,7 @@ new ResizeObserver(resize).observe(stage);
 resize();load();
 /* ---------- temps réel : flux WebSocket Binance (bougie en cours 1D + 1W) ---------- */
 let ws=null,wsOk=false,wsRetry=0,lastFull=0,lastCalc=0,calcT=null,lastPlan=0,lastSimple=0,dailyDirty=false;
-function setBadge(){const b=$('badge'),src=$('src')?.textContent||'';b.textContent=isDemo?'DÉMO · SIMULÉ':src==='Coinbase'?'COINBASE · 1 MIN':wsOk?'BINANCE · LIVE':'BINANCE · 1 MIN';b.className='badge '+(isDemo?'demo':'live');}
+function setBadge(){const b=$('badge'),src=$('src')?.textContent||'';b.textContent=isDemo?'DÉMO · SIMULÉ':src==='Coinbase'?'COINBASE · SECOURS':wsOk?'BINANCE · LIVE':'BINANCE · ACTUALISÉ';b.className='badge '+(isDemo?'demo':'live');}
 function upd(rows,row){if(!rows||!rows.length)return false;const L=rows[rows.length-1];if(row.t===L.t){L.h=Math.max(L.h,row.h);L.l=Math.min(L.l,row.l);L.c=row.c;L.v=row.v??L.v;L.qv=row.qv??L.qv;L.trades=row.trades??L.trades;L.takerBuy=row.takerBuy??L.takerBuy;return true;}
   if(row.t>L.t){rows.push(row);return true;}return false;}
 function connectWS(){
