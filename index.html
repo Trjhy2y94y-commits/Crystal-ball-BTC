@@ -1838,7 +1838,7 @@ function historicalStructureFeatures(rows,i){
     return{poc:lo+(poc+.5)*step,vah:lo+(right+1)*step,val:lo+left*step};
   };
   const p=vpCalc(90)||vpCalc(30);if(!p)return{fvg,vp:0};
-  const vv=price>p.vah?.65:price<p.val?-.65:price>p.poc?.25:price<p.poc?-.25:0;
+  const vv=price>p.vah ? .65 : price<p.val ? -.65 : price>p.poc ? .25 : price<p.poc ? -.25 : 0;
   return{fvg,vp:vv>.1?1:vv<-.1?-1:0};
 }
 function priceForecastAudit(D){
