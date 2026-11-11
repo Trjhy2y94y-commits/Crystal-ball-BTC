@@ -1799,7 +1799,15 @@ function buildCone(D,maxH=92){
 function priceForecastAudit(D){
   const d=D.rows,I=D.ind,C=I.Cl||d.map(x=>x.c),n=Math.min(C.length,I.lastClosed??C.length-1),R=I.rgA||[],LT=I.ltA||[];
   if(D.demo||n<1200)return{demo:!!D.demo,rows:[],reason:D.demo?'Mode démo : audit réel suspendu.':'Historique insuffisant pour valider les horizons longs.'};
-  const hs=[30,90,365],out=[];
+  const hs=[30,90,365],out=[],mom=I.wt2||[];
+  // Volatilité réalisée 30 j et percentile causal : aucun seuil ne regarde le futur.
+  const rv=new Array(n).fill(null),volBucket=new Array(n).fill(1),sortedVol=[];
+  for(let i=30;i<=n;i++){let sum=0,sum2=0,cnt=0;for(let k=i-29;k<=i;k++){if(C[k]>0&&C[k-1]>0){const x=Math.log(C[k]/C[k-1]);sum+=x;sum2+=x*x;cnt++;}}
+    if(cnt<25)continue;const m=sum/cnt,v=Math.sqrt(Math.max(0,sum2/cnt-m*m)*365);rv[i]=v;
+    let lo=0,hi=sortedVol.length;while(lo<hi){const mid=(lo+hi)>>1;if(sortedVol[mid]<v)lo=mid+1;else hi=mid;}sortedVol.splice(lo,0,v);
+    const pct=(lo+.5)/sortedVol.length;volBucket[i]=pct<.33?0:pct>.67?2:1;
+  }
+  const momBucket=i=>mom[i]==null?0:mom[i]<=-40?-1:mom[i]>=40?1:0;
   const q=(a,p)=>{if(!a.length)return null;const v=a.slice().sort((x,y)=>x-y);return qs(v,p);};
   const metrics=a=>{if(!a.length)return{n:0,mae:null,h5:null,h10:null,h20:null,dir:null,cov:null};
     const n=a.length;return{n,mae:a.reduce((s,x)=>s+x.err,0)/n,
@@ -1815,12 +1823,14 @@ function priceForecastAudit(D){
       for(let j=Math.max(220,Math.floor(n*.08));j+h<=i;j++){
         const ret=Math.log(C[j+h]/C[j]);if(!Number.isFinite(ret))continue;
         uncond.push(ret);
-        if(R[j]===R[i])train.push({r:ret,j});
+        if(R[j]===R[i])train.push({r:ret,j,mom:momBucket(j),vol:volBucket[j],liq:LT[j]});
       }
-      let chosen=train,condition='tendance';
+      // Premier choix : mêmes régimes de tendance, momentum et volatilité, puis filtre M2 réel.
+      const sameState=train.filter(x=>x.mom===momBucket(i)&&x.vol===volBucket[i]);
+      let chosen=sameState.length>=60?sameState:train,condition=sameState.length>=60?'tendance + momentum + volatilité':'tendance';
       if(I.real&&LT[i]!=null){
-        const both=train.filter(x=>LT[x.j]===LT[i]);
-        if(both.length>=60){chosen=both;condition='tendance + M2';macroUsed++;}
+        const both=chosen.filter(x=>x.liq===LT[i]);
+        if(both.length>=60){chosen=both;condition+=' + M2';macroUsed++;}
       }
       if(chosen.length<60){chosen=uncond.map(r=>({r}));condition='historique complet';}
       if(chosen.length<60||uncond.length<60)continue;
