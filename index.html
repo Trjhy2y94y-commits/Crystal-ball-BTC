@@ -1160,10 +1160,51 @@ function area(vis,a,X,Y,c){const z=Y(0);ctx.fillStyle=c;ctx.beginPath();let st=n
 // ===== Confluence chartiste + probabilités empiriques =====
 const overlayLayers={wyckoff:true,smc:true,elliott:true,patterns:true,rsiDiv:true};
 const money=v=>v==null?'—':Math.round(v).toLocaleString('fr-FR')+' '+String.fromCharCode(36);
+/* ===== FVG ICT multi-unité : zones causales, mitigation et taux de comblement ===== */
+function buildFvgContext(D){
+  const daily=D.rows.slice(0,Math.min(D.ind?.lastClosed??D.rows.length-1,D.rows.length-1)+1);
+  const aggregate=(rows,unit)=>{
+    if(unit==='1D')return rows;
+    const out=[];let key=null,last=null;
+    rows.forEach(r=>{const dt=new Date(r.t),k=unit==='1W'?Date.UTC(dt.getUTCFullYear(),dt.getUTCMonth(),dt.getUTCDate()-((dt.getUTCDay()+6)%7)):Date.UTC(dt.getUTCFullYear(),dt.getUTCMonth(),1);
+      if(k!==key){last={t:k,o:r.o,h:r.h,l:r.l,c:r.c,v:r.v||0};out.push(last);key=k;}
+      else{last.h=Math.max(last.h,r.h);last.l=Math.min(last.l,r.l);last.c=r.c;last.v+=(r.v||0);}
+    });return out;
+  };
+  const price=daily[daily.length-1]?.c;if(!price)return null;
+  const all=[],stats={};
+  [['1D',daily],['1W',aggregate(daily,'1W')],['1M',aggregate(daily,'1M')]].forEach(([tf,rows])=>{
+    const zones=[];let hit=0,eligible=0;
+    for(let i=2;i<rows.length;i++){
+      const a=rows[i-2],c=rows[i],bull=c.l>a.h,bear=c.h<a.l;if(!bull&&!bear)continue;
+      const lo=bull?a.h:c.h,hi=bull?c.l:a.l,gap=(hi-lo)/c.c;if(gap<.001)continue;
+      let filled=false,mit=0,fillAt=null;
+      for(let j=i+1;j<rows.length;j++){
+        const r=rows[j];
+        if(bull){if(r.l<=lo){filled=true;fillAt=j;break;}if(r.l<hi)mit=Math.max(mit,Math.min(1,(hi-r.l)/(hi-lo)));}
+        else{if(r.h>=hi){filled=true;fillAt=j;break;}if(r.h>lo)mit=Math.max(mit,Math.min(1,(r.h-lo)/(hi-lo)));}
+      }
+      const horizon=Math.min(90,rows.length-i-1);
+      if(horizon>=Math.min(30,tf==='1D'?30:6)){eligible++;if(filled&&fillAt-i<=90)hit++;}
+      if(!filled)zones.push({tf,dir:bull?'bull':'bear',lo,hi,mid:(lo+hi)/2,created:rows[i].t,age:rows.length-1-i,mit,dist:(price-(lo+hi)/2)/price,gap});
+    }
+    stats[tf]={fillRate:eligible?hit/eligible:null,sample:eligible};
+    zones.sort((a,b)=>a.age-b.age);all.push(...zones.slice(0,30));
+  });
+  const active=all.filter(z=>z.dir==='bull'?z.hi<price:z.lo>price);
+  const below=active.filter(z=>z.dir==='bull').sort((a,b)=>Math.abs(a.dist)-Math.abs(b.dist)).slice(0,5);
+  const above=active.filter(z=>z.dir==='bear').sort((a,b)=>Math.abs(a.dist)-Math.abs(b.dist)).slice(0,5);
+  const weight={'1D':1,'1W':1.6,'1M':2.2};
+  const score=zones=>zones.reduce((v,z)=>v+Math.exp(-Math.abs(z.dist)*35)*weight[z.tf]*(1-z.mit*.65),0);
+  const b=score(below),a=score(above),vote=b+a?Math.max(-1,Math.min(1,(b-a)/(b+a))):0;
+  const fmt=zones=>zones.map(x=>({tf:x.tf,dir:x.dir,lo:x.lo,hi:x.hi,age:x.age,mit:x.mit,dist:x.dist}));
+  return{price,below:fmt(below),above:fmt(above),vote,stats,active:all.length};
+}
 function confluenceSnapshot(D){
   const d=D.rows,I=D.ind;if(!d||d.length<220||!I)return null;
   const n=Math.min(I.lastClosed??d.length-1,d.length-1),p=d[n].c,ma=I.sma200?.[n],r=I.rsiD?.[n];
   const trend=ma==null?0:p>ma?1:-1,trendVote=ma==null?0:p>ma*1.01?1:p<ma*.99?-1:0;
+  const fvg=buildFvgContext(D);
   const hi=Math.max(...d.slice(Math.max(0,n-30),n+1).map(x=>x.h)),lo=Math.min(...d.slice(Math.max(0,n-30),n+1).map(x=>x.l));
   const prevHi=Math.max(...d.slice(Math.max(0,n-90),Math.max(1,n-30)).map(x=>x.h)),prevLo=Math.min(...d.slice(Math.max(0,n-90),Math.max(1,n-30)).map(x=>x.l));
   const avgVol=d.slice(Math.max(0,n-20),n).reduce((a,x)=>a+(x.v||0),0)/Math.max(1,Math.min(20,n));
@@ -1181,7 +1222,8 @@ function confluenceSnapshot(D){
     {key:'Tendance',value:trendVote,weight:30,detail:trendVote>0?'Au-dessus SMA200 (+1 %)':trendVote<0?'Sous SMA200 (-1 %)':'Proche de la SMA200'},
     {key:'Momentum',value:mom,weight:25,detail:mom>0?'RSI > 55':mom<0?'RSI < 45':'RSI neutre'},
     {key:'Liquidité',value:liqVote,weight:25,detail:liqVote>0?'Pente 14 j positive':liqVote<0?'Pente 14 j négative':'Stable / indisponible'},
-    {key:'Structure',value:structure,weight:20,detail:structure>0?'Cassure haussière':structure<0?'Cassure baissière':'Pas de cassure'}
+    {key:'Structure',value:structure,weight:10,detail:structure>0?'Cassure haussière':structure<0?'Cassure baissière':'Pas de cassure'},
+    {key:'FVG multi-UT',value:fvg?.vote||0,weight:10,detail:fvg?'Zones haussières sous le prix : '+fvg.below.length+' · zones baissières au-dessus : '+fvg.above.length:'FVG indisponibles'}
   ];
   const active=votes.filter(v=>v.value!==0);
   const confluence=Math.round(votes.reduce((a,v)=>a+v.value*v.weight,0));
@@ -1191,7 +1233,7 @@ function confluenceSnapshot(D){
     vals.sort((a,b)=>a-b);const q=k=>vals.length?Math.exp(vals[Math.min(vals.length-1,Math.floor((vals.length-1)*k))])*p:null;
     probs[h]={lo:q(.1),mid:q(.5),hi:q(.9),count:vals.length,up:vals.length?vals.filter(x=>x>0).length/vals.length:null};
   });
-  return {p,trend,bias,confluence,votes,labels,probs,volRatio,rsi:r};
+  return {p,trend,bias,confluence,votes,labels,probs,volRatio,rsi:r,fvg};
 }
 async function renderConfluence(){
   const panel=$('probabilityPanel');if(!panel)return;
@@ -1208,8 +1250,9 @@ async function renderConfluence(){
   const dir=z.confluence>15?'haussier':z.confluence< -15?'baissier':'neutre';
   $('probAgreement').textContent='CONFLUENCE '+(z.confluence>0?'+':'')+z.confluence+'/100 · '+dir.toUpperCase()+' · '+z.votes.filter(v=>v.value>0).length+' votes ↑ / '+z.votes.filter(v=>v.value<0).length+' votes ↓';
   $('probAgreement').title=z.votes.map(v=>v.key+' : '+v.detail).join(' | ');
-  $('probLayers').innerHTML=Object.entries(z.labels).filter(([k])=>overlayLayers[k]).map(([k,v])=>'<span class="prob-layer"><b>'+({wyckoff:'Wyckoff',smc:'SMC',elliott:'Elliott',patterns:'Figures'}[k])+'</b> · '+v+'</span>').join('');
-  $('probNote').textContent='P10 / P50 / P90 = distribution historique conditionnelle, pas probabilité garantie. Confluence = score directionnel pondéré (tendance 30, momentum 25, liquidité 25, structure 20), non calibré comme probabilité. Elliott, Wyckoff et SMC sont affichés séparément pour éviter de compter plusieurs fois le même signal. Effectifs : 30j '+(K.q[30]?.n||0)+' / 90j '+(K.q[90]?.n||0)+' / 12m '+(K.q[365]?.n||0)+'.';
+  const f=z.fvg,zoneTxt=x=>x.tf+' '+(x.dir==='bull'?'FVG haussier':'FVG baissier')+' '+money(x.lo)+'–'+money(x.hi)+' · '+Math.round(x.mit*100)+' % mitigé';
+  $('probLayers').innerHTML=Object.entries(z.labels).filter(([k])=>overlayLayers[k]).map(([k,v])=>'<span class="prob-layer"><b>'+({wyckoff:'Wyckoff',smc:'SMC',elliott:'Elliott',patterns:'Figures'}[k])+'</b> · '+v+'</span>').join('')+(f?'<span class="prob-layer"><b>FVG 1D/1W/1M</b> · '+(f.below[0]?'Support : '+zoneTxt(f.below[0]):'Aucun FVG haussier actif sous le prix')+' · '+(f.above[0]?'Aimant : '+zoneTxt(f.above[0]):'Aucun FVG baissier actif au-dessus')+'</span>':'');
+  $('probNote').textContent='P10 / P50 / P90 = distribution historique conditionnelle, pas probabilité garantie. Confluence = score directionnel pondéré (tendance 30, momentum 25, liquidité 25, structure 10, FVG 10), non calibré comme probabilité. Les FVG sont détectés sur bougies clôturées en 1D/1W/1M ; les taux de comblement restent descriptifs et dépendent de l'échantillon. Elliott, Wyckoff et SMC sont affichés séparément pour éviter de compter plusieurs fois le même signal. Effectifs : 30j '+(K.q[30]?.n||0)+' / 90j '+(K.q[90]?.n||0)+' / 12m '+(K.q[365]?.n||0)+'.';
 }
 document.querySelectorAll('#overlayLegend [data-layer]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.layer;overlayLayers[k]=!overlayLayers[k];b.classList.toggle('on',overlayLayers[k]);draw();renderConfluence();}));
 function updateHeader(){
