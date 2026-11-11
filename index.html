@@ -603,12 +603,129 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
 @media(prefers-reduced-motion:reduce){.quant-terminal:before,.quant-terminal:after,.qt-pulse,.qt-tape span,.qt-wave i{animation:none!important}}
 
 
+/* CRYSTAL QUANT — redesigned first-screen cockpit */
+#vHome{overflow-y:auto;overscroll-behavior:contain;gap:0!important;background:radial-gradient(ellipse at 80% 0%,rgba(0,195,220,.12),transparent 42%),linear-gradient(180deg,#071321,#050a12 70%)}
+.home-quant{position:relative;isolation:isolate;overflow:hidden;flex:none;margin:12px 12px 14px;padding:17px 16px 13px;border:1px solid rgba(83,220,242,.25);border-radius:19px;background:linear-gradient(135deg,rgba(14,37,55,.98),rgba(7,17,30,.98) 62%,rgba(10,28,40,.98));box-shadow:0 16px 42px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.045)}
+.home-quant:before{content:"";position:absolute;z-index:-1;inset:-40% -30%;background:linear-gradient(115deg,transparent 43%,rgba(66,224,255,.08) 50%,transparent 57%);animation:hqSweep 8s linear infinite}
+.home-quant:after{content:"";position:absolute;z-index:-1;inset:0;opacity:.15;pointer-events:none;background:linear-gradient(rgba(91,204,232,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(91,204,232,.1) 1px,transparent 1px);background-size:24px 24px;mask-image:linear-gradient(90deg,#000,transparent)}
+.hq-top,.hq-title,.hq-signal,.hq-foot{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hq-brand{font:800 10px var(--mono);letter-spacing:.19em;color:#d9f7ff}.hq-brand b{color:#55e7ff}.hq-brand i,.hq-scan i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#42f2aa;box-shadow:0 0 12px #42f2aa;margin-right:7px;animation:hqPulse 1.8s infinite}
+.hq-status{font:700 8px var(--mono);letter-spacing:.12em;color:#82a7bb}
+.hq-title{padding:19px 0 15px;align-items:center}.hq-eyebrow{font:700 9px var(--mono);letter-spacing:.16em;color:#7fa4b9;margin-bottom:7px}.hq-price{font:750 clamp(29px,8vw,43px) var(--mono);letter-spacing:-.075em;color:#f1fbff;text-shadow:0 0 28px rgba(65,221,255,.2);line-height:1.08}.hq-change{font:10px var(--mono);color:#8faebf;margin-top:7px}
+.hq-orbit{width:83px;height:83px;position:relative;display:grid;place-items:center;flex:none;border:1px solid rgba(79,223,255,.28);border-radius:50%;box-shadow:inset 0 0 28px rgba(48,203,245,.09),0 0 25px rgba(48,203,245,.08)}
+.hq-orbit:before,.hq-orbit:after{content:"";position:absolute;inset:8px;border:1px dashed rgba(93,214,243,.28);border-radius:50%;animation:hqSpin 18s linear infinite}.hq-orbit:after{inset:-5px;border-style:solid;border-color:rgba(91,214,245,.13);animation-direction:reverse;animation-duration:25s}.hq-orbit b{font:700 36px var(--cond);color:#60e9ff;text-shadow:0 0 18px rgba(96,233,255,.55)}.hq-orbit span{position:absolute;width:5px;height:5px;top:8px;right:13px;background:#42f2aa;border-radius:50%;box-shadow:0 0 10px #42f2aa}.hq-orbit i{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 68%,rgba(67,222,255,.23) 82%,transparent 90%);animation:hqSpin 5s linear infinite}
+.hq-signal{padding:10px 11px;border:1px solid rgba(84,214,239,.17);border-radius:11px;background:rgba(4,13,23,.5)}.hq-signal small,.hq-metrics small{display:block;font:700 8px var(--mono);letter-spacing:.13em;color:#7798ac;margin-bottom:5px}.hq-signal strong{font:800 13px var(--mono);color:#b9d5e3;letter-spacing:.05em}.hq-scan{font:700 8px var(--mono);color:#88a8ba;letter-spacing:.1em;white-space:nowrap}.hq-scan b{color:#55e7ff}
+.hq-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}.hq-metrics>div{padding:9px 8px;border:1px solid rgba(84,214,239,.12);border-radius:9px;background:rgba(255,255,255,.025);min-width:0}.hq-metrics b{font:700 11px var(--mono);color:#e5f6ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}.hq-foot{margin-top:12px;font:7px var(--mono);letter-spacing:.07em;color:#63869b;flex-wrap:wrap}
+#vHome #home{flex:none;min-height:0;padding:0 12px max(14px,env(safe-area-inset-bottom))!important}
+#vHome #home .card,#vHome #home .tile{border-color:rgba(90,180,210,.16)!important}
+#vHome #home .ck-top,#vHome #home .ck-hero{display:none!important}
+@keyframes hqSweep{0%{transform:translateX(-40%)}100%{transform:translateX(40%)}}@keyframes hqSpin{to{transform:rotate(360deg)}}@keyframes hqPulse{50%{box-shadow:0 0 0 6px rgba(66,242,170,0)}}
+@media(max-width:380px){.home-quant{margin:8px;padding:13px 12px 11px}.hq-orbit{width:68px;height:68px}.hq-price{font-size:29px}.hq-foot{font-size:6px}}
+@media(prefers-reduced-motion:reduce){.home-quant:before,.hq-orbit:before,.hq-orbit:after,.hq-orbit i,.hq-brand i,.hq-scan i{animation:none!important}}
+
 /* Keep the thumb navigation above chart canvases and probability overlays on touch devices */
 .tabbar{position:relative;z-index:50;flex-shrink:0;pointer-events:auto}
+
+/* CRYSTAL QUANT — ART DIRECTION V2: high-contrast institutional command deck */
+#vHome{
+  background:
+    radial-gradient(ellipse at 92% 2%,rgba(0,229,255,.19),transparent 36%),
+    radial-gradient(ellipse at 0% 26%,rgba(255,71,87,.13),transparent 40%),
+    linear-gradient(180deg,#030711 0%,#07111f 48%,#030711 100%)!important;
+}
+#vHome:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.16;
+  background-image:linear-gradient(rgba(65,210,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(65,210,255,.13) 1px,transparent 1px);
+  background-size:32px 32px;mask-image:linear-gradient(180deg,#000 0%,transparent 82%);
+}
+.home-quant{
+  margin:10px 10px 13px!important;padding:17px 15px 14px!important;
+  border:1px solid rgba(69,231,255,.55)!important;border-radius:13px!important;
+  background:
+    linear-gradient(115deg,rgba(255,61,84,.12),transparent 34%),
+    linear-gradient(145deg,#0b1b2d 0%,#06101e 54%,#0b2130 100%)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.035),0 18px 45px rgba(0,0,0,.55),0 0 34px rgba(0,206,255,.12),inset 0 1px rgba(255,255,255,.12)!important;
+}
+.home-quant:before{
+  inset:-70% -50%!important;opacity:.9;
+  background:linear-gradient(105deg,transparent 39%,rgba(0,225,255,.17) 48%,rgba(255,59,93,.13) 51%,transparent 60%)!important;
+  animation:hqSweep 4.8s linear infinite!important;
+}
+.home-quant:after{
+  opacity:.24!important;background-size:19px 19px!important;
+  mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.7) 48%,transparent 100%)!important;
+}
+.hq-top{padding-bottom:9px;border-bottom:1px solid rgba(102,219,255,.18)}
+.hq-brand{font-size:11px!important;letter-spacing:.24em!important;color:#fff!important}
+.hq-brand b{color:#38eaff!important;text-shadow:0 0 16px rgba(56,234,255,.8)}
+.hq-brand i{background:#ff4766!important;box-shadow:0 0 13px #ff4766!important}
+.hq-status{font-size:8px!important;color:#ffb45b!important;letter-spacing:.16em!important}
+.hq-title{padding:21px 0 18px!important}
+.hq-eyebrow{font-size:9px!important;color:#6feaff!important;letter-spacing:.22em!important}
+.hq-price{
+  font-size:clamp(36px,10.3vw,51px)!important;font-weight:850!important;letter-spacing:-.09em!important;
+  color:#fff!important;text-shadow:0 0 12px rgba(69,226,255,.32),0 0 38px rgba(69,226,255,.17)!important;
+}
+.hq-change{font-size:11px!important;color:#b8d7e8!important;letter-spacing:.025em}
+.hq-orbit{
+  width:91px!important;height:91px!important;border:1px solid rgba(0,231,255,.7)!important;
+  background:radial-gradient(circle,rgba(0,223,255,.16),rgba(0,20,36,.08) 62%,transparent 64%)!important;
+  box-shadow:0 0 0 7px rgba(0,225,255,.035),0 0 28px rgba(0,220,255,.22),inset 0 0 30px rgba(0,220,255,.15)!important;
+}
+.hq-orbit:before{border:1px dashed rgba(255,77,110,.65)!important;animation-duration:7s!important}
+.hq-orbit:after{border:1px solid rgba(0,230,255,.35)!important;inset:-8px!important;animation-duration:11s!important}
+.hq-orbit b{font-size:42px!important;color:#f7fdff!important;text-shadow:0 0 10px #00dfff,0 0 30px rgba(0,223,255,.85)!important}
+.hq-orbit span{background:#ff4766!important;box-shadow:0 0 12px #ff4766!important}
+.hq-signal{
+  border:1px solid rgba(0,230,255,.36)!important;border-left:3px solid #ff4969!important;
+  border-radius:8px!important;padding:12px 12px!important;
+  background:linear-gradient(90deg,rgba(255,67,99,.11),rgba(0,221,255,.08) 72%,rgba(0,0,0,.2))!important;
+  box-shadow:inset 0 0 22px rgba(0,210,255,.045)!important;
+}
+.hq-signal small,.hq-metrics small{font-size:8px!important;color:#80a9c2!important;letter-spacing:.17em!important}
+.hq-signal strong{font-size:14px!important;color:#fff!important;text-shadow:0 0 12px rgba(0,224,255,.25)}
+.hq-scan{font-size:8px!important;color:#9bb7ca!important}
+.hq-scan b{color:#40edff!important}
+.hq-metrics{gap:6px!important;margin-top:8px!important}
+.hq-metrics>div{
+  padding:10px 8px!important;border:1px solid rgba(74,214,255,.25)!important;border-radius:7px!important;
+  background:linear-gradient(150deg,rgba(21,59,82,.72),rgba(4,16,29,.9))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.06),0 5px 14px rgba(0,0,0,.2)!important;
+}
+.hq-metrics b{font-size:12px!important;color:#f2fcff!important}
+.hq-foot{margin-top:13px!important;font-size:7px!important;color:#7da4bb!important;letter-spacing:.1em!important}
+#vHome #home{padding-inline:10px!important}
+#vHome #home .card,#vHome #home .tile{
+  border:1px solid rgba(64,207,255,.22)!important;border-radius:12px!important;
+  background:linear-gradient(145deg,rgba(13,31,48,.96),rgba(5,13,24,.98))!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.035)!important;
+}
+#vHome #home .lbl2{color:#75cde4!important;letter-spacing:.08em!important;text-transform:uppercase!important}
+#vHome #home .tile .v1{color:#f4fbff!important}
+#vHome .tabbar{background:rgba(3,8,17,.96)!important;border-top:1px solid rgba(58,209,255,.28)!important}
+#vHome .tabbar button.on{color:#43eaff!important;text-shadow:0 0 12px rgba(67,234,255,.45)}
+@keyframes hqSweep{0%{transform:translateX(-48%) rotate(-3deg)}100%{transform:translateX(48%) rotate(-3deg)}}
+@media(max-width:380px){
+ .home-quant{margin:8px!important;padding:14px 12px 12px!important}
+ .hq-orbit{width:76px!important;height:76px!important}
+ .hq-price{font-size:35px!important}
+ .hq-foot{font-size:6px!important}
+}
+@media(prefers-reduced-motion:reduce){.home-quant:before{animation:none!important}}
+
 </style>
 
 <div class="app">
-  <section class="view" id="vHome"><div class="proj page" id="home"></div></section>
+  <section class="view" id="vHome">
+    <section class="home-quant" id="homeQuant" aria-label="Crystal BTC Quant cockpit">
+      <div class="hq-top"><span class="hq-brand"><i></i> CRYSTAL <b>QUANT</b></span><span class="hq-status" id="homeQtFeed">SCAN EN ATTENTE</span></div>
+      <div class="hq-title"><div><div class="hq-eyebrow">BITCOIN · MARKET INTELLIGENCE</div><div class="hq-price" id="homeQtPrice">—</div><div class="hq-change" id="homeQtChange">Prix de marché en attente</div></div><div class="hq-orbit" aria-hidden="true"><span></span><i></i><b>₿</b></div></div>
+      <div class="hq-signal"><div><small>RÉGIME DE MARCHÉ</small><strong id="homeQtBias">ANALYSE EN COURS</strong></div><div class="hq-scan"><i></i><span>QUANT SCAN <b>2s</b></span></div></div>
+      <div class="hq-metrics"><div><small>WAVETREND</small><b id="homeQtWT">—</b></div><div><small>RSI · 14</small><b id="homeQtRSI">—</b></div><div><small>FLUX DE DONNÉES</small><b id="homeQtSource">—</b></div></div>
+      <div class="hq-foot"><span>WYCKOFF / SMC / ELLIOTT / FVG / VOLUME PROFILE</span><span>MODÈLE · EN OBSERVATION</span></div>
+    </section>
+    <div class="proj page" id="home"></div>
+  </section>
   <section class="view" id="vChart" hidden>
   <header>
     <div>
@@ -2709,16 +2826,24 @@ function updateQuantTerminal(){
   if(!$('quantTerminal'))return;
   const price=liveSpotPrice>0?liveSpotPrice:(data&&data.length?data[data.length-1].c:NaN);
   const p=$('qtPrice'),ch=$('qtChange'),feed=$('qtFeed'),src=$('src')?.textContent||'—';
-  if(Number.isFinite(price)&&price>0)p.textContent='$'+Math.round(price).toLocaleString('en-US');
-  if(data&&data.length>1){const delta=(data[data.length-1].c/data[data.length-2].c-1)*100;ch.textContent=(delta>=0?'+':'')+delta.toFixed(2)+'% · 24H';ch.style.color=delta>=0?'var(--up)':'var(--down)';}
+  const hp=$('homeQtPrice'),hc=$('homeQtChange'),hf=$('homeQtFeed');
+  const priceText=Number.isFinite(price)&&price>0?String.fromCharCode(36)+Math.round(price).toLocaleString('en-US'):'—';
+  if(p)p.textContent=priceText;if(hp)hp.textContent=priceText;
+  if(data&&data.length>1){const delta=(data[data.length-1].c/data[data.length-2].c-1)*100;const deltaText=(delta>=0?'+':'')+delta.toFixed(2)+'% · 24H';if(ch){ch.textContent=deltaText;ch.style.color=delta>=0?'var(--up)':'var(--down)';}if(hc){hc.textContent=deltaText;hc.style.color=delta>=0?'#42f2aa':'#ff6680';}}
   const idx=ind?.lastClosed??(ind?.rsiD?.length-1),wt=ind?.wt2?.[idx],rsi=ind?.rsiD?.[idx];
   const w=$('qtWT'),r=$('qtRSI'),bias=$('qtBias'),source=$('qtSource');
+  const hw=$('homeQtWT'),hr=$('homeQtRSI'),hb=$('homeQtBias'),hs=$('homeQtSource');
   if(w){w.textContent=Number.isFinite(wt)?wt.toFixed(1):'—';w.className=Number.isFinite(wt)?(wt<=-40?'pos':wt>=40?'neg':'neu'):'neu';}
   if(r){r.textContent=Number.isFinite(rsi)?rsi.toFixed(1):'—';r.className=Number.isFinite(rsi)?(rsi<35?'pos':rsi>65?'neg':'neu'):'neu';}
   const trend=idx!=null&&ind?.sma200?.[idx]!=null&&data?.length?data[Math.min(idx,data.length-1)].c>ind.sma200[idx]?'HAUSSE':'BAISSE':'NEUTRE';
   if(bias){bias.textContent=trend;bias.className=trend==='HAUSSE'?'pos':trend==='BAISSE'?'neg':'neu';}
   if(source){source.textContent=isDemo?'DÉMO':wsOk?'WS LIVE':src.toUpperCase();source.className=isDemo?'neu':wsOk?'pos':'neu';}
   if(feed)feed.textContent=isDemo?'SIMULATION':wsOk?'STREAM CONNECTÉ':'SCAN ACTIF';
+  if(hf)hf.textContent=isDemo?'MODE SIMULATION':wsOk?'FLUX LIVE CONNECTÉ':'SCAN ACTIF · '+src.toUpperCase();
+  if(hw){hw.textContent=Number.isFinite(wt)?wt.toFixed(1):'—';hw.style.color=Number.isFinite(wt)&&wt<=-40?'#42f2aa':Number.isFinite(wt)&&wt>=40?'#ff6680':'#e5f6ff';}
+  if(hr){hr.textContent=Number.isFinite(rsi)?rsi.toFixed(1):'—';hr.style.color=Number.isFinite(rsi)&&rsi<35?'#42f2aa':Number.isFinite(rsi)&&rsi>65?'#ff6680':'#e5f6ff';}
+  if(hb){hb.textContent=trend==='HAUSSE'?'TENDANCE HAUSSIÈRE':trend==='BAISSE'?'TENDANCE BAISSIÈRE':'NEUTRE';hb.style.color=trend==='HAUSSE'?'#42f2aa':trend==='BAISSE'?'#ff6680':'#b9d5e3';}
+  if(hs)hs.textContent=isDemo?'SIMULATION':wsOk?'WEBSOCKET LIVE':src.toUpperCase();
 }
 function tick(){const now=Date.now();if(now-lastCalc<2000){if(!calcT)calcT=setTimeout(()=>{calcT=null;tick();},2000-(now-lastCalc));return;}
   lastCalc=now;
