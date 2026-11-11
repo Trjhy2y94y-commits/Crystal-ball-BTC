@@ -567,6 +567,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
     <div class="meta">
       <div><span class="badge" id="badge">…</span></div>
       <div id="hl">H — · L —</div>
+      <div id="priceUpdated" style="font-size:10px;color:var(--muted);white-space:nowrap">Prix live · en attente</div>
       <div id="wtNow" style="white-space:nowrap">WT —</div>
       <div id="lastSig" class="sig">Aucun signal</div>
     </div>
@@ -1201,6 +1202,7 @@ async function renderConfluence(){
 document.querySelectorAll('#overlayLegend [data-layer]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.layer;overlayLayers[k]=!overlayLayers[k];b.classList.toggle('on',overlayLayers[k]);draw();renderConfluence();}));
 function updateHeader(){
   const n=data.length,d=data[n-1],p=data[n-2];$('px').textContent=fmt(d.c)+' '+String.fromCharCode(36);
+  const stamp=$('priceUpdated');if(stamp)stamp.textContent='Prix actualisé · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const ch=(d.c-p.c)/p.c*100,el=$('chg');el.textContent=`${ch>=0?'+':''}${fmt(d.c-p.c)} (${ch>=0?'+':''}${ch.toFixed(2)} %)`;el.className='chg '+(ch>=0?'up':'dn');
   const yr=data.slice(-(tf==='1w'?52:tf==='4h'?2190:365));$('hl').textContent=`H ${fmt(Math.max(...yr.map(x=>x.h)))} · L ${fmt(Math.min(...yr.map(x=>x.l)))}`;
   const w=ind.wt2[n-1],lv=ind.liq[n-1]??ind.liq[ind.lastClosed];
@@ -2166,7 +2168,7 @@ function connectWS(){
     if(k.x){setTimeout(()=>load(true),4000);return;} /* bougie close : rechargement complet pour figer les signaux */
     tick();};
 }
-function tick(){const now=Date.now();if(now-lastCalc<1500){if(!calcT)calcT=setTimeout(()=>{calcT=null;tick();},1500-(now-lastCalc));return;}
+function tick(){const now=Date.now();if(now-lastCalc<2000){if(!calcT)calcT=setTimeout(()=>{calcT=null;tick();},2000-(now-lastCalc));return;}
   lastCalc=now;
   if(tf!=='1d'&&dailyDirty&&daily){daily.ind=compute(daily.rows);dailyDirty=false;}
   ind=compute(data,tf==='4h'?daily:null);
