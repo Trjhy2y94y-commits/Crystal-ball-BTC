@@ -545,7 +545,7 @@ header{border-color:#263646;background:rgba(10,16,23,.94)}
 .overlay-legend [data-layer=wyckoff].on{background:#ff9f0a}.overlay-legend [data-layer=smc].on{background:#0a84ff}.overlay-legend [data-layer=elliott].on{background:#bf5af2}.overlay-legend [data-layer=patterns].on{background:#30d158}
 .probability-panel{flex:0 0 auto;max-height:190px;overflow:auto;background:#111114;border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));display:grid;gap:7px;font-family:var(--cond)}
 .prob-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.prob-head strong{font-size:13px}.prob-head small,.prob-note{font-size:10px;color:var(--muted)}
-.prob-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.prob-cell{background:var(--panel);border-radius:9px;padding:7px;min-width:0}.prob-cell span{display:block;font-size:10px;color:var(--muted)}.prob-cell b{display:block;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}.prob-layers{display:flex;gap:5px;flex-wrap:wrap}.prob-layer{font-size:10px;padding:4px 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--sub)}.prob-layer b{color:var(--fg)}
+.prob-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.prob-cell{background:var(--panel);border-radius:9px;padding:7px;min-width:0}.prob-cell span{display:block;font-size:10px;color:var(--muted)}.prob-cell b{display:block;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}.scenario-values{display:grid;gap:2px;margin-top:5px}.scenario-values i{font-style:normal;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}.scenario-values b{font-size:14px!important;color:var(--fg)}.scenario-legend{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);padding:0 2px}.scenario-grid .prob-cell{padding:6px 7px}.prob-layers{display:flex;gap:5px;flex-wrap:wrap}.prob-layer{font-size:10px;padding:4px 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--sub)}.prob-layer b{color:var(--fg)}
 
 /* Prevent chart overlay / intrinsic canvas from widening the iPhone document */
 html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
@@ -602,7 +602,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
   </div>
   <div class="probability-panel" id="probabilityPanel" aria-live="polite">
     <div class="prob-head"><strong>Probabilité de prix BTC</strong><small id="probConfidence">Calcul en attente…</small></div>
-    <div class="prob-grid"><div class="prob-cell"><span>30 jours · médiane</span><b id="prob30">—</b></div><div class="prob-cell"><span>90 jours · médiane</span><b id="prob90">—</b></div><div class="prob-cell"><span>12 mois · médiane</span><b id="prob365">—</b></div></div>
+    <div class="prob-grid scenario-grid"><div class="prob-cell"><span>30 jours</span><div class="scenario-values"><i id="prob30low">—</i><b id="prob30">—</b><i id="prob30high">—</i></div></div><div class="prob-cell"><span>90 jours</span><div class="scenario-values"><i id="prob90low">—</i><b id="prob90">—</b><i id="prob90high">—</i></div></div><div class="prob-cell"><span>12 mois</span><div class="scenario-values"><i id="prob365low">—</i><b id="prob365">—</b><i id="prob365high">—</i></div></div></div><div class="scenario-legend"><span>Baissier · P10</span><span>Central · P50</span><span>Haussier · P90</span></div>
     <div class="prob-layers" id="probLayers"></div><div class="prob-note" id="probNote">Les fourchettes proviennent des rendements historiques conditionnés au régime. Les méthodes chartistes affinent la lecture, elles ne garantissent pas le prix.</div>
   </div>
   </section>
@@ -1140,11 +1140,17 @@ function confluenceSnapshot(D){
 async function renderConfluence(){
   const panel=$('probabilityPanel');if(!panel)return;
   const D=await getDaily(),z=confluenceSnapshot(D);if(!z){$('probConfidence').textContent='Historique insuffisant';return;}
-  [30,90,365].forEach(h=>{const q=z.probs[h];$('prob'+h).textContent=q&&q.mid?money(q.mid):'—';});
-  const minN=Math.min(...[30,90,365].map(h=>z.probs[h].count));
-  $('probConfidence').textContent=minN>=100?'Échantillon historique · robuste':minN>=40?'Échantillon limité':'Confiance faible · peu de cas comparables';
+  const K=buildCone(D,365),hs=[30,90,365],fmtScenario=v=>v?money(v):'—';
+  hs.forEach(h=>{
+    const q=K.q[h],base=K.base;
+    $('prob'+h+'low').textContent='↓ '+fmtScenario(q?base*Math.exp(q.p10):null);
+    $('prob'+h).textContent=fmtScenario(q?base*Math.exp(q.p50):null);
+    $('prob'+h+'high').textContent='↑ '+fmtScenario(q?base*Math.exp(q.p90):null);
+  });
+  const minN=Math.min(...hs.map(h=>K.q[h]?.n||0));
+  $('probConfidence').textContent=minN>=250?'Échantillon conditionnel · étoffé':minN>=100?'Échantillon conditionnel · moyen':minN>=60?'Échantillon limité':'Confiance faible · peu de cas comparables';
   $('probLayers').innerHTML=Object.entries(z.labels).filter(([k])=>overlayLayers[k]).map(([k,v])=>'<span class="prob-layer"><b>'+({wyckoff:'Wyckoff',smc:'SMC',elliott:'Elliott',patterns:'Figures'}[k])+'</b> · '+v+'</span>').join('');
-  $('probNote').textContent='Biais '+(z.bias>1?'haussier':z.bias< -1?'baissier':'neutre')+' · RSI '+(z.rsi==null?'—':z.rsi.toFixed(0))+' · volume x'+z.volRatio.toFixed(1)+' · médianes et intervalles historiques conditionnés à la tendance. Effectifs : 30j '+z.probs[30].count+' / 90j '+z.probs[90].count+' / 12m '+z.probs[365].count+'.';
+  $('probNote').textContent='Scénarios historiques conditionnels : P10 / P50 / P90, calculés selon tendance, liquidité et volatilité quand l’échantillon le permet. Ce ne sont pas des probabilités garanties. Effectifs : 30j '+(K.q[30]?.n||0)+' / 90j '+(K.q[90]?.n||0)+' / 12m '+(K.q[365]?.n||0)+'. Biais technique '+(z.bias>1?'haussier':z.bias< -1?'baissier':'neutre')+' · RSI '+(z.rsi==null?'—':z.rsi.toFixed(0))+'.';
 }
 document.querySelectorAll('#overlayLegend [data-layer]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.layer;overlayLayers[k]=!overlayLayers[k];b.classList.toggle('on',overlayLayers[k]);draw();renderConfluence();}));
 function updateHeader(){
