@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Cristal · BTC",
   "short_name": "Cristal BTC",
-  "description": "Analyse probabiliste et multi-facteurs du marché Bitcoin · V22",
+  "description": "Analyse multi-facteurs, signaux et suivi du marché Bitcoin.",
   "lang": "fr-FR",
   "start_url": "./",
   "scope": "./",
