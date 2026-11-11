@@ -160,6 +160,7 @@ jobs:
               assert page.locator("#homeQuant").is_visible(), "Redesigned Crystal Quant cockpit is missing from the first screen"
               assert page.locator("#homeQtPrice").is_visible(), "Cockpit BTC price is missing"
               assert page.locator("#homeQtBias").is_visible(), "Cockpit market regime is missing"
+              assert not page.locator("#home .ck-hero").is_visible(), "Legacy duplicate price hero is still visible under the new cockpit"
               cockpit = page.locator("#homeQuant").bounding_box()
               assert cockpit and cockpit["width"] >= 340 and cockpit["height"] >= 180, f"Cockpit layout is unexpectedly collapsed: {cockpit}"
               page.screenshot(path="artifacts/iphone-cockpit.png")
