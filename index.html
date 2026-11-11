@@ -2879,18 +2879,25 @@ drawOrb=function(c,d,K,PL,HZ,sel,Iarg){
  const past=d.filter(x=>x.t>=tA);
  const mb=i=>I?.wt2?.[i]==null?0:I.wt2[i]<=-40?-1:I.wt2[i]>=40?1:0,curM=mb(end);
  const valid=i=>i>=200&&i+7<=end&&Number.isFinite(C[i])&&C[i]>0&&Array.from({length:7},(_,k)=>Number.isFinite(C[i+k+1])&&C[i+k+1]>0).every(Boolean);
- let pool=[];for(let i=200;i+7<=end;i++)if(valid(i)&&I?.rgA?.[i]===K.rg&&I?.ltA?.[i]===K.lt&&mb(i)===curM)pool.push(i);
- if(pool.length<40){pool=[];for(let i=200;i+7<=end;i++)if(valid(i)&&I?.rgA?.[i]===K.rg)pool.push(i);}
- if(pool.length<40){pool=[];for(let i=200;i+7<=end;i++)if(valid(i))pool.push(i);}
- let seed=((end+1)*2654435761+Math.round(K.base*100)+HZ*2246822519)>>>0;if(!seed)seed=0x9e3779b9;
- const rnd=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296;};
- const paths=[];
- if(pool.length>=20&&Number.isInteger(end)){
-  for(let s=0;s<40;s++){let p=K.base,day=0,vals=[p];while(day<HZ){const origin=pool[Math.floor(rnd()*pool.length)],len=Math.min(7,HZ-day);
-    for(let k=1;k<=len;k++){const j=origin+k;p*=C[j]/C[j-1];vals.push(p);day++;}}
-   paths.push({vals,terminal:p});}
- }
- paths.sort((a,b)=>a.terminal-b.terminal);
+ /* Cache local : le curseur tactile redessine le graphe sans recalculer les 40 simulations. */
+  const pathKey=[end,K.base.toFixed(2),K.rg,K.lt,curM,HZ].join('|');
+  let pool,paths;
+  if(c._pathCache?.key===pathKey){pool=c._pathCache.pool;paths=c._pathCache.paths;}
+  else{
+   pool=[];for(let i=200;i+7<=end;i++)if(valid(i)&&I?.rgA?.[i]===K.rg&&I?.ltA?.[i]===K.lt&&mb(i)===curM)pool.push(i);
+   if(pool.length<40){pool=[];for(let i=200;i+7<=end;i++)if(valid(i)&&I?.rgA?.[i]===K.rg)pool.push(i);}
+   if(pool.length<40){pool=[];for(let i=200;i+7<=end;i++)if(valid(i))pool.push(i);}
+   let seed=((end+1)*2654435761+Math.round(K.base*100)+HZ*2246822519)>>>0;if(!seed)seed=0x9e3779b9;
+   const rnd=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296;};
+   paths=[];
+   if(pool.length>=20&&Number.isInteger(end)){
+    for(let s=0;s<40;s++){let p=K.base,day=0,vals=[p];while(day<HZ){const origin=pool[Math.floor(rnd()*pool.length)],len=Math.min(7,HZ-day);
+      for(let k=1;k<=len;k++){const j=origin+k;p*=C[j]/C[j-1];vals.push(p);day++;}}
+     paths.push({vals,terminal:p});}
+   }
+   paths.sort((a,b)=>a.terminal-b.terminal);
+   c._pathCache={key:pathKey,pool,paths};
+  }
  const qPath=p=>paths.length?paths[Math.max(0,Math.min(paths.length-1,Math.round((paths.length-1)*p)))]:null;
  const lowPath=qPath(.1),midPath=qPath(.5),highPath=qPath(.9);
  const st=Math.max(1,Math.round(HZ/180)),cp=[{t:t1,p10:K.base,p25:K.base,p50:K.base,p75:K.base,p90:K.base}];
@@ -3268,18 +3275,25 @@ drawOrb=function(c,d,K,PL,HZ,sel,Iarg){
  const past=d.filter(x=>x.t>=tA);
  const mb=i=>I?.wt2?.[i]==null?0:I.wt2[i]<=-40?-1:I.wt2[i]>=40?1:0,curM=mb(end);
  const valid=i=>i>=200&&i+7<=end&&Number.isFinite(C[i])&&C[i]>0&&Array.from({length:7},(_,k)=>Number.isFinite(C[i+k+1])&&C[i+k+1]>0).every(Boolean);
- let pool=[];for(let i=200;i+7<=end;i++)if(valid(i)&&I?.rgA?.[i]===K.rg&&I?.ltA?.[i]===K.lt&&mb(i)===curM)pool.push(i);
- if(pool.length<40){pool=[];for(let i=200;i+7<=end;i++)if(valid(i)&&I?.rgA?.[i]===K.rg)pool.push(i);}
- if(pool.length<40){pool=[];for(let i=200;i+7<=end;i++)if(valid(i))pool.push(i);}
- let seed=((end+1)*2654435761+Math.round(K.base*100)+HZ*2246822519)>>>0;if(!seed)seed=0x9e3779b9;
- const rnd=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296;};
- const paths=[];
- if(pool.length>=20&&Number.isInteger(end)){
-  for(let s=0;s<40;s++){let p=K.base,day=0,vals=[p];while(day<HZ){const origin=pool[Math.floor(rnd()*pool.length)],len=Math.min(7,HZ-day);
-    for(let k=1;k<=len;k++){const j=origin+k;p*=C[j]/C[j-1];vals.push(p);day++;}}
-   paths.push({vals,terminal:p});}
- }
- paths.sort((a,b)=>a.terminal-b.terminal);
+ /* Cache local : le curseur tactile redessine le graphe sans recalculer les 40 simulations. */
+  const pathKey=[end,K.base.toFixed(2),K.rg,K.lt,curM,HZ].join('|');
+  let pool,paths;
+  if(c._pathCache?.key===pathKey){pool=c._pathCache.pool;paths=c._pathCache.paths;}
+  else{
+   pool=[];for(let i=200;i+7<=end;i++)if(valid(i)&&I?.rgA?.[i]===K.rg&&I?.ltA?.[i]===K.lt&&mb(i)===curM)pool.push(i);
+   if(pool.length<40){pool=[];for(let i=200;i+7<=end;i++)if(valid(i)&&I?.rgA?.[i]===K.rg)pool.push(i);}
+   if(pool.length<40){pool=[];for(let i=200;i+7<=end;i++)if(valid(i))pool.push(i);}
+   let seed=((end+1)*2654435761+Math.round(K.base*100)+HZ*2246822519)>>>0;if(!seed)seed=0x9e3779b9;
+   const rnd=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296;};
+   paths=[];
+   if(pool.length>=20&&Number.isInteger(end)){
+    for(let s=0;s<40;s++){let p=K.base,day=0,vals=[p];while(day<HZ){const origin=pool[Math.floor(rnd()*pool.length)],len=Math.min(7,HZ-day);
+      for(let k=1;k<=len;k++){const j=origin+k;p*=C[j]/C[j-1];vals.push(p);day++;}}
+     paths.push({vals,terminal:p});}
+   }
+   paths.sort((a,b)=>a.terminal-b.terminal);
+   c._pathCache={key:pathKey,pool,paths};
+  }
  const qPath=p=>paths.length?paths[Math.max(0,Math.min(paths.length-1,Math.round((paths.length-1)*p)))]:null;
  const lowPath=qPath(.1),midPath=qPath(.5),highPath=qPath(.9);
  const st=Math.max(1,Math.round(HZ/180)),cp=[{t:t1,p10:K.base,p25:K.base,p50:K.base,p75:K.base,p90:K.base}];
