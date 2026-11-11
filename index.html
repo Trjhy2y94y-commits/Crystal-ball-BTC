@@ -1156,8 +1156,8 @@ function buildCone(D,maxH=92){
   /* application du facteur d'élargissement (interpolé entre 3, 6 et 12 mois) */
   let q2=Q.q;if(Q.cal){const S=Q.cal.map(c=>[c.h,c.s]);const sAt=h=>{if(h<=S[0][0])return S[0][1];for(let k=1;k<S.length;k++)if(h<=S[k][0]){const [h0,s0]=S[k-1],[h1,s1]=S[k];return s0+(s1-s0)*(h-h0)/(h1-h0);}return S[S.length-1][1];};
     q2=Q.q.map((x,h)=>{if(!x)return x;const s=sAt(h),m=x.p50,f=v=>m+(v-m)*s;return{...x,p10:f(x.p10),p25:f(x.p25),p75:f(x.p75),p90:f(x.p90)};});}
-  const lc=I.lastClosed;
-  return{q:q2,cond:Q.cond,rg,lt,base:C[lc],t0:D.rows[lc].t,n:Q.n,cal:Q.cal,curVol:Q.curVol,volPct:Q.volPct,bucket:Q.bucket,at:Date.now()};}
+  // Le point d'ancrage est le dernier prix observable (bougie en cours incluse) ; l'apprentissage reste limité aux bougies closes.
+  return{q:q2,cond:Q.cond,rg,lt,base:C[n-1],t0:D.rows[n-1].t,n:Q.n,cal:Q.cal,curVol:Q.curVol,volPct:Q.volPct,bucket:Q.bucket,at:Date.now()};}
 function calibrate(C,R,HS){const n=C.length;
   return HS.map(h=>{const tests=[];
     for(let j=Math.max(700,h+300);j+h<n;j+=14){const v=[];for(let i=0;i+h<=j;i++)if(R[i]===R[j])v.push(Math.log(C[i+h]/C[i]));
@@ -1230,8 +1230,8 @@ async function renderProj(){
   </section>
   ${(()=>{const K=buildCone(D,365);const r=h=>{const qq=K.q[h];return qq?`<tr><td>J+${h}</td><td>${fmt(K.base*Math.exp(qq.p10))}</td><td>${fmt(K.base*Math.exp(qq.p25))}</td><td><b>${fmt(K.base*Math.exp(qq.p50))}</b></td><td>${fmt(K.base*Math.exp(qq.p75))}</td><td>${fmt(K.base*Math.exp(qq.p90))}</td></tr>`:'';};
     return `<section><h2>Cône de prix<small>${K.cond} · ${K.n} observations · vol ${K.curVol==null?'—':(K.curVol*100).toFixed(1)+' % annualisée'}</small></h2>
-    <table><tr><th></th><th>10 %</th><th>25 %</th><th>Médiane</th><th>75 %</th><th>90 %</th></tr>${r(30)}${r(90)}${r(182)}${r(365)}</table>${K.cal?`<p>Calibrage (test en marche avant) : ${K.cal.map(c=>`${c.h===91?'3 mois':c.h===182?'6 mois':'1 an'} ${pc0(c.raw)} → ${pc0(c.cal)} (×${c.s})`).join(' · ')}</p>`:''}
-    <p>Ce n'est pas une prévision : c'est ce que BTC a fait dans le passé à partir d'une situation comparable. La couverture est évaluée sur des tests historiques chronologiques ; elle peut varier selon le régime et ne garantit pas la couverture future.</p></section>`;})()}
+    <table><tr><th></th><th>10 %</th><th>25 %</th><th>Médiane</th><th>75 %</th><th>90 %</th></tr>${r(30)}${r(90)}${r(182)}${r(365)}</table>${K.cal?`<p>Ajustement rétrospectif (couverture mesurée sur les mêmes tests, non indépendante) : ${K.cal.map(c=>`${c.h===91?'3 mois':c.h===182?'6 mois':'1 an'} ${pc0(c.raw)} → ${pc0(c.cal)} (×${c.s})`).join(' · ')}</p>`:''}
+    <p>Ce n'est pas une prévision : c'est ce que BTC a fait dans le passé à partir d'une situation comparable. Les tests historiques sont chronologiques mais leurs horizons se chevauchent et le facteur est ajusté sur ce même échantillon : la couverture corrigée est indicative, non une validation indépendante. Elle peut varier selon le régime et ne garantit pas la couverture future.</p></section>`;})()}
   <section><h2>Calendrier 16 semaines<small>daily</small></h2>
     <div class="weeks">${wk}</div>
     <div class="legend"><span><em style="background:color-mix(in srgb,var(--buy) 38%,var(--panel))"></em>Achat fort</span><span><em style="background:color-mix(in srgb,var(--buy) 16%,var(--panel))"></em>Achat</span><span><em></em>Neutre</span><span><em style="background:color-mix(in srgb,var(--down) 22%,var(--panel))"></em>Prudence</span></div>
