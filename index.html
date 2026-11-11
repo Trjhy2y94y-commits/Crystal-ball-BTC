@@ -999,14 +999,15 @@ function optimize(d,I,kind,buy){
     return{n:v.length,hit:v.length?v.filter(x=>x>0).length/v.length:null,avg:v.length?v.reduce((s,x)=>s+x,0)/v.length:null};};
   const refIdx=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(bpd))===0);
   const ref={tr:ev(refIdx,0,cut),te:ev(refIdx,cut,n)};
-  const minN=I.intra?10:6;
+  const minN=I.intra?15:12;
   const res=grid.map(P=>{const idx=scoreAll(I.cands,P,I.real).filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);
     return{P,tr:ev(idx,0,cut),te:ev(idx,cut,n)};}).filter(r=>r.tr.n>=minN);
-  res.sort((a,b)=>(b.tr.hit-a.tr.hit)||(b.tr.avg-a.tr.avg));
+  const lower=r=>r.tr.hit==null?-1:wilson(Math.round(r.tr.hit*r.tr.n),r.tr.n)[0];
+  res.sort((a,b)=>(lower(b)-lower(a))||(b.tr.avg-a.tr.avg));
   const top=res.slice(0,6);
   const cur=(()=>{const idx=I.sig.filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);return{P:base,tr:ev(idx,0,cut),te:ev(idx,cut,n),cur:true};})();
   const all=grid.map(P=>{const idx=scoreAll(I.cands,P,I.real).filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);return ev(idx,0,cut);});
-  const best100=all.filter(x=>x.n>=2&&x.hit===1).length;
+  const best100=all.filter(x=>x.n>=minN&&x.hit===1).length;
   return{top,cur,ref,cutT:d[cut].t,Hm,best100,minN};}
 /* Walk-forward à fenêtres successives : apprentissage expansif, test suivant jamais utilisé pour choisir.
    Les signaux et leur horizon doivent être entièrement contenus dans chaque fenêtre. */
@@ -1041,7 +1042,8 @@ function walkForward(d,I,kind,buy){
     if(hi-lo<=hm+1)continue;
     const ranked=candidates.map(x=>({P:x.P,idx:x.idx,tr:ev(x.idx,0,lo)}))
       .filter(x=>x.tr.n>=minN&&x.tr.hit!=null);
-    ranked.sort((a,b)=>b.tr.hit-a.tr.hit||b.tr.avg-a.tr.avg);
+    const lower=x=>wilson(Math.round(x.tr.hit*x.tr.n),x.tr.n)[0];
+    ranked.sort((a,b)=>lower(b)-lower(a)||b.tr.avg-a.tr.avg);
     const chosen=ranked[0];
     if(!chosen) {folds.push({k:k+1,lo,hi,trained:0,test:null,ref:null,P:null});continue;}
     const test=ev(chosen.idx,lo,hi,true),ref=ev(refIdx,lo,hi,true);
@@ -1113,12 +1115,16 @@ function regimeStudyTable(rows){
 }
 function optTable(O,kind,buy){
   const pP=P=>`seuil ${buy?'−':'+'}${P.th} · score ≥${P.min}${kind==='4h'?' · feu daily '+(P.gate?'oui':'non'):' · filtre tendance '+((buy?P.penRg:(P.penRgS??P.penRg))?'oui':'non')} · funding ${P.wFund?'oui':'non'}${P.rsiD?' · RSI '+(P.rsiD===2?'obligatoire':'bonus'):''}${P.rsiW?' · RSI hebdo '+(P.rsiW===2?'obligatoire':'bonus'):''}`;
-  const cell=x=>x.n?`${pc0(x.hit)} <span style="color:var(--muted)">(${x.n})</span>`:'—';
-  const robust=r=>r.te.n>=5&&r.te.hit!=null&&O.ref.te.n>=5&&O.ref.te.hit!=null&&r.te.hit>=O.ref.te.hit+.10; /* Vert uniquement si l'échantillon test et sa référence sont suffisants, avec +10 points réels. */
-  const row=(r,k)=>`<tr><td style="white-space:normal">${r.cur?'<b>Actuel</b> · ':''}${pP(r.P)}</td><td>${cell(r.tr)}</td><td class="${r.te.n?(robust(r)?'good':'bad'):''}">${cell(r.te)}</td><td>${r.cur?'':`<button type="button" class="apply" data-k="${kind}" data-p='${JSON.stringify(r.P)}'>OK</button>`}</td></tr>`;
+  const cell=x=>{if(!x.n)return'—';const ci=wilson(Math.round(x.hit*x.n),x.n);
+    return `${pc0(x.hit)} <span style="color:var(--muted)">(${x.n}) · IC ${Math.round(ci[0]*100)}–${Math.round(ci[1]*100)}%</span>`;};
+  const robust=r=>{if(r.te.n<20||O.ref.te.n<20||r.te.hit==null||O.ref.te.hit==null)return false;
+    const a=wilson(Math.round(r.te.hit*r.te.n),r.te.n),b=wilson(Math.round(O.ref.te.hit*O.ref.te.n),O.ref.te.n);
+    return a[0]>b[1]&&r.te.hit>=O.ref.te.hit+.05;};
+  const status=r=>robust(r)?'good':r.te.n>=20&&r.te.avg!=null&&r.te.avg<0?'bad':'pend';
+  const row=(r,k)=>`<tr><td style="white-space:normal">${r.cur?'<b>Actuel</b> · ':''}${pP(r.P)}</td><td>${cell(r.tr)}</td><td class="${r.te.n?status(r):'pend'}">${cell(r.te)}</td><td>${r.cur?'':`<button type="button" class="apply" data-k="${kind}" data-p='${JSON.stringify(r.P)}'>OK</button>`}</td></tr>`;
   return `<table><tr><th>Réglage</th><th>Passé</th><th>Récent</th><th></th></tr>
     <tr><td>BTC sans signal (échantillon fixe)</td><td>${cell(O.ref.tr)}</td><td>${cell(O.ref.te)}</td><td></td></tr>
-    ${row(O.cur)}${O.top.map(row).join('')}</table><p class="note">Test chronologique unique 70/30 ; entrée à l'ouverture suivante et fenêtres sans chevauchement. Hors frais, spread, slippage, funding et gestion réelle du portefeuille : ce n'est pas un P&amp;L exécutable.</p>`;}
+    ${row(O.cur)}${O.top.map(row).join('')}</table><p class="note">Test chronologique unique 70/30, à considérer comme exploratoire. Réglage choisi sur 70 % anciens par borne basse de Wilson, puis gelé sur les 30 % récents. Vert uniquement si au moins 20 signaux et 20 références, avantage ≥5 points et IC 95 % du signal entièrement au-dessus de celui de la référence. Gris = preuve insuffisante ; rouge = rendement moyen négatif avec échantillon suffisant. Entrée à l'ouverture suivante, fenêtres sans chevauchement. Hors frais, spread, slippage, funding et gestion réelle du portefeuille : ce n'est pas un P&amp;L exécutable.</p>`;}
 const eur=v=>v>=1000?(v/1000).toFixed(1).replace('.0','').replace('.',',')+'k':String(v);
 const pc1=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+'%';
 const pc0=v=>v==null?'—':Math.round(v*100)+'%';
@@ -1372,7 +1378,7 @@ async function renderProj(){
     <p>« Passé » = la période où l'optimiseur a cherché. « Récent » = la période qu'il n'a jamais vue : <b>c'est la seule colonne qui compte</b>. Vert = sur la période jamais vue, au moins 5 événements et 10 points de mieux que la référence BTC échantillonnée. Si la référence manque d'observations, aucun réglage ne peut être déclaré robuste. Rouge = pas d'avantage démontré.</p>
     <h2 style="font-size:12px">Achats</h2>${optTable(O,'1d',true)}
     <h2 style="font-size:12px">Ventes</h2>${optTable(OS,'1d',false)}
-    <p class="note">${O.best100} réglage(s) font 100 % sur le passé avec 2 signaux ou plus. C'est le piège : avec si peu de cas, 100 % ne veut rien dire. On ne garde que ce qui tient sur la colonne « Récent ».</p>
+    <p class="note">${O.best100} réglage(s) font 100 % sur l'apprentissage avec au moins ${O.minN} événements. Ce chiffre reste exploratoire : le classement utilise une borne de confiance et la validation doit tenir sur les données récentes.</p>
     <div class="row" style="display:flex;gap:8px"><button type="button" class="apply" data-k="1d" data-p="reset">Réglages d'origine 1D</button></div></section>`;})()}
 
   ${(()=>{const R=regimeStudy(d,I);return `<section><h2>Signaux selon le régime<small>haussier · neutre · baissier</small></h2>${regimeStudyTable(R)}</section>`;})()}
