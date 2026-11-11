@@ -1125,6 +1125,28 @@ function optTable(O,kind,buy){
   return `<table><tr><th>Réglage</th><th>Passé</th><th>Récent</th><th></th></tr>
     <tr><td>BTC sans signal (échantillon fixe)</td><td>${cell(O.ref.tr)}</td><td>${cell(O.ref.te)}</td><td></td></tr>
     ${row(O.cur)}${O.top.map(row).join('')}</table><p class="note">Test chronologique unique 70/30, à considérer comme exploratoire. Réglage choisi sur 70 % anciens par borne basse de Wilson, puis gelé sur les 30 % récents. Vert uniquement si au moins 20 signaux et 20 références, avantage ≥5 points et IC 95 % du signal entièrement au-dessus de celui de la référence. Gris = preuve insuffisante ; rouge = rendement moyen négatif avec échantillon suffisant. Entrée à l'ouverture suivante, fenêtres sans chevauchement. Hors frais, spread, slippage, funding et gestion réelle du portefeuille : ce n'est pas un P&amp;L exécutable.</p>`;}
+/* Sensibilité aux coûts : achats, entrée prochaine ouverture, sortie à 30 j. Coûts hypothétiques, pas tarifs exchange. */
+function costSensitivity(d,I){
+  const n=d.length,H=30,hm=Math.max(1,Math.round(H*(I.bpd||1))),C=I.Cl;
+  const signals=I.sig.filter(s=>!s.prov&&!s.blocked&&s.t==='buy').map(s=>s.i);
+  const ref=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(I.bpd||1))===0);
+  const series=idx=>{const chosen=[];let last=-Infinity;
+    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=0&&i+1+hm<n&&d[i+1].o>0&&i-last>=hm+1){chosen.push(i);last=i;}});
+    return chosen.map(i=>C[i+1+hm]/d[i+1].o-1).filter(Number.isFinite);};
+  const metrics=(gross,cost)=>{let eq=1,peak=1,maxDD=0,worst=0,sum=0,wins=0;
+    const net=gross.map(r=>(1+r)*(1-cost)-1);
+    net.forEach(r=>{eq*=1+r;peak=Math.max(peak,eq);maxDD=Math.max(maxDD,1-eq/peak);worst=Math.min(worst,r);sum+=r;if(r>0)wins++;});
+    return{n:net.length,hit:net.length?wins/net.length:null,avg:net.length?sum/net.length:null,total:net.length?eq-1:null,dd:net.length?maxDD:null,worst:net.length?worst:null};};
+  const a=series(signals),b=series(ref),costs=[.002,.005,.01];
+  return{costs,rows:[{name:'Achats du signal',gross:metrics(a,0),scenarios:costs.map(c=>metrics(a,c))},{name:'BTC référence',gross:metrics(b,0),scenarios:costs.map(c=>metrics(b,c))}],Hm:H};
+}
+function costSensitivityTable(O){
+  const pc=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(1)+' %';
+  const cell=x=>x.n?pc(x.avg)+' / '+pc(x.total)+' / '+pc(x.dd):'—';
+  const rows=O.rows.map(r=>'<tr><td>'+r.name+'</td><td>'+r.gross.n+'</td><td>'+cell(r.gross)+'</td>'+r.scenarios.map(x=>'<td>'+cell(x)+'</td>').join('')+'</tr>').join('');
+  return '<table><tr><th>Stratégie</th><th>N</th><th>Brut · moy./cumul./DD</th><th>Coût 0,2 %</th><th>Coût 0,5 %</th><th>Coût 1 %</th></tr>'+rows+'</table>'+
+  '<p class="note">Achats uniquement, horizon '+O.Hm+' j, entrée à l’ouverture suivante, événements espacés sans chevauchement. Chaque scénario applique un coût aller-retour par opération (frais + spread + slippage) : 0,2 %, 0,5 % ou 1 % ; hypothèses de sensibilité, pas tarifs constatés. « Moy. » = rendement net moyen par opération ; « cumul. » = capital composé à mise fractionnelle constante, cash entre opérations ; « DD » = drawdown maximal de cette courbe d’événements. Ni buy-and-hold ni simulation de portefeuille exécutable. Funding, fiscalité et sizing réel exclus.</p>';
+}
 const eur=v=>v>=1000?(v/1000).toFixed(1).replace('.0','').replace('.',',')+'k':String(v);
 const pc1=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+'%';
 const pc0=v=>v==null?'—':Math.round(v*100)+'%';
@@ -1363,6 +1385,7 @@ async function renderProj(){
   <section><h2>Backtest des signaux<small>${dS(BT.from)} → ${dS(BT.to)} · daily</small></h2>
     ${btTable(BT.rows)}
     <p>« Juste » : part des achats en hausse (ou des ventes en baisse) 30 jours après. « Creux » : baisse médiane max subie dans les 30 jours après un achat (ou hausse max après une vente). Compare toujours à la ligne de référence : un signal qui ne la bat pas n'apporte rien.</p></section>
+  ${(()=>{const O=costSensitivity(d,I);return '<section><h2>Coûts & drawdown<small>achats daily · sensibilité 30 jours</small></h2>'+costSensitivityTable(O)+'</section>';})()}
   <section><h2>Funding seul<small>${I.FU?'depuis le '+dS(I.FU.start)+' · '+I.FU.days+' j':''}</small></h2>
     ${BT.fr?btTable(BT.fr)+`<p>Compare chaque ligne à « Réf. depuis le funding ». Funding négatif qui fait mieux que la réf. = les shorts trop nombreux se font squeezer, le critère est utile. Sinon, il n'apporte rien et on le retire du score.</p>`:`<p class="pend">Pas de données funding (${fut.err||'—'}).</p>`}</section>
   <section><h2>Seuils WaveTrend testés<small>croisements bruts, sans filtre</small></h2>
