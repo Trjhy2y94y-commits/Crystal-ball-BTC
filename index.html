@@ -1201,11 +1201,48 @@ function buildFvgContext(D){
   const fmt=zones=>zones.map(x=>({tf:x.tf,dir:x.dir,lo:x.lo,hi:x.hi,age:x.age,mit:x.mit,dist:x.dist}));
   return{price,below:fmt(below),above:fmt(above),vote,stats,active:all.length};
 }
+/* ===== Volume Profile : approximation OHLCV, multi-horizon ===== */
+function buildVolumeProfile(D){
+  const rows=D.rows, n=Math.min(D.ind?.lastClosed??rows.length-1,rows.length-1),price=rows[n]?.c;
+  if(!price||n<30)return null;
+  const calc=(lookback,label)=>{
+    const sample=rows.slice(Math.max(0,n-lookback+1),n+1),lo=Math.min(...sample.map(x=>x.l)),hi=Math.max(...sample.map(x=>x.h));
+    if(!(hi>lo))return null;
+    const bins=96,step=(hi-lo)/bins,vol=new Float64Array(bins);
+    sample.forEach(r=>{
+      const v=Number(r.v)||0;if(v<=0)return;
+      const a=Math.max(0,Math.min(bins-1,Math.floor((r.l-lo)/step)));
+      const b=Math.max(0,Math.min(bins-1,Math.floor((r.h-lo)/step)));
+      if(b===a){vol[a]+=v;return;}
+      const span=b-a+1,share=v/span;for(let k=a;k<=b;k++)vol[k]+=share;
+    });
+    const total=vol.reduce((a,b)=>a+b,0);if(!total)return null;
+    let poc=0;for(let i=1;i<bins;i++)if(vol[i]>vol[poc])poc=i;
+    let left=poc,right=poc,covered=vol[poc];
+    while(covered<total*.70&&(left>0||right<bins-1)){
+      const lv=left>0?vol[left-1]:-1,rv=right<bins-1?vol[right+1]:-1;
+      if(rv>lv){right++;covered+=vol[right];}else{left--;covered+=vol[left];}
+    }
+    const nodes=vol.map((v,i)=>({i,v,price:lo+(i+.5)*step})).sort((a,b)=>b.v-a.v);
+    const hvn=nodes.slice(0,5).map(x=>x.price).sort((a,b)=>a-b);
+    const lowNodes=vol.map((v,i)=>({v,price:lo+(i+.5)*step})).filter((x,i)=>i>1&&i<bins-2&&x.v<total/bins*.35).sort((a,b)=>Math.abs(a.price-price)-Math.abs(b.price-price)).slice(0,4).map(x=>x.price);
+    return{label,poc:lo+(poc+.5)*step,vah:lo+(right+1)*step,val:lo+left*step,hvn,lvn:lowNodes,total,coverage:covered/total,bins,from:sample[0].t,to:sample[sample.length-1].t};
+  };
+  const profiles={30:calc(30,'30 jours'),90:calc(90,'90 jours'),365:calc(365,'12 mois')};
+  const p=profiles[90]||profiles[30];if(!p)return null;
+  const dist=(a,b)=>(a-b)/price;
+  let vote=0;
+  if(price>p.vah)vote=.65;else if(price<p.val)vote=-.65;
+  else if(price>p.poc)vote=.25;else if(price<p.poc)vote=-.25;
+  const nearHvn=p.hvn.sort((a,b)=>Math.abs(a-price)-Math.abs(b-price))[0];
+  const nearLvn=p.lvn.sort((a,b)=>Math.abs(a-price)-Math.abs(b-price))[0];
+  return{profiles,primary:p,vote,nearHvn,nearLvn,distPoc:dist(price,p.poc),position:price>p.vah?'Au-dessus de la value area':price<p.val?'Sous la value area':price>=p.poc?'Dans la value area · au-dessus du POC':'Dans la value area · sous le POC'};
+}
 function confluenceSnapshot(D){
   const d=D.rows,I=D.ind;if(!d||d.length<220||!I)return null;
   const n=Math.min(I.lastClosed??d.length-1,d.length-1),p=d[n].c,ma=I.sma200?.[n],r=I.rsiD?.[n];
   const trend=ma==null?0:p>ma?1:-1,trendVote=ma==null?0:p>ma*1.01?1:p<ma*.99?-1:0;
-  const fvg=buildFvgContext(D);
+  const fvg=buildFvgContext(D),vp=buildVolumeProfile(D);
   const hi=Math.max(...d.slice(Math.max(0,n-30),n+1).map(x=>x.h)),lo=Math.min(...d.slice(Math.max(0,n-30),n+1).map(x=>x.l));
   const prevHi=Math.max(...d.slice(Math.max(0,n-90),Math.max(1,n-30)).map(x=>x.h)),prevLo=Math.min(...d.slice(Math.max(0,n-90),Math.max(1,n-30)).map(x=>x.l));
   const avgVol=d.slice(Math.max(0,n-20),n).reduce((a,x)=>a+(x.v||0),0)/Math.max(1,Math.min(20,n));
@@ -1220,11 +1257,12 @@ function confluenceSnapshot(D){
   const liqVote=liqNow==null||liqPrev==null?0:liqNow-liqPrev>.025?1:liqNow-liqPrev<-.025?-1:0;
   const structure=breakout.includes('haussière')?1:breakout.includes('baissière')?-1:0;
   const votes=[
-    {key:'Tendance',value:trendVote,weight:30,detail:trendVote>0?'Au-dessus SMA200 (+1 %)':trendVote<0?'Sous SMA200 (-1 %)':'Proche de la SMA200'},
-    {key:'Momentum',value:mom,weight:25,detail:mom>0?'RSI > 55':mom<0?'RSI < 45':'RSI neutre'},
-    {key:'Liquidité',value:liqVote,weight:25,detail:liqVote>0?'Pente 14 j positive':liqVote<0?'Pente 14 j négative':'Stable / indisponible'},
+    {key:'Tendance',value:trendVote,weight:25,detail:trendVote>0?'Au-dessus SMA200 (+1 %)':trendVote<0?'Sous SMA200 (-1 %)':'Proche de la SMA200'},
+    {key:'Momentum',value:mom,weight:20,detail:mom>0?'RSI > 55':mom<0?'RSI < 45':'RSI neutre'},
+    {key:'Liquidité',value:liqVote,weight:20,detail:liqVote>0?'Pente 14 j positive':liqVote<0?'Pente 14 j négative':'Stable / indisponible'},
     {key:'Structure',value:structure,weight:10,detail:structure>0?'Cassure haussière':structure<0?'Cassure baissière':'Pas de cassure'},
-    {key:'FVG multi-UT',value:fvg?.vote||0,weight:10,detail:fvg?'Zones haussières sous le prix : '+fvg.below.length+' · zones baissières au-dessus : '+fvg.above.length:'FVG indisponibles'}
+    {key:'FVG multi-UT',value:fvg?.vote||0,weight:10,detail:fvg?'Zones haussières sous le prix : '+fvg.below.length+' · zones baissières au-dessus : '+fvg.above.length:'FVG indisponibles'},
+    {key:'Volume Profile',value:vp?.vote||0,weight:15,detail:vp?'Prix '+vp.position+' · POC '+money(vp.primary.poc):'Volume Profile indisponible'}
   ];
   const active=votes.filter(v=>v.value!==0);
   const confluence=Math.round(votes.reduce((a,v)=>a+v.value*v.weight,0));
@@ -1234,7 +1272,7 @@ function confluenceSnapshot(D){
     vals.sort((a,b)=>a-b);const q=k=>vals.length?Math.exp(vals[Math.min(vals.length-1,Math.floor((vals.length-1)*k))])*p:null;
     probs[h]={lo:q(.1),mid:q(.5),hi:q(.9),count:vals.length,up:vals.length?vals.filter(x=>x>0).length/vals.length:null};
   });
-  return {p,trend,bias,confluence,votes,labels,probs,volRatio,rsi:r,fvg};
+  return {p,trend,bias,confluence,votes,labels,probs,volRatio,rsi:r,fvg,vp};
 }
 async function renderConfluence(){
   const panel=$('probabilityPanel');if(!panel)return;
@@ -1253,7 +1291,9 @@ async function renderConfluence(){
   $('probAgreement').title=z.votes.map(v=>v.key+' : '+v.detail).join(' | ');
   const f=z.fvg,zoneTxt=x=>x.tf+' '+(x.dir==='bull'?'FVG haussier':'FVG baissier')+' '+money(x.lo)+'–'+money(x.hi)+' · '+Math.round(x.mit*100)+' % mitigé';
   $('probLayers').innerHTML=Object.entries(z.labels).filter(([k])=>overlayLayers[k]).map(([k,v])=>'<span class="prob-layer"><b>'+({wyckoff:'Wyckoff',smc:'SMC',elliott:'Elliott',patterns:'Figures'}[k])+'</b> · '+v+'</span>').join('')+(f?'<span class="prob-layer"><b>FVG 1D/1W/1M</b> · '+(f.below[0]?'Support : '+zoneTxt(f.below[0]):'Aucun FVG haussier actif sous le prix')+' · '+(f.above[0]?'Aimant : '+zoneTxt(f.above[0]):'Aucun FVG baissier actif au-dessus')+' · Comblement historique : '+['1D','1W','1M'].map(k=>k+' '+(f.stats[k].fillRate==null?'n.d.':Math.round(f.stats[k].fillRate*100)+' %')+' (n='+f.stats[k].sample+')').join(' / ')+'</span>':'');
-  $('probNote').textContent='P10 / P50 / P90 = distribution historique conditionnelle, pas probabilité garantie. Confluence = score directionnel pondéré (tendance 30, momentum 25, liquidité 25, structure 10, FVG 10), non calibré comme probabilité. Les FVG sont détectés sur bougies clôturées en 1D/1W/1M ; les taux de comblement restent descriptifs et dépendent de l’échantillon. Elliott, Wyckoff et SMC sont affichés séparément pour éviter de compter plusieurs fois le même signal. Effectifs : 30j '+(K.q[30]?.n||0)+' / 90j '+(K.q[90]?.n||0)+' / 12m '+(K.q[365]?.n||0)+'.';
+  const v=z.vp;if(v){const fmtP=x=>money(x);$('probLayers').innerHTML+='<span class="prob-layer"><b>Volume Profile · 30J / 90J / 12M</b> · '+v.position+' · POC '+fmtP(v.primary.poc)+' · VAH '+fmtP(v.primary.vah)+' · VAL '+fmtP(v.primary.val)+' · HVN proche '+(v.nearHvn?fmtP(v.nearHvn):'—')+' · LVN proche '+(v.nearLvn?fmtP(v.nearLvn):'—')+' · Couverture value area '+Math.round(v.primary.coverage*100)+' %</span>';}
+
+  $('probNote').textContent='P10 / P50 / P90 = distribution historique conditionnelle, pas probabilité garantie. Confluence = score directionnel pondéré (tendance 25, momentum 20, liquidité 20, structure 10, FVG 10, Volume Profile 15), non calibré comme probabilité. Volume Profile : approximation OHLCV par répartition uniforme du volume dans la plage de chaque bougie, et non un profil tick par tick. Les FVG sont détectés sur bougies clôturées en 1D/1W/1M ; les taux de comblement restent descriptifs et dépendent de l’échantillon. Elliott, Wyckoff et SMC sont affichés séparément pour éviter de compter plusieurs fois le même signal. Effectifs : 30j '+(K.q[30]?.n||0)+' / 90j '+(K.q[90]?.n||0)+' / 12m '+(K.q[365]?.n||0)+'.';
 }
 document.querySelectorAll('#overlayLegend [data-layer]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.layer;overlayLayers[k]=!overlayLayers[k];b.classList.toggle('on',overlayLayers[k]);draw();renderConfluence();}));
 function updateHeader(){
