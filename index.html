@@ -625,6 +625,94 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
 
 /* Keep the thumb navigation above chart canvases and probability overlays on touch devices */
 .tabbar{position:relative;z-index:50;flex-shrink:0;pointer-events:auto}
+
+/* CRYSTAL QUANT — ART DIRECTION V2: high-contrast institutional command deck */
+#vHome{
+  background:
+    radial-gradient(ellipse at 92% 2%,rgba(0,229,255,.19),transparent 36%),
+    radial-gradient(ellipse at 0% 26%,rgba(255,71,87,.13),transparent 40%),
+    linear-gradient(180deg,#030711 0%,#07111f 48%,#030711 100%)!important;
+}
+#vHome:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.16;
+  background-image:linear-gradient(rgba(65,210,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(65,210,255,.13) 1px,transparent 1px);
+  background-size:32px 32px;mask-image:linear-gradient(180deg,#000 0%,transparent 82%);
+}
+.home-quant{
+  margin:10px 10px 13px!important;padding:17px 15px 14px!important;
+  border:1px solid rgba(69,231,255,.55)!important;border-radius:13px!important;
+  background:
+    linear-gradient(115deg,rgba(255,61,84,.12),transparent 34%),
+    linear-gradient(145deg,#0b1b2d 0%,#06101e 54%,#0b2130 100%)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.035),0 18px 45px rgba(0,0,0,.55),0 0 34px rgba(0,206,255,.12),inset 0 1px rgba(255,255,255,.12)!important;
+}
+.home-quant:before{
+  inset:-70% -50%!important;opacity:.9;
+  background:linear-gradient(105deg,transparent 39%,rgba(0,225,255,.17) 48%,rgba(255,59,93,.13) 51%,transparent 60%)!important;
+  animation:hqSweep 4.8s linear infinite!important;
+}
+.home-quant:after{
+  opacity:.24!important;background-size:19px 19px!important;
+  mask-image:linear-gradient(90deg,#000 0%,rgba(0,0,0,.7) 48%,transparent 100%)!important;
+}
+.hq-top{padding-bottom:9px;border-bottom:1px solid rgba(102,219,255,.18)}
+.hq-brand{font-size:11px!important;letter-spacing:.24em!important;color:#fff!important}
+.hq-brand b{color:#38eaff!important;text-shadow:0 0 16px rgba(56,234,255,.8)}
+.hq-brand i{background:#ff4766!important;box-shadow:0 0 13px #ff4766!important}
+.hq-status{font-size:8px!important;color:#ffb45b!important;letter-spacing:.16em!important}
+.hq-title{padding:21px 0 18px!important}
+.hq-eyebrow{font-size:9px!important;color:#6feaff!important;letter-spacing:.22em!important}
+.hq-price{
+  font-size:clamp(36px,10.3vw,51px)!important;font-weight:850!important;letter-spacing:-.09em!important;
+  color:#fff!important;text-shadow:0 0 12px rgba(69,226,255,.32),0 0 38px rgba(69,226,255,.17)!important;
+}
+.hq-change{font-size:11px!important;color:#b8d7e8!important;letter-spacing:.025em}
+.hq-orbit{
+  width:91px!important;height:91px!important;border:1px solid rgba(0,231,255,.7)!important;
+  background:radial-gradient(circle,rgba(0,223,255,.16),rgba(0,20,36,.08) 62%,transparent 64%)!important;
+  box-shadow:0 0 0 7px rgba(0,225,255,.035),0 0 28px rgba(0,220,255,.22),inset 0 0 30px rgba(0,220,255,.15)!important;
+}
+.hq-orbit:before{border:1px dashed rgba(255,77,110,.65)!important;animation-duration:7s!important}
+.hq-orbit:after{border:1px solid rgba(0,230,255,.35)!important;inset:-8px!important;animation-duration:11s!important}
+.hq-orbit b{font-size:42px!important;color:#f7fdff!important;text-shadow:0 0 10px #00dfff,0 0 30px rgba(0,223,255,.85)!important}
+.hq-orbit span{background:#ff4766!important;box-shadow:0 0 12px #ff4766!important}
+.hq-signal{
+  border:1px solid rgba(0,230,255,.36)!important;border-left:3px solid #ff4969!important;
+  border-radius:8px!important;padding:12px 12px!important;
+  background:linear-gradient(90deg,rgba(255,67,99,.11),rgba(0,221,255,.08) 72%,rgba(0,0,0,.2))!important;
+  box-shadow:inset 0 0 22px rgba(0,210,255,.045)!important;
+}
+.hq-signal small,.hq-metrics small{font-size:8px!important;color:#80a9c2!important;letter-spacing:.17em!important}
+.hq-signal strong{font-size:14px!important;color:#fff!important;text-shadow:0 0 12px rgba(0,224,255,.25)}
+.hq-scan{font-size:8px!important;color:#9bb7ca!important}
+.hq-scan b{color:#40edff!important}
+.hq-metrics{gap:6px!important;margin-top:8px!important}
+.hq-metrics>div{
+  padding:10px 8px!important;border:1px solid rgba(74,214,255,.25)!important;border-radius:7px!important;
+  background:linear-gradient(150deg,rgba(21,59,82,.72),rgba(4,16,29,.9))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.06),0 5px 14px rgba(0,0,0,.2)!important;
+}
+.hq-metrics b{font-size:12px!important;color:#f2fcff!important}
+.hq-foot{margin-top:13px!important;font-size:7px!important;color:#7da4bb!important;letter-spacing:.1em!important}
+#vHome #home{padding-inline:10px!important}
+#vHome #home .card,#vHome #home .tile{
+  border:1px solid rgba(64,207,255,.22)!important;border-radius:12px!important;
+  background:linear-gradient(145deg,rgba(13,31,48,.96),rgba(5,13,24,.98))!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.035)!important;
+}
+#vHome #home .lbl2{color:#75cde4!important;letter-spacing:.08em!important;text-transform:uppercase!important}
+#vHome #home .tile .v1{color:#f4fbff!important}
+#vHome .tabbar{background:rgba(3,8,17,.96)!important;border-top:1px solid rgba(58,209,255,.28)!important}
+#vHome .tabbar button.on{color:#43eaff!important;text-shadow:0 0 12px rgba(67,234,255,.45)}
+@keyframes hqSweep{0%{transform:translateX(-48%) rotate(-3deg)}100%{transform:translateX(48%) rotate(-3deg)}}
+@media(max-width:380px){
+ .home-quant{margin:8px!important;padding:14px 12px 12px!important}
+ .hq-orbit{width:76px!important;height:76px!important}
+ .hq-price{font-size:35px!important}
+ .hq-foot{font-size:6px!important}
+}
+@media(prefers-reduced-motion:reduce){.home-quant:before{animation:none!important}}
+
 </style>
 
 <div class="app">
