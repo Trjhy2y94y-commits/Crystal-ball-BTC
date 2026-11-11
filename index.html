@@ -545,7 +545,7 @@ header{border-color:#263646;background:rgba(10,16,23,.94)}
 .overlay-legend [data-layer=wyckoff].on{background:#ff9f0a}.overlay-legend [data-layer=smc].on{background:#0a84ff}.overlay-legend [data-layer=elliott].on{background:#bf5af2}.overlay-legend [data-layer=patterns].on{background:#30d158}
 .probability-panel{flex:0 0 auto;max-height:190px;overflow:auto;background:#111114;border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));display:grid;gap:7px;font-family:var(--cond)}
 .prob-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.prob-head strong{font-size:13px}.prob-head small,.prob-note{font-size:10px;color:var(--muted)}
-.prob-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.prob-cell{background:var(--panel);border-radius:9px;padding:7px;min-width:0}.prob-cell span{display:block;font-size:10px;color:var(--muted)}.prob-cell b{display:block;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}.scenario-values{display:grid;gap:2px;margin-top:5px}.scenario-values i{font-style:normal;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}.scenario-values b{font-size:14px!important;color:var(--fg)}.scenario-legend{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);padding:0 2px}.scenario-grid .prob-cell{padding:6px 7px}.prob-layers{display:flex;gap:5px;flex-wrap:wrap}.prob-layer{font-size:10px;padding:4px 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--sub)}.prob-layer b{color:var(--fg)}
+.prob-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.prob-cell{background:var(--panel);border-radius:9px;padding:7px;min-width:0}.prob-cell span{display:block;font-size:10px;color:var(--muted)}.prob-cell b{display:block;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}.scenario-values{display:grid;gap:2px;margin-top:5px}.scenario-values i{font-style:normal;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}.scenario-values b{font-size:14px!important;color:var(--fg)}.scenario-legend{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);padding:0 2px}.scenario-grid .prob-cell{padding:6px 7px}.prob-agreement{font-size:10px;font-weight:700;letter-spacing:.035em;padding:5px 7px;border-radius:7px;background:var(--panel);border:1px solid var(--line);color:var(--fg);font-variant-numeric:tabular-nums}.prob-layers{display:flex;gap:5px;flex-wrap:wrap}.prob-layer{font-size:10px;padding:4px 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--sub)}.prob-layer b{color:var(--fg)}
 
 /* Prevent chart overlay / intrinsic canvas from widening the iPhone document */
 html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
@@ -601,7 +601,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
     </div>
   </div>
   <div class="probability-panel" id="probabilityPanel" aria-live="polite">
-    <div class="prob-head"><strong>Probabilité de prix BTC</strong><small id="probConfidence">Calcul en attente…</small></div>
+    <div class="prob-head"><strong>Scénarios BTC · historique</strong><small id="probConfidence">Calcul en attente…</small></div><div class="prob-agreement" id="probAgreement">Confluence en attente…</div>
     <div class="prob-grid scenario-grid"><div class="prob-cell"><span>30 jours</span><div class="scenario-values"><i id="prob30low">—</i><b id="prob30">—</b><i id="prob30high">—</i></div></div><div class="prob-cell"><span>90 jours</span><div class="scenario-values"><i id="prob90low">—</i><b id="prob90">—</b><i id="prob90high">—</i></div></div><div class="prob-cell"><span>12 mois</span><div class="scenario-values"><i id="prob365low">—</i><b id="prob365">—</b><i id="prob365high">—</i></div></div></div><div class="scenario-legend"><span>Baissier · P10</span><span>Central · P50</span><span>Haussier · P90</span></div>
     <div class="prob-layers" id="probLayers"></div><div class="prob-note" id="probNote">Les fourchettes proviennent des rendements historiques conditionnés au régime. Les méthodes chartistes affinent la lecture, elles ne garantissent pas le prix.</div>
   </div>
@@ -1157,14 +1157,26 @@ function confluenceSnapshot(D){
   const wy=trend>0&&p>prevHi?'Markup / SOS possible':trend<0&&p<prevLo?'Markdown / SOW possible':'Range : accumulation ou distribution à confirmer';
   const smc=p>prevHi?'BOS haussier potentiel':p<prevLo?'BOS baissier potentiel':(d[n].l<d[n-1].l&&p>d[n-1].c)?'Sweep de liquidité bas possible':'Structure sans rupture confirmée';
   const ell=trend>0?'Biais impulsif haussier (décompte non confirmé)':trend<0?'Biais impulsif baissier (décompte non confirmé)':'Structure corrective / indéterminée';
-  const scores=[trend,r==null?0:r>55?1:r<45?-1:0,volRatio>1.4?(p>d[n-1].c?1:-1):0,breakout.includes('haussière')?1:breakout.includes('baissière')?-1:0];
-  const bias=scores.reduce((a,b)=>a+b,0),labels={wyckoff:wy,smc,elliott:ell,patterns:breakout},probs={};
+  // Votes directionnels séparés : Elliott/Wyckoff/SMC restent descriptifs ici pour éviter le double comptage.
+  const mom=r==null?0:r>55?1:r<45?-1:0;
+  const liqNow=I.liq?.[n],liqPrev=I.liq?.[Math.max(0,n-14)];
+  const liqVote=liqNow==null||liqPrev==null?0:liqNow-liqPrev>.025?1:liqNow-liqPrev<-.025?-1:0;
+  const structure=breakout.includes('haussière')?1:breakout.includes('baissière')?-1:0;
+  const votes=[
+    {key:'Tendance',value:trend,weight:30,detail:trend>0?'Au-dessus SMA200':trend<0?'Sous SMA200':'Neutre'},
+    {key:'Momentum',value:mom,weight:25,detail:mom>0?'RSI > 55':mom<0?'RSI < 45':'RSI neutre'},
+    {key:'Liquidité',value:liqVote,weight:25,detail:liqVote>0?'Pente 14 j positive':liqVote<0?'Pente 14 j négative':'Stable / indisponible'},
+    {key:'Structure',value:structure,weight:20,detail:structure>0?'Cassure haussière':structure<0?'Cassure baissière':'Pas de cassure'}
+  ];
+  const active=votes.filter(v=>v.value!==0),den=active.reduce((a,v)=>a+v.weight,0);
+  const confluence=den?Math.round(100*active.reduce((a,v)=>a+v.value*v.weight,0)/den):0;
+  const bias=active.reduce((a,v)=>a+v.value,0),labels={wyckoff:wy,smc,elliott:ell,patterns:breakout},probs={};
   [30,90,365].forEach(h=>{
     const vals=[];for(let i=60;i+h<=n;i++){const m=I.sma200?.[i];if(m==null)continue;if((d[i].c>m?1:-1)===trend)vals.push(Math.log(d[i+h].c/d[i].c));}
     vals.sort((a,b)=>a-b);const q=k=>vals.length?Math.exp(vals[Math.min(vals.length-1,Math.floor((vals.length-1)*k))])*p:null;
     probs[h]={lo:q(.1),mid:q(.5),hi:q(.9),count:vals.length,up:vals.length?vals.filter(x=>x>0).length/vals.length:null};
   });
-  return {p,trend,bias,labels,probs,volRatio,rsi:r};
+  return {p,trend,bias,confluence,votes,labels,probs,volRatio,rsi:r};
 }
 async function renderConfluence(){
   const panel=$('probabilityPanel');if(!panel)return;
@@ -1178,8 +1190,11 @@ async function renderConfluence(){
   });
   const minN=Math.min(...hs.map(h=>K.q[h]?.n||0));
   $('probConfidence').textContent=minN>=250?'Échantillon conditionnel · étoffé':minN>=100?'Échantillon conditionnel · moyen':minN>=60?'Échantillon limité':'Confiance faible · peu de cas comparables';
+  const dir=z.confluence>15?'haussier':z.confluence< -15?'baissier':'neutre';
+  $('probAgreement').textContent='CONFLUENCE '+(z.confluence>0?'+':'')+z.confluence+'/100 · '+dir.toUpperCase()+' · '+z.votes.filter(v=>v.value>0).length+' votes ↑ / '+z.votes.filter(v=>v.value<0).length+' votes ↓';
+  $('probAgreement').title=z.votes.map(v=>v.key+' : '+v.detail).join(' | ');
   $('probLayers').innerHTML=Object.entries(z.labels).filter(([k])=>overlayLayers[k]).map(([k,v])=>'<span class="prob-layer"><b>'+({wyckoff:'Wyckoff',smc:'SMC',elliott:'Elliott',patterns:'Figures'}[k])+'</b> · '+v+'</span>').join('');
-  $('probNote').textContent='Scénarios historiques conditionnels : P10 / P50 / P90, calculés selon tendance, liquidité et volatilité quand l’échantillon le permet. Ce ne sont pas des probabilités garanties. Effectifs : 30j '+(K.q[30]?.n||0)+' / 90j '+(K.q[90]?.n||0)+' / 12m '+(K.q[365]?.n||0)+'. Biais technique '+(z.bias>1?'haussier':z.bias< -1?'baissier':'neutre')+' · RSI '+(z.rsi==null?'—':z.rsi.toFixed(0))+'.';
+  $('probNote').textContent='P10 / P50 / P90 = distribution historique conditionnelle, pas probabilité garantie. Confluence = score directionnel pondéré (tendance 30, momentum 25, liquidité 25, structure 20), non calibré comme probabilité. Elliott, Wyckoff et SMC sont affichés séparément pour éviter de compter plusieurs fois le même signal. Effectifs : 30j '+(K.q[30]?.n||0)+' / 90j '+(K.q[90]?.n||0)+' / 12m '+(K.q[365]?.n||0)+'.';
 }
 document.querySelectorAll('#overlayLegend [data-layer]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.layer;overlayLayers[k]=!overlayLayers[k];b.classList.toggle('on',overlayLayers[k]);draw();renderConfluence();}));
 function updateHeader(){
