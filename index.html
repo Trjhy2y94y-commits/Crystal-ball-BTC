@@ -2087,6 +2087,53 @@ function buildTrajectory(D,K,count=1200){
  const sensitivity=[runSensitivity(1),{blockDays:7,n:count,p50:q(samples[365],.5),dd20:dd20/count,pool:pool.length},runSensitivity(14)].filter(Boolean);
  return{n:count,blockDays:7,pool:pool.length,rows:hs.map(h=>({h,n:samples[h].length,p10:q(samples[h],.1),p50:q(samples[h],.5),p90:q(samples[h],.9)})),probDD20:dd20/count,probDD20CI:wilson(dd20,count),probUp20:up20/count,probUp20CI:wilson(up20,count),avgMaxDD:ddSum/count,sensitivity};
 }
+
+/* Audit walk-forward du bootstrap de trajectoires : les blocs d'apprentissage sont intégralement connus à chaque origine. */
+function trajectoryWalkForwardAudit(D){
+ const I=D.ind,C=I.Cl||[],R=I.rgA||[],LT=I.ltA||[],M=I.wt2||[],end=Math.min(I.lastClosed??C.length-1,C.length-1);
+ if(D.demo||end<1100)return{demo:!!D.demo,rows:[],reason:D.demo?'Mode démo : audit walk-forward suspendu.':'Historique insuffisant : 1 100 clôtures minimum requises.'};
+ const mb=i=>M[i]==null?0:M[i]<=-40?-1:M[i]>=40?1:0;
+ const valid=i=>i>=200&&i+7<=end&&Number.isFinite(C[i])&&C[i]>0&&Array.from({length:7},(_,k)=>Number.isFinite(C[i+k+1])&&C[i+k+1]>0).every(Boolean);
+ const first=Math.max(700,end-48*30),last=end-365,step=Math.max(30,Math.ceil((last-first)/47));
+ if(last-first<300)return{demo:false,rows:[],reason:'Pas assez de recul pour former plusieurs origines indépendantes.'};
+ const origins=[];for(let i=first;i<=last;i+=step)origins.push(i);
+ const hs=[30,90,365],out=Object.fromEntries(hs.map(h=>[h,{cond:[],base:[]}]));
+ let poolTotal=0,strict=0,fallbackTrend=0,fallbackAll=0,used=0;
+ const q=(a,p)=>{const s=a.slice().sort((x,y)=>x-y),z=(s.length-1)*p,k=Math.floor(z);return s[k]+(s[Math.min(k+1,s.length-1)]-s[k])*(z-k);};
+ origins.forEach((o,oi)=>{
+  const all=[];for(let i=200;i+7<=o;i++)if(valid(i))all.push(i);
+  let pool=all.filter(i=>R[i]===R[o]&&LT[i]===LT[o]&&mb(i)===mb(o)),mode='tendance + liquidité + momentum';
+  if(pool.length>=40)strict++;
+  else{pool=all.filter(i=>R[i]===R[o]);mode='tendance';}
+  if(pool.length<40){pool=all;mode='historique complet';}
+  if(pool.length<20)return;
+  if(mode==='tendance')fallbackTrend++;if(mode==='historique complet')fallbackAll++;
+  poolTotal+=pool.length;used++;
+  const sims=(starts,salt)=>{
+   const vals={30:[],90:[],365:[]};let seed=((o+1)*2654435761+Math.round(C[o]*100)+salt*2246822519)>>>0;if(!seed)seed=0x9e3779b9;
+   const rnd=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296;};
+   for(let s=0;s<200;s++){let p=C[o],day=0;while(day<365){const start=starts[Math.floor(rnd()*starts.length)],len=Math.min(7,365-day);
+     for(let k=1;k<=len;k++){p*=C[start+k]/C[start+k-1];day++;if(day===30||day===90||day===365)vals[day].push(p);}
+    }}
+   return vals;
+  };
+  const conditional=sims(pool,oi+1),baseline=sims(all,oi+101);
+  hs.forEach(h=>{const actual=C[o+h],a=conditional[h],b=baseline[h];if(!a.length||!b.length||!Number.isFinite(actual)||actual<=0)return;
+   const p10=q(a,.1),p50=q(a,.5),p90=q(a,.9),b50=q(b,.5);
+   out[h].cond.push({err:Math.abs(p50/actual-1),hit5:Math.abs(p50/actual-1)<=.05,dir:(p50/C[o]-1)*(actual/C[o]-1)>0,cover:actual>=p10&&actual<=p90,width:p90/p10-1});
+   out[h].base.push({err:Math.abs(b50/actual-1),hit5:Math.abs(b50/actual-1)<=.05,dir:(b50/C[o]-1)*(actual/C[o]-1)>0});
+  });
+ });
+ const metrics=a=>({n:a.length,mae:a.length?a.reduce((s,x)=>s+x.err,0)/a.length:null,hit5:a.length?a.filter(x=>x.hit5).length/a.length:null,dir:a.length?a.filter(x=>x.dir).length/a.length:null,cover:a.length?a.filter(x=>x.cover).length/a.length:null,width:a.length?a.reduce((s,x)=>s+x.width,0)/a.length:null});
+ return{demo:false,rows:hs.map(h=>({h,model:metrics(out[h].cond),base:metrics(out[h].base)})),origins:used,strict,fallbackTrend,fallbackAll,poolAvg:used?poolTotal/used:0,pathsPerOrigin:200,step,blockDays:7,asOf:D.rows[end]?.t};
+}
+function trajectoryWalkForwardHTML(A){
+ if(A.demo||!A.rows.length)return '<p class="ck-forecast-note">'+(A.reason||'Pas assez de tests hors échantillon.')+'</p>';
+ const pc=x=>x==null?'—':(x*100).toFixed(1)+' %',err=x=>x==null?'—':(x*100).toFixed(2)+' %';
+ const rows=A.rows.map(x=>{const delta=x.model.mae!=null&&x.base.mae!=null?x.model.mae-x.base.mae:null;return '<tr><td>J+'+x.h+'</td><td><b>'+err(x.model.mae)+'</b></td><td>'+pc(x.model.cover)+'</td><td>'+pc(x.model.hit5)+'</td><td>'+pc(x.model.dir)+'</td><td>'+err(x.base.mae)+'</td><td>'+(delta==null?'—':(delta<=0?'−':'＋')+err(Math.abs(delta)))+'</td><td>'+x.model.n+'</td></tr>';}).join('');
+ return '<div class="ck-forecast-grid"><div class="ck-fh">Horizon</div><div class="ck-fh">Erreur P50</div><div class="ck-fh">Couverture P10–90</div><div class="ck-fh">P50 ±5 %</div><div class="ck-fh">Direction</div><div class="ck-fh">Erreur base</div><div class="ck-fh">Δ erreur</div><div class="ck-fh">N</div>'+rows+'</div><p class="ck-forecast-note">Tests walk-forward : '+A.origins+' origines · 200 chemins par origine · blocs de 7 jours · pas moyen '+A.step+' j. Pool moyen '+Math.round(A.poolAvg)+' départs ; condition stricte '+A.strict+' fois, repli tendance '+A.fallbackTrend+' fois, historique complet '+A.fallbackAll+' fois. Le modèle est comparé à un bootstrap non conditionné sur les mêmes dates. Les fenêtres à 365 jours se chevauchent : les tests ne sont pas indépendants. Couverture visée : 80 % ; ±5 % mesure la proximité de la médiane, pas une probabilité de gain.</p>';
+}
+
 /* Audit de précision du prix : chaque prévision historique est recalculée avec les seules données connues à sa date.
    Le modèle conditionne sur tendance, régime de liquidité M2 (si disponible), momentum et volatilité.
    Les rendements d'apprentissage sont tous arrivés à maturité avant l'origine du test. */
@@ -2557,7 +2604,7 @@ function pUp(qq){if(!qq)return null;if(Number.isFinite(qq.pUp))return qq.pUp;con
   for(let k=1;k<5;k++)if(0<=P[k][0]){const [x0,c0]=P[k-1],[x1,c1]=P[k];return 1-(c0+(c1-c0)*(0-x0)/(x1-x0));}return .5;}
 async function renderHome(){
   const el=$('home');let D;try{D=await getDaily();}catch(e){return;}const d=D.rows,I=D.ind,n=d.length,last=d[n-1];
-  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),PL=buildPlan(D,53),HZ=homeH;
+  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH;
   const prev=d[n-2],ch=(last.c-prev.c)/prev.c*100,T0=new Date().setHours(0,0,0,0);
   const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),buyZones=PL.days.filter(c=>c.amt&&c.a>=T0).slice(0,4),trig=!!(td&&td.amt&&last.c<=td.zone);
   if(trig&&!isDemo){const key='buy:'+T0;if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='▲ ACHAT DÉCLENCHÉ · '+td.amt.toLocaleString('fr-FR')+' € · BTC ≤ '+fmt(td.zone)+' $';t.className='toast buy';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}}
@@ -2615,6 +2662,7 @@ async function renderHome(){
     ${SIM.n?`<div class="ck-forecast-grid"><div class="ck-fh">Horizon</div><div class="ck-fh">P10</div><div class="ck-fh">P50</div><div class="ck-fh">P90</div><div class="ck-fh">Scénarios</div>${SIM.rows.map(x=>`<div class="ck-fv">${x.h} J</div><div class="ck-fv">${fmt(r5(x.p10))}</div><div class="ck-fv ck-central">${fmt(r5(x.p50))}</div><div class="ck-fv">${fmt(r5(x.p90))}</div><div class="ck-fv">${x.n.toLocaleString("fr-FR")}</div>`).join("")}</div><div class="ck-prob-grid"><div class="ck-prob"><span>RISQUE DE -20 % EN COURS DE ROUTE</span><strong>${Math.round(SIM.probDD20*100)} %</strong><small>Drawdown maximal moyen : ${(SIM.avgMaxDD*100).toFixed(1)} % · IC Monte Carlo 95 % : ${(SIM.probDD20CI.lo*100).toFixed(1)}–${(SIM.probDD20CI.hi*100).toFixed(1)} %</small></div><div class="ck-prob"><span>CHANCE DE +20 % À 12 MOIS</span><strong>${Math.round(SIM.probUp20*100)} %</strong><small>IC Monte Carlo 95 % : ${(SIM.probUp20CI.lo*100).toFixed(1)}–${(SIM.probUp20CI.hi*100).toFixed(1)} % · Base : ${fmt(K.base)} $ · ${SIM.pool} départs comparables</small></div></div>`:`<p>${SIM.reason}</p>`}
     <p class="ck-forecast-note">Bootstrap historique conditionné au régime, à la liquidité et au momentum, par blocs de 7 jours. Sensibilité testée avec des blocs de ${SIM.sensitivity.map(x=>x.blockDays+' j').join(' / ')}. Les IC Monte Carlo à 95 % quantifient uniquement l’erreur d’échantillonnage des simulations, pas l’incertitude du modèle ni sa capacité prédictive. Scénarios empiriques non calibrés : aucune fiabilité prédictive n’est revendiquée avant validation walk-forward indépendante.</p>
   </section>
+  <section class="ck-forecast-table" id="trajectoryAudit"><div class="ck-section-head"><span>FIABILITÉ RÉELLE · WALK-FORWARD</span><span class="ck-muted">Hors échantillon</span></div>${trajectoryWalkForwardHTML(WFA)}</section>
   <section class="ck-chart-card">
     <div class="ck-section-head"><span>TRAJECTOIRE CONDITIONNELLE</span><span class="ck-muted">Fourchette historique</span></div>
     <div class="seg">${[[30,'30 J'],[91,'90 J'],[182,'6 M'],[365,'1 AN']].map(([h,t])=>`<button type="button" data-h="${h}" class="${h===HZ?'on':''}">${t}</button>`).join('')}</div>
