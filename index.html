@@ -1793,6 +1793,60 @@ function buildCone(D,maxH=92){
     q2=Q.q.map((x,h)=>{if(!x)return x;const s=sAt(h),m=x.p50,f=v=>m+(v-m)*s;return{...x,p10:f(x.p10),p25:f(x.p25),p75:f(x.p75),p90:f(x.p90)};});}
   // Le point d'ancrage est le dernier prix observable (bougie en cours incluse) ; l'apprentissage reste limité aux bougies closes.
   return{q:q2,cond:Q.cond,rg,lt,base:C[n-1],t0:D.rows[n-1].t,n:Q.n,cal:Q.cal,curVol:Q.curVol,volPct:Q.volPct,bucket:Q.bucket,at:Date.now()};}
+/* Audit de précision du prix : chaque prévision historique est recalculée avec les seules données connues à sa date.
+   Le modèle conditionne sur tendance, régime de liquidité M2 (si disponible), momentum et volatilité.
+   Les rendements d'apprentissage sont tous arrivés à maturité avant l'origine du test. */
+function priceForecastAudit(D){
+  const d=D.rows,I=D.ind,C=I.Cl||d.map(x=>x.c),n=Math.min(C.length,I.lastClosed??C.length-1),R=I.rgA||[],LT=I.ltA||[];
+  if(D.demo||n<1200)return{demo:!!D.demo,rows:[],reason:D.demo?'Mode démo : audit réel suspendu.':'Historique insuffisant pour valider les horizons longs.'};
+  const hs=[30,90,365],out=[];
+  const q=(a,p)=>{if(!a.length)return null;const v=a.slice().sort((x,y)=>x-y);return qs(v,p);};
+  const metrics=a=>{if(!a.length)return{n:0,mae:null,h5:null,h10:null,h20:null,dir:null,cov:null};
+    const n=a.length;return{n,mae:a.reduce((s,x)=>s+x.err,0)/n,
+      h5:a.filter(x=>x.err<=.05).length/n,h10:a.filter(x=>x.err<=.10).length/n,
+      h20:a.filter(x=>x.err<=.20).length/n,dir:a.filter(x=>x.dir).length/n,
+      cov:a.filter(x=>x.cover).length/n};};
+  hs.forEach(h=>{
+    const stride=h===30?7:h===90?14:30,first=Math.max(900,Math.floor(n*.45)),last=n-h-1;
+    const model=[],base=[];let macroUsed=0,origins=0;
+    for(let i=first;i<=last;i+=stride){
+      const train=[],uncond=[];
+      // Aucune observation dont le rendement à h jours n'était pas déjà connu à la date i.
+      for(let j=Math.max(220,Math.floor(n*.08));j+h<=i;j++){
+        const ret=Math.log(C[j+h]/C[j]);if(!Number.isFinite(ret))continue;
+        uncond.push(ret);
+        if(R[j]===R[i])train.push({r:ret,j});
+      }
+      let chosen=train,condition='tendance';
+      if(I.real&&LT[i]!=null){
+        const both=train.filter(x=>LT[x.j]===LT[i]);
+        if(both.length>=60){chosen=both;condition='tendance + M2';macroUsed++;}
+      }
+      if(chosen.length<60){chosen=uncond.map(r=>({r}));condition='historique complet';}
+      if(chosen.length<60||uncond.length<60)continue;
+      const a=chosen.map(x=>x.r),b=uncond;
+      const p10=q(a,.1),p50=q(a,.5),p90=q(a,.9),b50=q(b,.5);
+      const actual=Math.log(C[i+h]/C[i]),priceActual=C[i]*Math.exp(actual);
+      const pred=C[i]*Math.exp(p50),basePred=C[i]*Math.exp(b50);
+      const err=Math.abs(pred/priceActual-1),baseErr=Math.abs(basePred/priceActual-1);
+      const dir=Math.sign(p50)===Math.sign(actual),baseDir=Math.sign(b50)===Math.sign(actual);
+      model.push({err,dir,cover:actual>=p10&&actual<=p90});
+      base.push({err:baseErr,dir:baseDir,cover:actual>=q(b,.1)&&actual<=q(b,.9)});
+      origins++;
+    }
+    out.push({h,model:metrics(model),base:metrics(base),macroUsed,origins});
+  });
+  return{demo:false,rows:out,macro:I.real&&!!I.liq,source:I.real?'Composite M2/liquidité décalée':'M2 indisponible · modèle sans filtre macro'};
+}
+function priceAuditTable(A){
+  if(A.demo||!A.rows.length)return '<p class="note">'+(A.reason||'Pas assez de prévisions historiques indépendantes pour calculer un taux fiable.')+'</p>';
+  const pc=x=>x==null?'—':(x*100).toFixed(1)+' %',err=x=>x==null?'—':(x*100).toFixed(2)+' %';
+  const rows=A.rows.map(x=>{const a=x.model,b=x.base;return '<tr><td>J+'+x.h+'</td><td><b>'+pc(a.h5)+'</b><small>±5 %</small></td><td>'+pc(a.h10)+'<small>±10 %</small></td><td>'+err(a.mae)+'</td><td>'+pc(a.dir)+'</td><td>'+pc(a.cov)+'</td><td>'+pc(b.h5)+'</td><td>'+err(b.mae)+'</td><td>'+a.n+'</td></tr>';}).join('');
+  const macro=A.rows.reduce((s,x)=>s+x.macroUsed,0),total=A.rows.reduce((s,x)=>s+x.origins,0);
+  return '<p><b>'+A.source+'</b> · M2 effectivement utilisée dans '+macro+'/'+total+' prévisions conditionnelles.</p>'+
+    '<table><tr><th>Horizon</th><th>Prix à ±5 %</th><th>Prix à ±10 %</th><th>Erreur médiane P50*</th><th>Direction juste</th><th>Couverture P10–P90</th><th>Réf. ±5 %</th><th>Réf. erreur*</th><th>N</th></tr>'+rows+'</table>'+
+    '<p class="note">*Erreur moyenne absolue relative du prix médian prévu face au prix réellement observé. « Prix à ±5/10 % » = part des prévisions dont le prix P50 termine dans cette marge. Direction juste = hausse/baisse correctement anticipée. Couverture = part des prix réels dans la fourchette P10–P90 (cible théorique 80 %). Référence = distribution historique BTC sans filtre de régime. Prévisions testées chronologiquement, apprentissage limité aux rendements déjà connus à chaque date. Les horizons se chevauchent : les observations ne sont pas indépendantes et les taux ne sont pas des garanties.</p>';
+}
 function calibrate(C,R,HS,lastClosed=C.length-1){const n=C.length,end=Math.min(n-1,lastClosed);
   return HS.map(h=>{const tests=[];
     for(let j=Math.max(700,h+300);j+h<=end;j+=14){const v=[];for(let i=0;i+h<=j;i++)if(R[i]===R[j])v.push(Math.log(C[i+h]/C[i]));
@@ -1953,6 +2007,7 @@ async function renderProj(){
     return `<section><h2>Indice d'achat<small>est‑ce qu'il marche ? · 1 relevé / semaine</small></h2>${btTable([
       grp('Référence (tous les jours)',ev(()=>true),true),grp('Indice ≥ 70 (acheter)',ev(v=>v>=70),true),grp('Indice 31–69 (neutre)',ev(v=>v>30&&v<70),true),grp('Indice ≤ 30 (alléger) ↓',ev(v=>v<=30),false)])}
     <p>L'indice de l'accueil est un résumé des critères (signal récent, WaveTrend, M2 sur le mois à venir — jusqu'à 20 points —, funding). Il est utile si « ≥ 70 » fait nettement mieux que la référence, et si « ≤ 30 » baisse plus souvent (lignes ↓ : « Juste » = part des baisses). La semaine du calendrier n'est pas incluse dans ce test.</p></section>`;})()}
+  ${(()=>{const A=priceForecastAudit(D);return `<section><h2>Précision réelle des prévisions de prix<small>audit walk-forward · M2 + tendance + momentum + volatilité</small></h2>${priceAuditTable(A)}</section>`;})()}
   ${(()=>{const T=liqTest(d);if(!T)return '<section><h2>M2 seule ou composite ?<small>v19</small></h2><p>Le Worker M2 ne répond pas : test impossible.</p></section>';
     const e=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+' pts';
     return `<section><h2>M2 seule ou composite ?<small>v19 · décalage ${liqCfg.lag} j</small></h2>${btTable(T.rows)}
