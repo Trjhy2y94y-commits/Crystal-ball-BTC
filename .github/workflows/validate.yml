@@ -1,0 +1,68 @@
+name: Validate Cristal BTC
+
+on:
+  push:
+    branches: [main, chatgpt-improvements]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate manifest
+        run: python -m json.tool manifest.webmanifest > /dev/null
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          node --check service-worker.js
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import subprocess
+          import tempfile
+
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.active = False
+                  self.current = []
+                  self.blocks = []
+
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() == "script":
+                      attrs = dict(attrs)
+                      self.active = not attrs.get("src") and attrs.get("type", "text/javascript") in ("text/javascript", "application/javascript", "module", "")
+                      self.current = []
+
+              def handle_data(self, data):
+                  if self.active:
+                      self.current.append(data)
+
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script":
+                      if self.active:
+                          self.blocks.append("".join(self.current))
+                      self.active = False
+                      self.current = []
+
+          parser = Scripts()
+          parser.feed(Path("index.html").read_text(encoding="utf-8"))
+          if not parser.blocks:
+              raise SystemExit("No inline JavaScript blocks found")
+          with tempfile.TemporaryDirectory() as tmp:
+              for i, source in enumerate(parser.blocks):
+                  path = Path(tmp) / f"inline-{i}.js"
+                  path.write_text(source, encoding="utf-8")
+                  subprocess.run(["node", "--check", str(path)], check=True)
+          print(f"Validated {len(parser.blocks)} inline JavaScript block(s)")
+          PY
