@@ -1018,7 +1018,7 @@ function optTable(O,kind,buy){
   const row=(r,k)=>`<tr><td style="white-space:normal">${r.cur?'<b>Actuel</b> · ':''}${pP(r.P)}</td><td>${cell(r.tr)}</td><td class="${r.te.n?(robust(r)?'good':'bad'):''}">${cell(r.te)}</td><td>${r.cur?'':`<button type="button" class="apply" data-k="${kind}" data-p='${JSON.stringify(r.P)}'>OK</button>`}</td></tr>`;
   return `<table><tr><th>Réglage</th><th>Passé</th><th>Récent</th><th></th></tr>
     <tr><td>BTC sans signal (échantillon fixe)</td><td>${cell(O.ref.tr)}</td><td>${cell(O.ref.te)}</td><td></td></tr>
-    ${row(O.cur)}${O.top.map(row).join('')}</table>`;}
+    ${row(O.cur)}${O.top.map(row).join('')}</table><p class="note">Test chronologique unique 70/30 ; entrée à l'ouverture suivante et fenêtres sans chevauchement. Hors frais, spread, slippage, funding et gestion réelle du portefeuille : ce n'est pas un P&amp;L exécutable.</p>`;}
 const eur=v=>v>=1000?(v/1000).toFixed(1).replace('.0','').replace('.',',')+'k':String(v);
 const pc1=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+'%';
 const pc0=v=>v==null?'—':Math.round(v*100)+'%';
