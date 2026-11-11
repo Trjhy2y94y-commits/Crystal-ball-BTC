@@ -1309,7 +1309,7 @@ function m2Read(I,i){if(!I.real||I.liq[i]==null)return null;const n=I.liq.length
   // Avec un décalage plus court, on utilise exclusivement la pente passée pour éviter toute fuite temporelle.
   if(slope==null){const prev=I.liq[i-k];if(prev==null)return null;slope=I.liq[i]-prev;fut=I.liq[i]+slope;}
   return{lvl:I.liq[i],fut,slope,forward};}
-/* v17 : backtest réel → seuls les extrêmes ont un avantage (≥70 : 74 % de hausse à 30 j ; ≤30 : 69 % de baisse). Entre les deux = hasard. */
+/* Seuils d'affichage de l'indice : hypothèse à vérifier avec les études d'événements actualisées, pas un avantage statistique garanti. */
 function idxLabel(v){return v>=70?['Acheter par petits bouts','var(--buy)']:v<=30?['Alléger','var(--down)']:['Neutre : pas d\'avantage, on attend','#A7B0BF'];}
 function idxHistory(d,I){const out=new Array(d.length).fill(null),S=I.sig.filter(s=>!s.prov&&!s.blocked);let k=-1;
   for(let i=0;i<d.length;i++){while(k+1<S.length&&S[k+1].i<=i)k++;const ls=k>=0?S[k]:null;out[i]=idxParts(I,i,ls,ls?d[ls.i].t:0,d[i].t,null).score;}return out;}
