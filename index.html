@@ -546,6 +546,13 @@ header{border-color:#263646;background:rgba(10,16,23,.94)}
 .probability-panel{flex:0 0 auto;max-height:190px;overflow:auto;background:#111114;border-top:1px solid var(--line);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));display:grid;gap:7px;font-family:var(--cond)}
 .prob-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.prob-head strong{font-size:13px}.prob-head small,.prob-note{font-size:10px;color:var(--muted)}
 .prob-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.prob-cell{background:var(--panel);border-radius:9px;padding:7px;min-width:0}.prob-cell span{display:block;font-size:10px;color:var(--muted)}.prob-cell b{display:block;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}.prob-layers{display:flex;gap:5px;flex-wrap:wrap}.prob-layer{font-size:10px;padding:4px 7px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--sub)}.prob-layer b{color:var(--fg)}
+
+/* Prevent chart overlay / intrinsic canvas from widening the iPhone document */
+html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
+.app,.view,.page,.stage{min-width:0;max-width:100%;}
+#stage{overflow:hidden;}
+.probability-panel{width:100%;min-width:0;box-sizing:border-box;}
+.overlay-legend{left:8px;right:8px;max-width:none;}
 </style>
 
 <div class="app">
