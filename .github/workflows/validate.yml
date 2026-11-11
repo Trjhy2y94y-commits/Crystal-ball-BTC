@@ -112,3 +112,82 @@ jobs:
                   subprocess.run(["node", "--check", str(path)], check=True)
           print(f"Validated PWA manifest, {len(parser.scripts)} inline JS block(s), service worker, local assets and unique HTML ids")
           PY
+
+  mobile-smoke:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Playwright
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Start local app
+        run: |
+          python -m http.server 4173 --bind 127.0.0.1 > /tmp/cristal-http.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/cristal-http.log
+          exit 1
+      - name: iPhone-sized browser smoke test
+        run: |
+          mkdir -p artifacts
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          import json
+
+          errors = []
+          with sync_playwright() as p:
+              browser = p.chromium.launch()
+              context = browser.new_context(**p.devices["iPhone 13"])
+              page = context.new_page()
+              page.on("pageerror", lambda error: errors.append(str(error)))
+              page.goto("http://127.0.0.1:4173/", wait_until="domcontentloaded", timeout=30000)
+              page.wait_for_timeout(8000)
+
+              assert page.title() == "Cristal · BTC", "Unexpected page title"
+              assert page.locator(".tabbar").is_visible(), "Bottom navigation is missing"
+              assert page.locator("#home").is_visible(), "Home view is not visible"
+              assert page.locator("#home").inner_text().strip(), "Home view did not render"
+
+              page.locator('.tabbar button[data-tab="chart"]').click()
+              assert page.locator("#vChart").is_visible(), "Chart tab did not open"
+              assert page.locator("#cv").is_visible(), "Chart canvas is not visible"
+
+              page.locator('.tabbar button[data-tab="cal"]').click()
+              assert page.locator("#vCal").is_visible(), "Calendar tab did not open"
+
+              page.locator('.tabbar button[data-tab="stats"]').click()
+              assert page.locator("#vStats").is_visible(), "Stats tab did not open"
+              page.wait_for_timeout(500)
+
+              dimensions = page.evaluate("""() => ({
+                viewport: window.innerWidth,
+                document: document.documentElement.scrollWidth,
+                app: document.querySelector('.app').scrollWidth,
+                bottomNavHeight: document.querySelector('.tabbar').getBoundingClientRect().height
+              })""")
+              assert dimensions["document"] <= dimensions["viewport"] + 1, f"Horizontal page overflow: {dimensions}"
+              assert dimensions["app"] <= dimensions["viewport"] + 1, f"App horizontal overflow: {dimensions}"
+              assert dimensions["bottomNavHeight"] >= 44, f"Bottom navigation touch area too small: {dimensions}"
+              page.screenshot(path="artifacts/iphone-emulation.png")
+              if errors:
+                  raise AssertionError("Uncaught JavaScript errors: " + " | ".join(errors))
+              print(json.dumps({"result":"passed","dimensions":dimensions,"uncaughtErrors":errors}))
+              browser.close()
+          PY
+      - name: Upload iPhone emulation screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cristal-btc-iphone-emulation
+          path: artifacts/iphone-emulation.png
+          if-no-files-found: ignore
