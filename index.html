@@ -1050,7 +1050,7 @@ function rhythm(T,now){
   return{last,med,a,b,shift,hits,tot,n:T.length};}
 async function getDaily(){
   /* Une démo n'est jamais figée : on retente la source réelle après 60 s pour récupérer d'une panne réseau. */
-  if(daily&&(!daily.demo||Date.now()-dailyAt<60000))return daily;
+  if(daily&&Date.now()-dailyAt<60000)return daily;
   await Promise.all([loadMacro(),loadFut()]);
   try{const r=await loadLive('1d');const I=compute(r.rows);daily={rows:r.rows,ind:I,demo:false};}
   catch(e){const r=demo('1d');daily={rows:r.rows,ind:compute(r.rows),demo:true};}
