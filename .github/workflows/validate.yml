@@ -28,8 +28,26 @@ jobs:
           python - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
+          import json
+          import re
           import subprocess
           import tempfile
+
+          manifest = json.loads(Path("manifest.webmanifest").read_text(encoding="utf-8"))
+          for icon in manifest.get("icons", []):
+              asset = Path(icon["src"].removeprefix("./"))
+              if not asset.is_file():
+                  raise SystemExit(f"Manifest icon missing: {asset}")
+          sw = Path("service-worker.js").read_text(encoding="utf-8")
+          shell_match = re.search(r"const\\s+SHELL\\s*=\\s*\\[(.*?)\\]", sw, re.S)
+          if not shell_match:
+              raise SystemExit("Service worker shell list not found")
+          for asset in re.findall(r"['\"]([^'\"]+)['\"]", shell_match.group(1)):
+              local = Path(asset.removeprefix("./"))
+              if asset in ("./", "./index.html"):
+                  local = Path("index.html")
+              if not local.is_file():
+                  raise SystemExit(f"Service worker precache asset missing: {local}")
 
           class Scripts(HTMLParser):
               def __init__(self):
