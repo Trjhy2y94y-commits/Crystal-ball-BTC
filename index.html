@@ -1148,7 +1148,7 @@ const money=v=>v==null?'—':Math.round(v).toLocaleString('fr-FR')+' '+String.fr
 function confluenceSnapshot(D){
   const d=D.rows,I=D.ind;if(!d||d.length<220||!I)return null;
   const n=Math.min(I.lastClosed??d.length-1,d.length-1),p=d[n].c,ma=I.sma200?.[n],r=I.rsiD?.[n];
-  const trend=ma==null?0:p>ma?1:-1;
+  const trend=ma==null?0:p>ma?1:-1,trendVote=ma==null?0:p>ma*1.01?1:p<ma*.99?-1:0;
   const hi=Math.max(...d.slice(Math.max(0,n-30),n+1).map(x=>x.h)),lo=Math.min(...d.slice(Math.max(0,n-30),n+1).map(x=>x.l));
   const prevHi=Math.max(...d.slice(Math.max(0,n-90),Math.max(1,n-30)).map(x=>x.h)),prevLo=Math.min(...d.slice(Math.max(0,n-90),Math.max(1,n-30)).map(x=>x.l));
   const avgVol=d.slice(Math.max(0,n-20),n).reduce((a,x)=>a+(x.v||0),0)/Math.max(1,Math.min(20,n));
@@ -1163,13 +1163,13 @@ function confluenceSnapshot(D){
   const liqVote=liqNow==null||liqPrev==null?0:liqNow-liqPrev>.025?1:liqNow-liqPrev<-.025?-1:0;
   const structure=breakout.includes('haussière')?1:breakout.includes('baissière')?-1:0;
   const votes=[
-    {key:'Tendance',value:trend,weight:30,detail:trend>0?'Au-dessus SMA200':trend<0?'Sous SMA200':'Neutre'},
+    {key:'Tendance',value:trendVote,weight:30,detail:trendVote>0?'Au-dessus SMA200 (+1 %)':trendVote<0?'Sous SMA200 (-1 %)':'Proche de la SMA200'},
     {key:'Momentum',value:mom,weight:25,detail:mom>0?'RSI > 55':mom<0?'RSI < 45':'RSI neutre'},
     {key:'Liquidité',value:liqVote,weight:25,detail:liqVote>0?'Pente 14 j positive':liqVote<0?'Pente 14 j négative':'Stable / indisponible'},
     {key:'Structure',value:structure,weight:20,detail:structure>0?'Cassure haussière':structure<0?'Cassure baissière':'Pas de cassure'}
   ];
-  const active=votes.filter(v=>v.value!==0),den=active.reduce((a,v)=>a+v.weight,0);
-  const confluence=den?Math.round(100*active.reduce((a,v)=>a+v.value*v.weight,0)/den):0;
+  const active=votes.filter(v=>v.value!==0);
+  const confluence=Math.round(votes.reduce((a,v)=>a+v.value*v.weight,0));
   const bias=active.reduce((a,v)=>a+v.value,0),labels={wyckoff:wy,smc,elliott:ell,patterns:breakout},probs={};
   [30,90,365].forEach(h=>{
     const vals=[];for(let i=60;i+h<=n;i++){const m=I.sma200?.[i];if(m==null)continue;if((d[i].c>m?1:-1)===trend)vals.push(Math.log(d[i+h].c/d[i].c));}
