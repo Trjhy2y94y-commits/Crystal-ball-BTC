@@ -984,14 +984,18 @@ function optimize(d,I,kind,buy){
   const grid=[];const TH=[45,53,60,70],MIN=I.intra?[1,2,2.5,3]:[2,2.5,3,3.5,4];
   TH.forEach(th=>MIN.forEach(min=>[0,1].forEach(a=>[0,1].forEach(b=>{
     const P={...base,th,min};if(I.intra){P.gate=a;P.wFund=b;}else{if(buy)P.penRg=a;else P.penRgS=a;P.wFund=b;}grid.push(P);}))));
-  const ev=(idx,lo,hi)=>{const v=idx.filter(i=>i>=lo&&i<hi&&i+hm<n).map(i=>C[i+hm]/C[i]-1);
-    return{n:v.length,hit:v.length?v.filter(x=>buy?x>0:x<0).length/v.length:null,avg:v.length?v.reduce((s,x)=>s+x,0)/v.length:null};};
+  // Sépare strictement les fenêtres d'apprentissage et de test : aucun rendement du train ne traverse cut.
+  // Signal à la clôture, entrée à l'ouverture suivante, événements non chevauchants.
+  const ev=(idx,lo,hi)=>{const chosen=[];let last=-Infinity;
+    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=lo&&i<hi&&i+1<hi&&i+hm<hi&&i-last>=hm){chosen.push(i);last=i;}});
+    const v=chosen.map(i=>(C[i+hm]/d[i+1].o-1)*(buy?1:-1)).filter(Number.isFinite);
+    return{n:v.length,hit:v.length?v.filter(x=>x>0).length/v.length:null,avg:v.length?v.reduce((s,x)=>s+x,0)/v.length:null};};
   const refIdx=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(bpd))===0);
   const ref={tr:ev(refIdx,0,cut),te:ev(refIdx,cut,n)};
   const minN=I.intra?10:6;
   const res=grid.map(P=>{const idx=scoreAll(I.cands,P,I.real).filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);
     return{P,tr:ev(idx,0,cut),te:ev(idx,cut,n)};}).filter(r=>r.tr.n>=minN);
-  res.sort((a,b)=>(b.tr.hit-a.tr.hit)||(b.tr.avg-a.tr.avg)*(buy?1:-1));
+  res.sort((a,b)=>(b.tr.hit-a.tr.hit)||(b.tr.avg-a.tr.avg));
   const top=res.slice(0,6);
   const cur=(()=>{const idx=I.sig.filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);return{P:base,tr:ev(idx,0,cut),te:ev(idx,cut,n),cur:true};})();
   const all=grid.map(P=>{const idx=scoreAll(I.cands,P,I.real).filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);return ev(idx,0,cut);});
@@ -999,7 +1003,10 @@ function optimize(d,I,kind,buy){
   return{top,cur,ref,cutT:d[cut].t,Hm,best100,minN};}
 /* test dédié : le réglage actuel avec / sans RSI (jour, hebdo), en bonus ou obligatoire */
 function rsiTest(d,I,kind,buy){const O=optimize(d,I,kind,buy),n=d.length,C=I.Cl,hm=Math.round(O.Hm*(I.bpd||1)),cut=Math.floor(n*.7),base=getParams(kind);
-  const ev=(idx,lo,hi)=>{const v=idx.filter(i=>i>=lo&&i<hi&&i+hm<n).map(i=>C[i+hm]/C[i]-1);return{n:v.length,hit:v.length?v.filter(x=>buy?x>0:x<0).length/v.length:null};};
+  const ev=(idx,lo,hi)=>{const chosen=[];let last=-Infinity;
+    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=lo&&i<hi&&i+1<hi&&i+hm<hi&&i-last>=hm){chosen.push(i);last=i;}});
+    const v=chosen.map(i=>(C[i+hm]/d[i+1].o-1)*(buy?1:-1)).filter(Number.isFinite);
+    return{n:v.length,hit:v.length?v.filter(x=>x>0).length/v.length:null};};
   const V=[[0,0],[1,0],[2,0],[0,1],[0,2],[1,1]].map(([a,b])=>{const P={...base,rsiD:a,rsiW:b};
     const idx=scoreAll(I.cands,P,I.real).filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);
     return{P,tr:ev(idx,0,cut),te:ev(idx,cut,n),cur:a===(base.rsiD||0)&&b===(base.rsiW||0)};});
