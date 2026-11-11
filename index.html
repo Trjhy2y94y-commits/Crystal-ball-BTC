@@ -1810,14 +1810,14 @@ function historicalStructureFeatures(rows,i){
   };
   const fvgZones=[];
   [['1D',daily.slice(-365)],['1W',aggregate('1W').slice(-104)],['1M',aggregate('1M').slice(-36)]].forEach(([tf,bars])=>{
+    const minLow=new Array(bars.length),maxHigh=new Array(bars.length);
+    for(let z=bars.length-1;z>=0;z--){minLow[z]=Math.min(bars[z].l,z+1<bars.length?minLow[z+1]:Infinity);maxHigh[z]=Math.max(bars[z].h,z+1<bars.length?maxHigh[z+1]:-Infinity);}
     for(let k=2;k<bars.length;k++){
       const a=bars[k-2],c=bars[k],bull=c.l>a.h,bear=c.h<a.l;if(!bull&&!bear)continue;
       const lo=bull?a.h:c.h,hi=bull?c.l:a.l;if((hi-lo)/c.c<.001)continue;
-      let filled=false,mit=0;
-      for(let z=k+1;z<bars.length;z++){const r=bars[z];
-        if(bull){if(r.l<=lo){filled=true;break;}if(r.l<hi)mit=Math.max(mit,(hi-r.l)/(hi-lo));}
-        else{if(r.h>=hi){filled=true;break;}if(r.h>lo)mit=Math.max(mit,(r.h-lo)/(hi-lo));}
-      }
+      const later=k+1<bars.length,extreme=bull?(later?minLow[k+1]:Infinity):(later?maxHigh[k+1]:-Infinity);
+      const filled=bull?extreme<=lo:extreme>=hi;
+      const mit=bull?(extreme<hi&&extreme>lo?(hi-extreme)/(hi-lo):0):(extreme>lo&&extreme<hi?(extreme-lo)/(hi-lo):0);
       if(!filled){const mid=(lo+hi)/2,dist=(price-mid)/price;
         if((bull&&hi<price)||(bear&&lo>price))fvgZones.push({tf,bull,dist,mit});}
     }
