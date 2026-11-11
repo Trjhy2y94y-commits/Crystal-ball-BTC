@@ -1295,20 +1295,20 @@ function idxParts(I,i,ls,lsT,t,week){
      c'est la partie qui regarde vers l'avant (pente sur le mois à venir) + son niveau actuel. Sans M2 réelle : ±6 sur le proxy. */
   const m2=m2Read(I,i);
   if(m2){const v=Math.max(-1,Math.min(1,m2.slope/0.08))*14+Math.max(-1,Math.min(1,m2.lvl))*6;
-    if(Math.abs(v)>=1)P.push([v,m2.slope>0.01?'M2 en hausse sur le mois à venir':m2.slope<-0.01?'M2 en baisse sur le mois à venir':(m2.lvl>0?'M2 élevée':'M2 faible')]);}
+    if(Math.abs(v)>=1)P.push([v,m2.slope>0.01?(m2.forward?'M2 en hausse sur le mois à venir':'M2 en hausse sur 30 j passés'):m2.slope<-0.01?(m2.forward?'M2 en baisse sur le mois à venir':'M2 en baisse sur 30 j passés'):(m2.lvl>0?'M2 élevée':'M2 faible')]);}
   else{const lt=(I.ltA||[])[i]||0;if(lt)P.push([lt*6,lt>0?'momentum en hausse':'momentum en baisse']);}
   if(I.FU&&I.FU.f7[i]!=null&&I.FU.f7[i]<0)P.push([6,'les shorts paient (funding négatif)']);
   if(week!=null&&week!==0){P.push([Math.max(-2,Math.min(2,week))*5,week>0?'semaine verte au calendrier':'semaine de prudence au calendrier']);}
   const score=Math.round(Math.max(0,Math.min(100,50+P.reduce((s,x)=>s+x[0],0))));
   return{score,parts:P.filter(x=>Math.abs(x[0])>=4).sort((x,y)=>Math.abs(y[0])-Math.abs(x[0]))};}
 function m2Read(I,i){if(!I.real||I.liq[i]==null)return null;const n=I.liq.length,bpd=I.bpd||1,k=Math.max(1,Math.round(30*bpd)),lagBars=Math.round((+liqCfg.lag||0)*bpd);
-  let fut=null,slope=null;
+  let fut=null,slope=null,forward=false;
   // La pente « mois à venir » n'est exploitable historiquement que si le décalage de publication couvre ces 30 jours.
   if(lagBars>=k){if(i+k<n)fut=I.liq[i+k];else{const f=I.liqFut[i+k-n];fut=f?f.v:null;if(fut==null){const ok=I.liqFut.filter(x=>x.v!=null);fut=ok.length?ok[ok.length-1].v:null;}}
-    if(fut!=null)slope=fut-I.liq[i];}
+    if(fut!=null){slope=fut-I.liq[i];forward=true;}}
   // Avec un décalage plus court, on utilise exclusivement la pente passée pour éviter toute fuite temporelle.
   if(slope==null){const prev=I.liq[i-k];if(prev==null)return null;slope=I.liq[i]-prev;fut=I.liq[i]+slope;}
-  return{lvl:I.liq[i],fut,slope};}
+  return{lvl:I.liq[i],fut,slope,forward};}
 /* v17 : backtest réel → seuls les extrêmes ont un avantage (≥70 : 74 % de hausse à 30 j ; ≤30 : 69 % de baisse). Entre les deux = hasard. */
 function idxLabel(v){return v>=70?['Acheter par petits bouts','var(--buy)']:v<=30?['Alléger','var(--down)']:['Neutre : pas d\'avantage, on attend','#A7B0BF'];}
 function idxHistory(d,I){const out=new Array(d.length).fill(null),S=I.sig.filter(s=>!s.prov&&!s.blocked);let k=-1;
