@@ -922,13 +922,14 @@ function cycleInfo(d){if(!d||!d.length)return null;const after=d.filter(r=>r.t>=
 /* backtest des signaux sur l'historique chargé (rendements à +h jours, bougie close du signal) */
 /* statistiques à +Hm et +Hl jours (convertis en bougies) — avg30/hit30/avg90 = colonnes « moyen » et « long » */
 function mkGrp(d,C,bpd,Hm,Hl){const n=d.length,hm=Math.round(Hm*bpd),hl=Math.round(Hl*bpd);
-  const fwd=(i,h)=>i+h<n?C[i+h]/C[i]-1:null;
-  const mae=(i,h,buy)=>{if(i+h>=n)return null;let x=buy?Infinity:-Infinity;for(let j=i+1;j<=i+h;j++)x=buy?Math.min(x,d[j].l):Math.max(x,d[j].h);return x/C[i]-1;};
-  return(name,idx,buy)=>{const r={name,buy,n:idx.length};
-    const vm=idx.map(i=>fwd(i,hm)).filter(x=>x!=null),vl=idx.map(i=>fwd(i,hl)).filter(x=>x!=null);
-    r.avg30=vm.length?vm.reduce((s,x)=>s+x,0)/vm.length:null;r.hit30=vm.length?vm.filter(x=>buy?x>0:x<0).length/vm.length:null;r.nm=vm.length;
+  const fwd=(i,h,buy)=>i+h<n?(C[i+h]/C[i]-1)*(buy?1:-1):null;
+  /* Excursion adverse positive dans les deux sens : baisse après achat, hausse après vente. */
+  const adverse=(i,h,buy)=>{if(i+h>=n)return null;let x=buy?Infinity:-Infinity;for(let j=i+1;j<=i+h;j++)x=buy?Math.min(x,d[j].l):Math.max(x,d[j].h);return buy?C[i]/x-1:x/C[i]-1;};
+  return(name,idx,buy)=>{const vm=idx.map(i=>fwd(i,hm,buy)).filter(x=>x!=null),vl=idx.map(i=>fwd(i,hl,buy)).filter(x=>x!=null);
+    const r={name,buy,n:vm.length,signals:idx.length};
+    r.avg30=vm.length?vm.reduce((s,x)=>s+x,0)/vm.length:null;r.hit30=vm.length?vm.filter(x=>x>0).length/vm.length:null;
     r.avg90=vl.length?vl.reduce((s,x)=>s+x,0)/vl.length:null;
-    const m=idx.map(i=>mae(i,hm,buy)).filter(x=>x!=null);r.mae=m.length?q(m,.5):null;return r;};}
+    const m=idx.map(i=>adverse(i,hm,buy)).filter(x=>x!=null);r.mae=m.length?q(m,.5):null;return r;};}
 function backtest(d,I){
   const n=d.length,C=I.Cl;const grp=mkGrp(d,C,I.bpd||1,30,90);
   const S=I.sig.filter(s=>!s.prov&&!s.blocked),old=[];
@@ -1000,12 +1001,12 @@ function optTable(O,kind,buy){
   const robust=r=>r.te.n>=5&&r.te.hit!=null&&r.te.hit>=O.ref.te.hit+.10; /* v9 : on compare au hasard, pas au passé (100 % sur 7 cas = en partie de la chance) */
   const row=(r,k)=>`<tr><td style="white-space:normal">${r.cur?'<b>Actuel</b> · ':''}${pP(r.P)}</td><td>${cell(r.tr)}</td><td class="${r.te.n?(robust(r)?'good':'bad'):''}">${cell(r.te)}</td><td>${r.cur?'':`<button type="button" class="apply" data-k="${kind}" data-p='${JSON.stringify(r.P)}'>OK</button>`}</td></tr>`;
   return `<table><tr><th>Réglage</th><th>Passé</th><th>Récent</th><th></th></tr>
-    <tr><td>Référence (au hasard)</td><td>${cell(O.ref.tr)}</td><td>${cell(O.ref.te)}</td><td></td></tr>
+    <tr><td>Marché (référence)</td><td>${cell(O.ref.tr)}</td><td>${cell(O.ref.te)}</td><td></td></tr>
     ${row(O.cur)}${O.top.map(row).join('')}</table>`;}
 const eur=v=>v>=1000?(v/1000).toFixed(1).replace('.0','').replace('.',',')+'k':String(v);
 const pc1=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+'%';
 const pc0=v=>v==null?'—':Math.round(v*100)+'%';
-function btTable(rows,L=['+30j','+90j']){return `<table><tr><th>Signal</th><th>N</th><th>${L[0]}</th><th>Juste</th><th>${L[1]}</th><th>Creux</th></tr>${rows.map(r=>{
+function btTable(rows,L=['+30j','+90j']){return `<table><tr><th>Signal</th><th>N évalué</th><th>Perf. strat. ${L[0]}</th><th>Gagnants</th><th>Perf. strat. ${L[1]}</th><th>Excursion adverse méd.</th></tr>${rows.map(r=>{
   const ok=r.hit30==null?'':r.hit30>=.6?'good':r.hit30<.45?'bad':'';
   return `<tr><td>${r.name}</td><td>${r.n}</td><td>${pc1(r.avg30)}</td><td class="${ok}">${pc0(r.hit30)}</td><td>${pc1(r.avg90)}</td><td>${pc1(r.mae)}</td></tr>`;}).join('')}</table>`;}
 /* v18 : acheter PENDANT le repli (prix sous le plus haut 30 j) vs l'ancien vert (achat Cipher B, qui arrive après le creux) */
