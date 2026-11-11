@@ -928,7 +928,7 @@ function drawStructureOverlays(p0,vis,first,last,X,Y,cw,bw){
     // Biseaux : deux lignes convergentes construites sur les trois derniers pivots de chaque côté.
     if(hs.length>=3&&ls.length>=3){
       const H=hs.slice(-3),L=ls.slice(-3),fallH=H[2].v<H[0].v, riseH=H[2].v>H[0].v, riseL=L[2].v>L[0].v, fallL=L[2].v<L[0].v;
-      const converge=(H[2].v-H[0].v)*(L[2].v-L[0].v)<0&&Math.abs(H[2].v-L[2].v)<Math.abs(H[0].v-L[0].v);
+      const converge=Math.abs(H[2].v-L[2].v)<Math.abs(H[0].v-L[0].v);
       if(converge&&fallH&&fallL){seg(H[0],H[2],gold,'Biseau descendant');seg(L[0],L[2],gold,'');}
       else if(converge&&riseH&&riseL){seg(H[0],H[2],gold,'Biseau ascendant');seg(L[0],L[2],gold,'');}
     }
