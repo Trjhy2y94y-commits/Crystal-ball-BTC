@@ -1141,7 +1141,7 @@ function portfolioSimulation(d,I,roundTripCost){
       if(s.t==='buy'&&!position&&cash>0){entryPx=px;entryDate=d[j].t;units=cash*(1-fee)/px;cash=0;position=true;}
       else if(s.t==='sell'&&position){const proceeds=units*px*(1-fee),ret=proceeds/(entryPx?units*entryPx/(1-fee):1)-1;
         cash=proceeds;trades.push({ret,entry:entryDate,exit:d[j].t});tradeCount++;if(ret>0)wins++;tradeSum+=ret;units=0;entryPx=null;entryDate=null;position=false;}
-    }}
+    }
     if(position)exposed++;
     const equity=position?units*d[j].c*(1-fee):cash; // valeur liquidative, frais de sortie inclus même si position encore ouverte
     curve.push(equity);peak=Math.max(peak,equity);maxDD=Math.max(maxDD,peak>0?1-equity/peak:0);
