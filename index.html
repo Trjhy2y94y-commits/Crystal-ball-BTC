@@ -1,21 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-
-<link rel="icon" type="image/png" href="favicon.png">
-
-<link <link rel="manifest" href="manifest.webmanifest">">
+    <link rel="icon" type="image/png" href="./icon-192.png">
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#07090d">
+    <meta name="theme-color" content="#090d12">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Cristal BTC">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="description" content="Cristal BTC — analyse et suivi du marché Bitcoin.">
     <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
     <title>Cristal · BTC</title>
   </head>
   <body>
@@ -242,7 +238,14 @@ body{font-family:var(--cond);font-variant-numeric:tabular-nums;-webkit-font-smoo
 .proj th,.proj td{padding:9px 4px;border-bottom:.5px solid var(--line);}
 .proj tr:last-child td{border-bottom:0;}
 .proj th{font-size:12px;font-weight:600;color:var(--muted);}
-.proj .apply{font-family:var(--cond);font-size:14px;color:var(--blue);border:0;background:rgba(10,132,255,.15);border-radius:10px;padding:8px 12px;}
+/* Sur iPhone, les tableaux denses défilent dans leur propre zone : pas de colonnes écrasées ni de page qui déborde. */
+.proj table{display:block;width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y;
+  scrollbar-width:thin;}
+.proj table th,.proj table td{white-space:nowrap;}
+.proj table td:first-child,.proj table th:first-child{white-space:normal;min-width:92px;}
+.proj section{min-width:0;}
+.proj .apply{font-family:var(--cond);font-size:14px;color:var(--blue);border:0;background:rgba(10,132,255,.15);border-radius:10px;padding:8px 12px;min-height:40px;}
 .note{border-left:0;background:rgba(255,159,10,.12);color:var(--accent)!important;border-radius:12px;padding:10px 12px;}
 /* graphique */
 header{border-bottom:0;padding-block:10px 6px;}
@@ -302,6 +305,112 @@ header{border-bottom:0;padding-block:10px 6px;}
 .orb .gh{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;margin:6px 0 -8px 16px;}
 .orb .tag{font-size:15px;font-weight:600;}
 .orb .foot{font-size:12px;color:var(--muted);text-align:center;padding:0 10px;}
+
+/* Cristal BTC — finition premium, contraste calme et navigation plus lisible */
+:root{
+  --bg:#090d12;
+  --panel:#111923;
+  --panel2:#182331;
+  --grid:#1b2733;
+  --line:#263443;
+  --fg:#edf3f7;
+  --muted:#8293a4;
+  --sub:#b6c3ce;
+  --accent:#d8b66c;
+  --violet:#a78bfa;
+  --up:#35d39a;
+  --down:#ff6474;
+  --buy:#35d39a;
+  --pink:#fb7185;
+  --blue:#6da9ff;
+}
+body{background:radial-gradient(ellipse at 50% -18%,#172536 0%,var(--bg) 58%);letter-spacing:.005em}
+header{background:rgba(13,20,29,.94);border-bottom-color:var(--line);padding-top:12px;padding-bottom:11px}
+.px{font-size:clamp(24px,6vw,30px);letter-spacing:-.035em}
+.sym{letter-spacing:.12em}
+.badge{border-radius:999px;padding:3px 8px;letter-spacing:.08em}
+.toolbar{background:rgba(13,20,29,.96);gap:7px;padding-top:9px;padding-bottom:9px}
+.toolbar button,footer button,.sheet button{
+  border-radius:999px;border-color:#2a3948;background:#121c27;
+  letter-spacing:.015em;transition:background .18s ease,border-color .18s ease,color .18s ease;
+}
+.toolbar button.on,footer button.on,.sheet button.on{
+  color:#111820;background:var(--accent);border-color:var(--accent)
+}
+.tabbar{background:rgba(10,15,22,.98);border-top-color:var(--line);backdrop-filter:blur(18px)}
+.tabbar button{font-size:11px;letter-spacing:.015em;color:#8293a4}
+.tabbar button.on{color:var(--accent)}
+.tabbar svg{width:22px;height:22px}
+.proj{background:transparent;gap:14px;padding-top:16px}
+.proj section,.hm .card,.hm .tile,.orb .ball,.orb .ot,.orb .grp{
+  background:linear-gradient(145deg,rgba(22,33,46,.96),rgba(14,22,31,.98));
+  border:1px solid var(--line);border-radius:17px;
+  box-shadow:0 8px 24px rgba(0,0,0,.14)
+}
+.proj section{padding:14px}
+.proj h2{color:var(--accent);letter-spacing:.075em}
+.proj p,.proj .note{color:#9aabba}
+.hm .card,.hm .tile,.orb .ot{border-color:var(--line)}
+.hm .ban,.orb .act{background:linear-gradient(145deg,#172434,#101923);border-color:var(--line);border-radius:15px}
+.hm .score{letter-spacing:-.04em}
+.hm .price,.orb .price,.px,.hm .tile .v1,.orb .ot .v1{font-variant-numeric:tabular-nums;letter-spacing:-.035em}
+.hm .seg button,.toolbar button{border-radius:999px}
+.sheet{background:rgba(13,20,29,.98);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* Refonte structurelle mobile : cockpit, lecture hiérarchisée et surfaces dédiées */
+.cockpit{padding:14px 14px calc(28px + env(safe-area-inset-bottom));gap:12px}
+.ck-top{display:flex;align-items:center;justify-content:space-between;padding:5px 2px 13px}
+.ck-brand{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.16em;color:var(--sub);font-weight:700}
+.ck-mark{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(145deg,#e8cb83,#a98743);color:#111820;font-size:19px;letter-spacing:0}
+.ck-brand b{color:var(--accent)}
+.ck-live{font-size:9px;letter-spacing:.1em;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ck-live i{width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 9px var(--up)}
+.ck-hero{padding:19px 18px 17px;border:1px solid #344353;border-radius:21px;background:radial-gradient(ellipse at 85% 0%,rgba(216,182,108,.13),transparent 55%),linear-gradient(145deg,#192635,#101821);box-shadow:0 15px 34px rgba(0,0,0,.2)}
+.ck-eyebrow,.ck-section-head{font-size:10px;font-weight:750;letter-spacing:.13em;color:var(--muted)}
+.ck-eyebrow span{padding:0 5px;color:var(--accent)}
+.ck-price-row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin:12px 0 11px}
+.ck-price{font-size:clamp(32px,9vw,43px);font-weight:750;letter-spacing:-.055em;line-height:1.05;color:var(--fg);font-variant-numeric:tabular-nums}
+.ck-price small{font-size:17px;color:var(--muted);font-weight:550}
+.ck-change{padding:7px 9px;border-radius:10px;font-size:12px;font-weight:750;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ck-change small{font-size:9px;opacity:.7;margin-left:3px}
+.ck-change.positive{color:var(--up);background:rgba(53,211,154,.11)}
+.ck-change.negative{color:var(--down);background:rgba(255,100,116,.11)}
+.ck-regime{display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.08em;color:var(--sub);padding-top:12px;border-top:1px solid var(--line)}
+.ck-regime-dot{width:7px;height:7px;border-radius:50%}
+.ck-sep{color:var(--line);margin:0 2px 0 5px}
+.ck-muted{color:var(--muted);font-size:10px;letter-spacing:0}
+.ck-decision,.ck-chart-card{padding:16px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(150deg,#151f2b,#101720)}
+.ck-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ck-tag{font-size:9px;color:var(--accent);border:1px solid rgba(216,182,108,.28);border-radius:20px;padding:4px 7px;letter-spacing:.09em}
+.ck-decision-main{display:flex;align-items:center;gap:13px;padding:17px 0 13px}
+.ck-decision-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:13px;background:rgba(216,182,108,.1);font-size:23px;font-weight:700}
+.ck-decision h2{font-size:16px;margin:0 0 4px;color:var(--fg);letter-spacing:-.02em}
+.ck-decision p{font-size:12px;line-height:1.45;margin:0;color:var(--muted)}
+.ck-decision-foot{padding-top:10px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)}
+.ck-forecast-head{padding:5px 2px 0}
+.ck-prob-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ck-prob{padding:14px;border:1px solid var(--line);border-radius:16px;background:#121c27;min-width:0}
+.ck-prob span,.ck-prob small{display:block;color:var(--muted);font-size:9px;letter-spacing:.1em}
+.ck-prob strong{display:block;font-size:27px;line-height:1.2;margin:8px 0 4px;color:var(--accent);font-variant-numeric:tabular-nums}
+.ck-prob small{font-size:10px;letter-spacing:0}
+.ck-chart-card .seg{margin:14px 0 7px;background:#0b121a;border:1px solid var(--line);border-radius:12px;padding:3px}
+.ck-chart-card .seg button{flex:1;min-height:34px;border:0;background:transparent;color:var(--muted);font-size:10px}
+.ck-chart-card .seg button.on{background:#263342;color:var(--accent);border-radius:9px}
+.ck-chart-card #orb{width:100%;height:175px;display:block;touch-action:pan-y}
+.ck-chart-hint{text-align:center;font-size:10px;color:var(--muted);padding-top:5px}
+.ck-readout{margin-top:-2px}
+.ck-factors{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#111a24}
+.ck-factor{display:flex;align-items:center;gap:10px;padding:12px 13px;border-bottom:1px solid var(--line);font-size:12px;color:var(--sub)}
+.ck-factor:last-child{border-bottom:0}
+.ck-factor-icon{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:#202d3a;color:var(--accent);font-size:14px}
+.ck-factor b{margin-left:auto;font-size:11px}
+.ck-disclaimer{font-size:10px!important;line-height:1.5;color:var(--muted)!important;padding:2px 3px 0}
+.tabbar button{font-size:10px;letter-spacing:.01em}
+@media(min-width:600px){.cockpit{max-width:620px;margin:0 auto}.ck-prob strong{font-size:31px}}
+
 </style>
 
 <div class="app">
@@ -324,6 +433,7 @@ header{border-bottom:0;padding-block:10px 6px;}
     <button type="button" data-tf="1d" class="on" id="b1d">1D</button>
     <button type="button" data-tf="4h" id="b4h">4H</button>
     <button type="button" data-tf="1w" id="b1w">1W</button>
+    <button type="button" data-tf="1M" id="b1m">1M</button>
     <button type="button" id="b3m">3M</button>
     <span class="sp"></span>
     <button type="button" id="bZones" aria-label="Réglages">Réglages</button>
@@ -350,10 +460,10 @@ header{border-bottom:0;padding-block:10px 6px;}
   <section class="view" id="vStats" hidden><div class="proj page" id="proj"></div></section>
   <div class="toast" id="toast" hidden></div>
   <nav class="tabbar" aria-label="Navigation">
-    <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11" r="7"></circle><path d="M7 21h10M9 11a3 3 0 0 1 3-3"></path></svg>Boule</button>
-    <button type="button" data-tab="chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v16M16 4v16M5 8h6M13 14h6M5 16h6M13 6h6"></path></svg>Graphique</button>
-    <button type="button" data-tab="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Calendrier</button>
-    <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Stats</button>
+    <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11" r="7"></circle><path d="M7 21h10M9 11a3 3 0 0 1 3-3"></path></svg>Cockpit</button>
+    <button type="button" data-tab="chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v16M16 4v16M5 8h6M13 14h6M5 16h6M13 6h6"></path></svg>Analyse</button>
+    <button type="button" data-tab="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Cycle</button>
+    <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Fiabilité</button>
   </nav>
 </div>
 
@@ -423,15 +533,16 @@ function compute(d,ctx){
      - pente de liquidité mesurée sur ~14 jours (et plus sur 2 bougies, trop bruité)
      - divergences WaveTrend (le cœur de Cipher B)
      - régime de tendance : SMA200 en 1D, MA50 semaine en 1W (pénalise les signaux contre‑tendance) */
-  const step=d.length>1?d[1].t-d[0].t:864e5,wk=step>3*864e5,intra=step<864e5,bpd=864e5/step;
-  const trendMA=wk?sma(Cl,50):intra?sma(Cl,Math.round(200*bpd)):sma200;
-  const kL=Math.max(2,Math.round(14*bpd)),lookDiv=wk?40:90;
-  const closedAt=i=>d[i].t+step<=Date.now();
+  const step=d.length>1?d[1].t-d[0].t:864e5,mo=step>25*864e5,wk=step>3*864e5&&!mo,intra=step<864e5,bpd=mo?1/30.4375:864e5/step;
+  const trendMA=mo?sma(Cl,20):wk?sma(Cl,50):intra?sma(Cl,Math.round(200*bpd)):sma200;
+  const kL=mo?14:Math.max(2,Math.round(14*bpd)),lookDiv=mo?24:wk?40:90;
+  const closedAt=i=>{if(mo){const z=new Date(d[i].t);return Date.UTC(z.getUTCFullYear(),z.getUTCMonth()+1,1)<=Date.now();}return d[i].t+step<=Date.now();};
   const regime=i=>{const m=trendMA[i];if(m==null)return 0;return Cl[i]>m*1.02?1:Cl[i]<m*0.98?-1:0;};
   const liqTrend=i=>{if(liq[i]==null||liq[i-kL]==null)return 0;const s=liq[i]-liq[i-kL];return s>0.02?1:s<-0.02?-1:0;};
-  const trough=(i,dir)=>{let wi=i,pi=i;for(let j=Math.max(0,i-8);j<=i;j++){if(wt2[j]==null)continue;
-      if(dir>0){if(wt2[j]<wt2[wi])wi=j;if(L[j]<L[pi])pi=j;}else{if(wt2[j]>wt2[wi])wi=j;if(H[j]>H[pi])pi=j;}}
-    return{w:wt2[wi],p:dir>0?L[pi]:H[pi]};};
+  /* Le WT est lu sur la même bougie que le pivot de prix : pas de mélange de deux extrêmes distincts. */
+  const trough=(i,dir)=>{let pi=-1;for(let j=Math.max(0,i-8);j<=i;j++){if(wt2[j]==null)continue;
+      if(pi<0||(dir>0?L[j]<L[pi]:H[j]>H[pi]))pi=j;}
+    return pi<0?null:{i:pi,w:wt2[pi],p:dir>0?L[pi]:H[pi]};};
   const FU=memo('fu',d.length+':'+d[0].t+':'+fut.at,()=>buildFund(d));
   /* v7 : on extrait d'abord tous les croisements « candidats » avec leurs critères, puis on les note avec des réglages (P).
      Ça permet à l'optimiseur de tester des dizaines de réglages sans tout recalculer. */
@@ -445,21 +556,23 @@ function compute(d,ctx){
   dots.forEach(o=>{const i=o.i,w=wt2[i],buy=o.t==='up';
     if(buy?w>-40:w<40)return;
     const tr=trough(i,buy?1:-1),pv=prevEx[o.t];
-    const div=!!(pv&&i-pv.i<=lookDiv&&(buy?(tr.p<pv.p&&tr.w>pv.w+3):(tr.p>pv.p&&tr.w<pv.w-3)));
-    prevEx[o.t]={i,w:tr.w,p:tr.p};
+    if(!tr)return;
+    const div=!!(pv&&tr.i-pv.i>=3&&tr.i-pv.i<=lookDiv&&(buy?(tr.p<pv.p&&tr.w>pv.w+3):(tr.p>pv.p&&tr.w<pv.w-3)));
+    prevEx[o.t]={i:tr.i,w:tr.w,p:tr.p};
     const f=FU&&FU.f7[i],z=FU&&FU.fz[i];
     cands.push({i,buy,w,div,lt:liqTrend(i),rg:regime(i),mfT:mf[i]!=null&&mf[i-5]!=null?Math.sign(mf[i]-mf[i-5]):0,
       fneg:f!=null&&(f<0||(z!=null&&z<-1)),rD:rsiD[i],rW:rsiWk[i],gate:gateAt?gateAt(d[i].t+step,buy):1,prov:!closedAt(i)});});
-  const P=getParams(intra?'4h':wk?'1w':'1d');
+  const P=getParams(mo?'1m':intra?'4h':wk?'1w':'1d');
   const sig=scoreAll(cands,P,real),sig0=scoreAll(cands,{...P,wFund:0},real).filter(s=>!s.blocked);
   const lastClosed=(()=>{for(let i=d.length-1;i>=0;i--)if(closedAt(i))return i;return d.length-1;})();
   const rgA=d.map((_,i)=>regime(i)),ltA=d.map((_,i)=>liqTrend(i));
-  const out={O,H,L,Cl,wt1,wt2,mf,dots,cands,rsiD,rsiWk,P,sig,sig0,FU,liq,liqF,liqS,liqFut,liqEnd,real,ema50,sma200,trendMA,wk,intra,step,bpd,rgA,ltA,regime:regime(lastClosed),liqT:liqTrend(lastClosed),lastClosed};
+  const out={O,H,L,Cl,wt1,wt2,mf,dots,cands,divergences:cands.filter(c=>c.div),rsiD,rsiWk,P,sig,sig0,FU,liq,liqF,liqS,liqFut,liqEnd,real,ema50,sma200,trendMA,wk,mo,intra,step,bpd,rgA,ltA,regime:regime(lastClosed),liqT:liqTrend(lastClosed),lastClosed};
   out.model=modelSnapshot(d,out);return out;
 }
 /* ---------- réglages des signaux (par unité de temps) ---------- */
 const DEFP={'1d':{th:53,ext:60,min:3,strong:4,wExt:1,wDiv:1,wLiq:1,wMf:.5,wFund:1,penRg:0,penRgS:1,penLiq:1,gate:0,rsiD:0,rsiW:0}, /* v12 : ventes avec filtre tendance (33 % sans, 100 % avec) · v9 : filtre tendance retiré (optimiseur : 80 % sur 5 signaux jamais vus vs 54 % au hasard) */
   '1w':{th:53,ext:60,min:3,strong:4,wExt:1,wDiv:1,wLiq:1,wMf:.5,wFund:1,penRg:1,penLiq:1,gate:0,rsiD:0,rsiW:0},
+  '1m':{th:53,ext:60,min:2,strong:3,wExt:1,wDiv:1,wLiq:0,wMf:.5,wFund:0,penRg:1,penLiq:1,gate:0,rsiD:0,rsiW:0},
   '4h':{th:53,ext:60,min:2,strong:3,wExt:1,wDiv:1,wLiq:0,wMf:.5,wFund:1,penRg:0,penLiq:0,gate:1,rsiD:0,rsiW:0}};
 let userP=store.get('btcz_params_v13',{}); /* v13 : nouvelle clé → les anciens réglages sont oubliés automatiquement */
 function getParams(k){return{...DEFP[k],...(userP[k]||{})};}
@@ -556,7 +669,7 @@ function buildFund(d){
   return{f7:A,fz:Z,start:days[0],days:days.length};}
 
 /* ---------- données ---------- */
-let data=[],ind=null,isDemo=false,daily=null;
+let data=[],ind=null,isDemo=false,daily=null,dailyAt=0;
 async function fetchJSON(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json();}
 async function loadLive(t){
   try{
@@ -568,20 +681,20 @@ async function loadLive(t){
     return{src:'Binance',rows:all};
   }catch(e){}
   if(t==='4h')throw new Error('4h indisponible hors Binance');
-  const g=t==='1w'?null:86400; /* Coinbase n'a pas de 1W : on agrège le 1D */
+  const g=(t==='1w'||t==='1M')?null:86400; /* agrégation des unités non disponibles chez Coinbase */
   const now=Math.floor(Date.now()/1000),rows=[];
-  for(let k=0;k<4;k++){const end=now-k*300*86400,start=end-300*86400;
+  for(let k=0;k<8;k++){const end=now-k*300*86400,start=end-300*86400;
     const j=await fetchJSON(`https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400&start=${new Date(start*1000).toISOString()}&end=${new Date(end*1000).toISOString()}`);
     j.forEach(c=>rows.push({t:c[0]*1000,l:c[1],h:c[2],o:c[3],c:c[4],v:+c[5]}));}
   const m=new Map();rows.forEach(r=>m.set(r.t,r));let out=[...m.values()].sort((a,b)=>a.t-b.t);
-  if(!g){const w=[];out.forEach(r=>{const d=new Date(r.t),wk=r.t-((d.getUTCDay()+6)%7)*864e5;const last=w[w.length-1];
-    if(last&&last.t===wk){last.h=Math.max(last.h,r.h);last.l=Math.min(last.l,r.l);last.c=r.c;}else w.push({t:wk,o:r.o,h:r.h,l:r.l,c:r.c});});out=w;}
+  if(!g){const w=[];out.forEach(r=>{const d=new Date(r.t),key=t==='1M'?Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1):r.t-((d.getUTCDay()+6)%7)*864e5;const last=w[w.length-1];
+    if(last&&last.t===key){last.h=Math.max(last.h,r.h);last.l=Math.min(last.l,r.l);last.c=r.c;last.v=(last.v||0)+(r.v||0);}else w.push({t:key,o:r.o,h:r.h,l:r.l,c:r.c,v:r.v||0});});out=w;}
   return{src:'Coinbase',rows:out};
 }
 function demo(t){ /* série simulée, uniquement si l'API est injoignable */
   let s=42;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647;};
-  const n=t==='1w'?260:800,step=t==='1w'?7*864e5:t==='4h'?4*36e5:864e5,rows=[];let p=30000;const t0=Date.now()-n*step;
-  for(let i=0;i<n;i++){const drift=Math.sin(i/(t==='1w'?40:180))*0.002+0.0012,vol=t==='1w'?0.07:0.028;
+  const n=t==='1M'?180:t==='1w'?260:800,step=t==='1M'?30.4375*864e5:t==='1w'?7*864e5:t==='4h'?4*36e5:864e5,rows=[];let p=30000;const t0=Date.now()-n*step;
+  for(let i=0;i<n;i++){const drift=Math.sin(i/(t==='1M'?18:t==='1w'?40:180))*0.002+0.0012,vol=t==='1M'?0.12:t==='1w'?0.07:0.028;
     const o=p,c=o*Math.exp(drift+(rnd()-.5)*2*vol),h=Math.max(o,c)*(1+rnd()*vol*.6),l=Math.min(o,c)*(1-rnd()*vol*.6);rows.push({t:t0+i*step,o,h,l,c,v:1000+rnd()*5000});p=c;}
   const k=77784/p;rows.forEach(r=>{r.o*=k;r.h*=k;r.l*=k;r.c*=k;});return{src:'Démo',rows};
 }
@@ -590,12 +703,12 @@ async function load(keep){
   let res;try{res=await loadLive(tf);isDemo=false;}catch(e){res=demo(tf);isDemo=true;}
   await Promise.all([loadMacro(),loadFut()]);
   if(tf==='4h'&&!isDemo){try{await getDaily();}catch(e){}}
-  data=res.rows;ind=compute(data,tf==='4h'?daily:null);$('src').textContent=res.src;if(tf==='1d'){daily={rows:data,ind,demo:isDemo};}
+  data=res.rows;ind=compute(data,tf==='4h'?daily:null);$('src').textContent=res.src;if(tf==='1d'){daily={rows:data,ind,demo:isDemo};dailyAt=Date.now();}
   if(curTab==='stats')renderProj();
   if(curTab==='home')renderHome();
   if(curTab==='cal'&&!keep)renderCal();
   setBadge();lastFull=Date.now();if(!isDemo)connectWS();
-  if(!keep){view.right=data.length-1+4;view.bw=tf==='1w'?8:tf==='4h'?5:6;}updateHeader();draw();refreshPlan();
+  if(!keep){view.right=data.length-1+4;view.bw=tf==='1M'?2.5:tf==='1w'?8:tf==='4h'?5:6;}updateHeader();draw();refreshPlan();
 }
 
 /* ---------- vue ---------- */
@@ -686,6 +799,7 @@ function draw(){
   line(vis,ind.wt1,X,Y1,'#e8f0ff',1.2);line(vis,ind.wt2,X,Y1,COL.blue,1);
   ind.dots.forEach(o=>{if(o.i<first||o.i>last)return;ctx.fillStyle=o.t==='up'?'#3ddc84':COL.down;
     ctx.beginPath();ctx.arc(X(o.i),Y1(ind.wt2[o.i]),o.big?4:2.4,0,7);ctx.fill();});
+  (ind.divergences||[]).forEach(o=>{if(o.i<first||o.i>last||o.prov)return;const x=X(o.i),y=Y1(ind.wt2[o.i]);ctx.fillStyle=o.buy?'#30d158':'#ff453a';ctx.beginPath();ctx.moveTo(x,y+(o.buy?9:-9));ctx.lineTo(x-5,y+(o.buy?-1:1));ctx.lineTo(x+5,y+(o.buy?-1:1));ctx.closePath();ctx.fill();});
   ctx.restore();
   [100,0,-100].filter(v=>Math.abs(v)<mx).forEach(v=>axisTxt(Y1(v),String(v)));
   const lw=ind.wt2[data.length-1];if(lw!=null)tag(Y1(lw),lw.toFixed(1),COL.blue,p1);
@@ -694,7 +808,7 @@ function draw(){
     if(Y1(-60)<p1.y+p1.h-4)tagL('survente −60 · trop froid',Y1(-60)-8,COL.buy);
     nameAt(vis,ind.wt1,X,Y1,'vague rapide','#e8f0ff',p1,U);nameAt(vis,ind.wt2,X,Y1,'vague lente',COL.blue,p1,U);
     ctx.restore();}
-  label(p1,'Cipher B · élan du marché · ● = croisement',COL.muted);
+  label(p1,'Cipher B · ● croisement · ▲ divergence haussière · ▼ divergence baissière',COL.muted);
 
   /* ===== Liquidité composite ===== */
   const p2=P[2];const Y2=v=>p2.y+p2.h/2-v*(p2.h/2-6);
@@ -870,15 +984,20 @@ function cycleInfo(d){if(!d||!d.length)return null;const after=d.filter(r=>r.t>=
   let m=after[0];after.forEach(r=>{if(r.h>m.h)m=r;});const post=d.filter(r=>r.t>m.t);if(post.length<20)return{top:m.t,topPx:m.h,low:null};
   let lo=post[0];post.forEach(r=>{if(r.l<lo.l)lo=r;});return{top:m.t,topPx:m.h,low:lo.l,lowT:lo.t};}
 /* backtest des signaux sur l'historique chargé (rendements à +h jours, bougie close du signal) */
-/* statistiques à +Hm et +Hl jours (convertis en bougies) — avg30/hit30/avg90 = colonnes « moyen » et « long » */
-function mkGrp(d,C,bpd,Hm,Hl){const n=d.length,hm=Math.round(Hm*bpd),hl=Math.round(Hl*bpd);
-  const fwd=(i,h)=>i+h<n?C[i+h]/C[i]-1:null;
-  const mae=(i,h,buy)=>{if(i+h>=n)return null;let x=buy?Infinity:-Infinity;for(let j=i+1;j<=i+h;j++)x=buy?Math.min(x,d[j].l):Math.max(x,d[j].h);return x/C[i]-1;};
-  return(name,idx,buy)=>{const r={name,buy,n:idx.length};
-    const vm=idx.map(i=>fwd(i,hm)).filter(x=>x!=null),vl=idx.map(i=>fwd(i,hl)).filter(x=>x!=null);
-    r.avg30=vm.length?vm.reduce((s,x)=>s+x,0)/vm.length:null;r.hit30=vm.length?vm.filter(x=>buy?x>0:x<0).length/vm.length:null;r.nm=vm.length;
+/* Étude d'événements à +Hm et +Hl : une observation retenue par horizon non chevauchant. */
+function mkGrp(d,C,bpd,Hm,Hl){const n=d.length,hm=Math.max(1,Math.round(Hm*bpd)),hl=Math.max(1,Math.round(Hl*bpd));
+  // Un signal calculé à la clôture n'est exécutable qu'à l'ouverture de la bougie suivante.
+  const entry=i=>d[i+1]&&d[i+1].o>0?d[i+1].o:null;
+  const fwd=(i,h,buy)=>i+1+h<n&&entry(i)!=null?(C[i+1+h]/entry(i)-1)*(buy?1:-1):null;
+  /* Écarte les fenêtres qui se chevauchent : les observations ne sont plus comptées comme indépendantes à tort. */
+  const spaced=(idx,h)=>{const out=[];let last=-Infinity;[...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=0&&i+1+h<n&&entry(i)!=null&&i-last>=h+1){out.push(i);last=i;}});return out;};
+  /* Excursion adverse positive depuis l'entrée réellement simulée : baisse après achat, hausse après vente. */
+  const adverse=(i,h,buy)=>{const e=entry(i);let x=buy?Infinity:-Infinity;for(let j=i+1;j<=i+1+h;j++)x=buy?Math.min(x,d[j].l):Math.max(x,d[j].h);return buy?e/x-1:x/e-1;};
+  return(name,idx,buy)=>{const a30=spaced(idx,hm),a90=spaced(idx,hl),vm=a30.map(i=>fwd(i,hm,buy)),vl=a90.map(i=>fwd(i,hl,buy));
+    const r={name,buy,n:vm.length,n90:vl.length,signals:idx.length};
+    r.avg30=vm.length?vm.reduce((s,x)=>s+x,0)/vm.length:null;r.hit30=vm.length?vm.filter(x=>x>0).length/vm.length:null;
     r.avg90=vl.length?vl.reduce((s,x)=>s+x,0)/vl.length:null;
-    const m=idx.map(i=>mae(i,hm,buy)).filter(x=>x!=null);r.mae=m.length?q(m,.5):null;return r;};}
+    const m=a30.map(i=>adverse(i,hm,buy));r.mae=m.length?q(m,.5):null;return r;};}
 function backtest(d,I){
   const n=d.length,C=I.Cl;const grp=mkGrp(d,C,I.bpd||1,30,90);
   const S=I.sig.filter(s=>!s.prov&&!s.blocked),old=[];
@@ -924,40 +1043,213 @@ function optimize(d,I,kind,buy){
   const grid=[];const TH=[45,53,60,70],MIN=I.intra?[1,2,2.5,3]:[2,2.5,3,3.5,4];
   TH.forEach(th=>MIN.forEach(min=>[0,1].forEach(a=>[0,1].forEach(b=>{
     const P={...base,th,min};if(I.intra){P.gate=a;P.wFund=b;}else{if(buy)P.penRg=a;else P.penRgS=a;P.wFund=b;}grid.push(P);}))));
-  const ev=(idx,lo,hi)=>{const v=idx.filter(i=>i>=lo&&i<hi&&i+hm<n).map(i=>C[i+hm]/C[i]-1);
-    return{n:v.length,hit:v.length?v.filter(x=>buy?x>0:x<0).length/v.length:null,avg:v.length?v.reduce((s,x)=>s+x,0)/v.length:null};};
+  // Sépare strictement les fenêtres d'apprentissage et de test : aucun rendement du train ne traverse cut.
+  // Signal à la clôture, entrée à l'ouverture suivante, événements non chevauchants.
+  const ev=(idx,lo,hi)=>{const chosen=[];let last=-Infinity;
+    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=lo&&i<hi&&i+1<hi&&i+1+hm<hi&&i-last>=hm+1){chosen.push(i);last=i;}});
+    const v=chosen.map(i=>(C[i+1+hm]/d[i+1].o-1)*(buy?1:-1)).filter(Number.isFinite);
+    return{n:v.length,hit:v.length?v.filter(x=>x>0).length/v.length:null,avg:v.length?v.reduce((s,x)=>s+x,0)/v.length:null};};
   const refIdx=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(bpd))===0);
   const ref={tr:ev(refIdx,0,cut),te:ev(refIdx,cut,n)};
-  const minN=I.intra?10:6;
+  const minN=I.intra?15:12;
   const res=grid.map(P=>{const idx=scoreAll(I.cands,P,I.real).filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);
     return{P,tr:ev(idx,0,cut),te:ev(idx,cut,n)};}).filter(r=>r.tr.n>=minN);
-  res.sort((a,b)=>(b.tr.hit-a.tr.hit)||(b.tr.avg-a.tr.avg)*(buy?1:-1));
+  const lower=r=>r.tr.hit==null?-1:wilson(Math.round(r.tr.hit*r.tr.n),r.tr.n)[0];
+  res.sort((a,b)=>(lower(b)-lower(a))||(b.tr.avg-a.tr.avg));
   const top=res.slice(0,6);
   const cur=(()=>{const idx=I.sig.filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);return{P:base,tr:ev(idx,0,cut),te:ev(idx,cut,n),cur:true};})();
   const all=grid.map(P=>{const idx=scoreAll(I.cands,P,I.real).filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);return ev(idx,0,cut);});
-  const best100=all.filter(x=>x.n>=2&&x.hit===1).length;
+  const best100=all.filter(x=>x.n>=minN&&x.hit===1).length;
   return{top,cur,ref,cutT:d[cut].t,Hm,best100,minN};}
+/* Walk-forward à fenêtres successives : apprentissage expansif, test suivant jamais utilisé pour choisir.
+   Les signaux et leur horizon doivent être entièrement contenus dans chaque fenêtre. */
+function walkForward(d,I,kind,buy){
+  const n=d.length,bpd=I.bpd||1,Hm=I.intra?7:30,hm=Math.max(1,Math.round(Hm*bpd));
+  const initial=Math.floor(n*.5),block=Math.floor(n*.1),base=getParams(kind);
+  /* Le grand nombre de réglages testés impose un minimum d'apprentissage plus élevé. */
+  const minN=I.intra?15:12,folds=[],grid=[];
+  const TH=[45,53,60,70],MIN=I.intra?[1,2,2.5,3]:[2,2.5,3,3.5,4];
+  TH.forEach(th=>MIN.forEach(min=>[0,1].forEach(a=>[0,1].forEach(b=>{
+    const P={...base,th,min};
+    if(I.intra){P.gate=a;P.wFund=b;}else{if(buy)P.penRg=a;else P.penRgS=a;P.wFund=b;}
+    grid.push(P);
+  }))));
+  const ev=(idx,lo,hi,detail=false)=>{const chosen=[];let last=-Infinity;
+    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{
+      if(i>=lo&&i<hi&&i+1<hi&&i+1+hm<hi&&i-last>=hm+1){chosen.push(i);last=i;}
+    });
+    const events=chosen.map(i=>({i,regime:I.rgA&&I.rgA[i]===1?1:I.rgA&&I.rgA[i]===-1?-1:0,
+      ret:(I.Cl[i+1+hm]/d[i+1].o-1)*(buy?1:-1)})).filter(x=>Number.isFinite(x.ret));
+    const v=events.map(x=>x.ret);
+    return{n:v.length,hit:v.length?v.filter(x=>x>0).length/v.length:null,
+      avg:v.length?v.reduce((a,b)=>a+b,0)/v.length:null,...(detail?{events}: {})};
+  };
+  const refIdx=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(bpd))===0);
+  /* Calculer les signaux de chaque réglage une seule fois : limite le travail sur mobile. */
+  const candidates=grid.map(P=>({P,idx:scoreAll(I.cands,P,I.real)
+    .filter(x=>!x.blocked&&!x.prov&&x.t===(buy?'buy':'sell')).map(x=>x.i)}));
+  const pool={n:0,wins:0,sum:0,refN:0,refWins:0,refSum:0,regime:{},referenceRegime:{},foldsCompared:0,foldsBeat:0};
+  for(let k=0;k<5;k++){
+    const lo=initial+k*block,hi=k===4?n:Math.min(n,lo+block);
+    if(hi-lo<=hm+1)continue;
+    const ranked=candidates.map(x=>({P:x.P,idx:x.idx,tr:ev(x.idx,0,lo)}))
+      .filter(x=>x.tr.n>=minN&&x.tr.hit!=null);
+    const lower=x=>wilson(Math.round(x.tr.hit*x.tr.n),x.tr.n)[0];
+    ranked.sort((a,b)=>lower(b)-lower(a)||b.tr.avg-a.tr.avg);
+    const chosen=ranked[0];
+    if(!chosen) {folds.push({k:k+1,lo,hi,trained:0,test:null,ref:null,P:null});continue;}
+    const test=ev(chosen.idx,lo,hi,true),ref=ev(refIdx,lo,hi,true);
+    folds.push({k:k+1,lo,hi,trained:chosen.tr.n,test,ref,P:chosen.P});
+    if(test.n){pool.n+=test.n;pool.wins+=test.hit*test.n;pool.sum+=test.avg*test.n;}
+    if(ref.n){pool.refN+=ref.n;pool.refWins+=ref.hit*ref.n;pool.refSum+=ref.avg*ref.n;}
+    if(test.n>=3&&ref.n>=3){pool.foldsCompared++;if(test.hit>ref.hit)pool.foldsBeat++;}
+    test.events.forEach(x=>{const z=pool.regime[x.regime]||(pool.regime[x.regime]={n:0,wins:0,sum:0});
+      z.n++;if(x.ret>0)z.wins++;z.sum+=x.ret;});
+    ref.events.forEach(x=>{const z=pool.referenceRegime[x.regime]||(pool.referenceRegime[x.regime]={n:0,wins:0,sum:0});
+      z.n++;if(x.ret>0)z.wins++;z.sum+=x.ret;});
+  }
+  const metrics=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,{n:v.n,hit:v.n?v.wins/v.n:null,avg:v.n?v.sum/v.n:null}]));
+  return{folds,pool:{n:pool.n,hit:pool.n?pool.wins/pool.n:null,avg:pool.n?pool.sum/pool.n:null,
+    refN:pool.refN,refHit:pool.refN?pool.refWins/pool.refN:null,refAvg:pool.refN?pool.refSum/pool.refN:null,
+    foldsCompared:pool.foldsCompared,foldsBeat:pool.foldsBeat,
+    byRegime:metrics(pool.regime),referenceByRegime:metrics(pool.referenceRegime)},Hm,initial,block,minN};
+}
+function wilson(w,n){
+  if(!n)return null;const z=1.96,p=w/n,z2=z*z,den=1+z2/n,mid=(p+z2/(2*n))/den;
+  const rad=z*Math.sqrt((p*(1-p)+z2/(4*n))/n)/den;return[Math.max(0,mid-rad),Math.min(1,mid+rad)];
+}
+function walkForwardTable(O){
+  const pc=x=>x==null?'—':Math.round(x*100)+'%',avg=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(1)+'%';
+  const ci=(hit,n)=>{if(hit==null||!n)return'—';const v=wilson(Math.round(hit*n),n);return Math.round(v[0]*100)+'–'+Math.round(v[1]*100)+' %';};
+  const p=x=>x?('seuil '+x.th+' · score ≥'+x.min):'Aucun réglage avec assez de cas';
+  const rows=O.folds.map(f=>`<tr><td>Test ${f.k}</td><td>${f.trained||'—'}</td><td>${f.test?pc(f.test.hit)+' ('+f.test.n+')':'—'}</td><td>${f.ref?pc(f.ref.hit)+' ('+f.ref.n+')':'—'}</td><td>${p(f.P)}</td></tr>`).join('');
+  const z=O.pool,ok=z.n>=30&&z.refN>=30&&z.hit!=null&&z.refHit!=null&&z.hit>=z.refHit+.05&&z.foldsCompared>=3&&z.foldsBeat>=Math.ceil(z.foldsCompared*.6);
+  const regimes=[[-1,'Baissier'],[0,'Neutre'],[1,'Haussier']];
+  const regimeRows=regimes.map(([k,label])=>{const a=z.byRegime[k]||{n:0},b=z.referenceByRegime[k]||{n:0};
+    const cell=x=>x.n>=10?pc(x.hit)+' ('+x.n+') · IC '+ci(x.hit,x.n):x.n?'<span class="pend">Échantillon faible · '+x.n+'</span>':'—';
+    const mean=(x,y)=>x.n>=10?avg(x.avg):'—';
+    const edge=a.n>=10&&b.n>=10?avg(a.avg-b.avg):'—';
+    return `<tr><td>${label}</td><td>${cell(a)}</td><td>${cell(b)}</td><td>${mean(a)}</td><td>${mean(b)}</td><td>${edge}</td></tr>`;}).join('');
+  return `<table><tr><th>Fenêtre</th><th>N apprent.</th><th>Signal · % favorable</th><th>BTC réf. · % favorable</th><th>Réglage choisi avant test</th></tr>${rows}
+    <tr><td><b>Total tests</b></td><td>—</td><td class="${ok?'good':z.n?'bad':''}"><b>${pc(z.hit)} (${z.n})</b></td><td><b>${pc(z.refHit)} (${z.refN})</b></td><td>Rend. moyen signal ${avg(z.avg)} · réf. ${avg(z.refAvg)}</td></tr></table>
+    <p class="note">IC 95 % de Wilson sur les taux de réussite : une fourchette large signale une forte incertitude. Cohérence : ${z.foldsBeat}/${z.foldsCompared} fenêtres comparables battent la référence.</p>
+    <h2 style="font-size:12px">Résultats hors apprentissage · par régime</h2>
+    <table><tr><th>Régime au signal</th><th>Signal · % favorable (IC 95 %)</th><th>BTC réf. · % favorable (IC 95 %)</th><th>Rend. moyen signal</th><th>Rend. moyen réf.</th><th>Écart signal − réf.</th></tr>${regimeRows}</table>
+    <p class="note">5 tests chronologiques successifs. À chaque test, réglage choisi uniquement sur le passé, puis gelé. Entrée à l'ouverture suivante, horizon ${O.Hm} j, fenêtres sans chevauchement. Apprentissage minimal : ${O.minN} événements. Vert uniquement si ≥30 événements signal et référence, avantage ≥5 points et avantage dans au moins 60 % des fenêtres comparables (minimum 3). Les IC par régime sont indicatifs car les événements et les fenêtres ne sont pas totalement indépendants. Hors frais, spread, slippage, funding et gestion réelle : ce n'est pas un P&amp;L exécutable.</p>`;
+}
 /* test dédié : le réglage actuel avec / sans RSI (jour, hebdo), en bonus ou obligatoire */
 function rsiTest(d,I,kind,buy){const O=optimize(d,I,kind,buy),n=d.length,C=I.Cl,hm=Math.round(O.Hm*(I.bpd||1)),cut=Math.floor(n*.7),base=getParams(kind);
-  const ev=(idx,lo,hi)=>{const v=idx.filter(i=>i>=lo&&i<hi&&i+hm<n).map(i=>C[i+hm]/C[i]-1);return{n:v.length,hit:v.length?v.filter(x=>buy?x>0:x<0).length/v.length:null};};
+  const ev=(idx,lo,hi)=>{const chosen=[];let last=-Infinity;
+    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=lo&&i<hi&&i+1<hi&&i+1+hm<hi&&i-last>=hm+1){chosen.push(i);last=i;}});
+    const v=chosen.map(i=>(C[i+1+hm]/d[i+1].o-1)*(buy?1:-1)).filter(Number.isFinite);
+    return{n:v.length,hit:v.length?v.filter(x=>x>0).length/v.length:null};};
   const V=[[0,0],[1,0],[2,0],[0,1],[0,2],[1,1]].map(([a,b])=>{const P={...base,rsiD:a,rsiW:b};
     const idx=scoreAll(I.cands,P,I.real).filter(s=>!s.blocked&&!s.prov&&s.t===(buy?'buy':'sell')).map(s=>s.i);
     return{P,tr:ev(idx,0,cut),te:ev(idx,cut,n),cur:a===(base.rsiD||0)&&b===(base.rsiW||0)};});
   return{...O,top:V.filter(v=>!v.cur),cur:V.find(v=>v.cur)};}
+/* Étude par régime : paramètres actuels figés, rendement directionnel et événements espacés.
+   Diagnostic rétrospectif sur tout l'historique, pas un test indépendant ni une simulation de portefeuille. */
+function regimeStudy(d,I){
+  const H=I.intra?7:30,grp=mkGrp(d,I.Cl,I.bpd||1,H,H*3),n=d.length;
+  const regimes=[{v:1,label:'Haussier'},{v:0,label:'Neutre'},{v:-1,label:'Baissier'}];
+  const ref=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(I.bpd||1))===0),out=[];
+  for(const buy of [true,false]){
+    const signals=I.sig.filter(x=>!x.prov&&!x.blocked&&x.t===(buy?'buy':'sell')).map(x=>x.i);
+    regimes.forEach(r=>{
+      const eligible=i=>I.rgA&&I.rgA[i]===r.v;
+      out.push({buy,regime:r.label,base:grp('BTC sans signal',ref.filter(eligible),buy),
+        sig:grp(buy?'Achats actuels':'Ventes actuelles',signals.filter(eligible),buy)});
+    });
+  }
+  return out;
+}
+function regimeStudyTable(rows){
+  const cell=x=>x.n?pc0(x.hit)+' ('+x.n+')':'—';
+  return `<table><tr><th>Régime</th><th>Type</th><th>BTC réf. · % favor.</th><th>Signal · % favor.</th><th>Rend. moyen signal</th></tr>${rows.map(r=>`<tr><td>${r.regime}</td><td>${r.buy?'Achat':'Vente'}</td><td>${cell(r.base)}</td><td>${cell(r.sig)}</td><td>${pc1(r.sig.avg30)}</td></tr>`).join('')}</table><p class="note">Régime classé à la bougie du signal (MA causale). Entrée à l'ouverture suivante, fenêtres de 30 j sans chevauchement. Étude rétrospective sur tout l'historique, pas une validation indépendante. Hors frais et slippage.</p>`;
+}
 function optTable(O,kind,buy){
   const pP=P=>`seuil ${buy?'−':'+'}${P.th} · score ≥${P.min}${kind==='4h'?' · feu daily '+(P.gate?'oui':'non'):' · filtre tendance '+((buy?P.penRg:(P.penRgS??P.penRg))?'oui':'non')} · funding ${P.wFund?'oui':'non'}${P.rsiD?' · RSI '+(P.rsiD===2?'obligatoire':'bonus'):''}${P.rsiW?' · RSI hebdo '+(P.rsiW===2?'obligatoire':'bonus'):''}`;
-  const cell=x=>x.n?`${pc0(x.hit)} <span style="color:var(--muted)">(${x.n})</span>`:'—';
-  const robust=r=>r.te.n>=5&&r.te.hit!=null&&r.te.hit>=O.ref.te.hit+.10; /* v9 : on compare au hasard, pas au passé (100 % sur 7 cas = en partie de la chance) */
-  const row=(r,k)=>`<tr><td style="white-space:normal">${r.cur?'<b>Actuel</b> · ':''}${pP(r.P)}</td><td>${cell(r.tr)}</td><td class="${r.te.n?(robust(r)?'good':'bad'):''}">${cell(r.te)}</td><td>${r.cur?'':`<button type="button" class="apply" data-k="${kind}" data-p='${JSON.stringify(r.P)}'>OK</button>`}</td></tr>`;
+  const cell=x=>{if(!x.n)return'—';const ci=wilson(Math.round(x.hit*x.n),x.n);
+    return `${pc0(x.hit)} <span style="color:var(--muted)">(${x.n}) · IC ${Math.round(ci[0]*100)}–${Math.round(ci[1]*100)}%</span>`;};
+  const robust=r=>{if(r.te.n<20||O.ref.te.n<20||r.te.hit==null||O.ref.te.hit==null)return false;
+    const a=wilson(Math.round(r.te.hit*r.te.n),r.te.n),b=wilson(Math.round(O.ref.te.hit*O.ref.te.n),O.ref.te.n);
+    return a[0]>b[1]&&r.te.hit>=O.ref.te.hit+.05;};
+  const status=r=>robust(r)?'good':r.te.n>=20&&r.te.avg!=null&&r.te.avg<0?'bad':'pend';
+  const row=(r,k)=>`<tr><td style="white-space:normal">${r.cur?'<b>Actuel</b> · ':''}${pP(r.P)}</td><td>${cell(r.tr)}</td><td class="${r.te.n?status(r):'pend'}">${cell(r.te)}</td><td>${r.cur?'':`<button type="button" class="apply" data-k="${kind}" data-p='${JSON.stringify(r.P)}'>OK</button>`}</td></tr>`;
   return `<table><tr><th>Réglage</th><th>Passé</th><th>Récent</th><th></th></tr>
-    <tr><td>Référence (au hasard)</td><td>${cell(O.ref.tr)}</td><td>${cell(O.ref.te)}</td><td></td></tr>
-    ${row(O.cur)}${O.top.map(row).join('')}</table>`;}
+    <tr><td>BTC sans signal (échantillon fixe)</td><td>${cell(O.ref.tr)}</td><td>${cell(O.ref.te)}</td><td></td></tr>
+    ${row(O.cur)}${O.top.map(row).join('')}</table><p class="note">Test chronologique unique 70/30, à considérer comme exploratoire. Réglage choisi sur 70 % anciens par borne basse de Wilson, puis gelé sur les 30 % récents. Vert uniquement si au moins 20 signaux et 20 références, avantage ≥5 points et IC 95 % du signal entièrement au-dessus de celui de la référence. Gris = preuve insuffisante ; rouge = rendement moyen négatif avec échantillon suffisant. Entrée à l'ouverture suivante, fenêtres sans chevauchement. Hors frais, spread, slippage, funding et gestion réelle du portefeuille : ce n'est pas un P&amp;L exécutable.</p>`;}
+/* Sensibilité aux coûts : achats, entrée prochaine ouverture, sortie à 30 j. Coûts hypothétiques, pas tarifs exchange. */
+/* Portefeuille long-only séquentiel : achat/vente sur signaux clôturés, exécution à l'ouverture suivante.
+   100 % du capital disponible par position, sans levier ni renfort. Comparaison buy-and-hold sur mêmes dates. */
+function portfolioSimulation(d,I,roundTripCost){
+  const n=d.length,fee=roundTripCost/2;
+  if(n<3)return null;
+  const events=I.sig.filter(s=>!s.prov&&!s.blocked&&(s.t==='buy'||s.t==='sell')).slice().sort((a,b)=>a.i-b.i);
+  let cash=1,units=0,entryPx=null,entryDate=null,entryRegime=0,position=false,peak=1,maxDD=0,exposed=0,tradeCount=0,wins=0,tradeSum=0;
+  const curve=[],trades=[];let ptr=0;
+  for(let j=0;j<n;j++){
+    while(ptr<events.length&&events[ptr].i+1===j){
+      const s=events[ptr++],px=d[j].o;
+      if(!(px>0))continue;
+      if(s.t==='buy'&&!position&&cash>0){entryPx=px;entryDate=d[j].t;entryRegime=I.rgA&&Number.isFinite(I.rgA[s.i])?I.rgA[s.i]:0;units=cash*(1-fee)/px;cash=0;position=true;}
+      else if(s.t==='sell'&&position){const proceeds=units*px*(1-fee),ret=proceeds/(entryPx?units*entryPx/(1-fee):1)-1;
+        cash=proceeds;trades.push({ret,entry:entryDate,exit:d[j].t,regime:entryRegime});tradeCount++;if(ret>0)wins++;tradeSum+=ret;units=0;entryPx=null;entryDate=null;entryRegime=0;position=false;}
+    }
+    if(position)exposed++;
+    const equity=position?units*d[j].c*(1-fee):cash; // valeur liquidative, frais de sortie inclus même si position encore ouverte
+    curve.push(equity);peak=Math.max(peak,equity);maxDD=Math.max(maxDD,peak>0?1-equity/peak:0);
+  }
+  const finalEquity=curve[curve.length-1],days=Math.max(1,(d[n-1].t-d[0].t)/864e5),cagr=finalEquity>0?Math.pow(finalEquity,365.25/days)-1:null;
+  const bhUnits=(1-fee)/d[1].o,bhEnd=bhUnits*d[n-1].c*(1-fee);
+  const avg=tradeCount?tradeSum/tradeCount:null;
+  return{end:finalEquity,ret:finalEquity-1,dd:maxDD,cagr,exposure:exposed/n,trades:tradeCount,win:tradeCount?wins/tradeCount:null,avgTrade:avg,open:position,curve,bhEnd,bhRet:bhEnd-1};
+}
+/* Résultat des trades clôturés, attribués au régime observé au signal d'entrée.
+   Les rendements ne sont pas recomposés par régime : les trades s'enchaînent dans un seul portefeuille. */
+function portfolioRegimeTable(sim){
+  if(!sim||!sim.trades.length)return '<p class="note">Aucun trade clôturé pour cette analyse.</p>';
+  const labels={1:'Haussier',0:'Neutre',[-1]:'Baissier'},stats={1:{n:0,w:0,sum:0},0:{n:0,w:0,sum:0},[-1]:{n:0,w:0,sum:0}};
+  sim.trades.forEach(t=>{const k=Object.prototype.hasOwnProperty.call(stats,t.regime)?t.regime:0,z=stats[k];z.n++;if(t.ret>0)z.w++;z.sum+=t.ret;});
+  const pc=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(1)+' %';
+  return '<table><tr><th>Régime à l\'entrée</th><th>Trades</th><th>Gagnants</th><th>Rendement moyen net</th><th>Somme des rendements nets</th></tr>'+[1,0,-1].map(k=>{const z=stats[k];return '<tr><td>'+labels[k]+'</td><td>'+z.n+'</td><td>'+(z.n?Math.round(z.w/z.n*100)+' %':'—')+'</td><td>'+(z.n?pc(z.sum/z.n):'—')+'</td><td>'+(z.n?pc(z.sum):'—')+'</td></tr>';}).join('')+'</table><p class="note">Attribution selon le régime au signal d\'achat (tendance calculée uniquement avec les données disponibles à cette date). Trades clôturés uniquement, frais aller-retour inclus à 0,5 %. La somme des rendements par régime n\'est pas une performance composée ni un portefeuille autonome. Les positions encore ouvertes ne sont pas comptées.</p>';
+}
+function portfolioTable(d,I){
+  const costs=[.002,.005,.01],rows=costs.map(c=>({cost:c,sim:portfolioSimulation(d,I,c)}));
+  const pc=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(1)+' %';
+  const cells=rows.map(r=>{const s=r.sim;return '<tr><td>'+(r.cost*100).toFixed(1)+' %</td><td>'+(s?s.trades:'—')+'</td><td>'+(s?pc(s.ret):'—')+'</td><td>'+(s?pc(s.dd):'—')+'</td><td>'+(s?pc(s.cagr):'—')+'</td><td>'+(s?Math.round(s.exposure*100)+' %':'—')+'</td><td>'+(s?pc(s.win):'—')+'</td><td>'+(s?(s.open?'Ouverte':'Fermée'):'—')+'</td></tr>';}).join('');
+  const base=rows[1].sim;
+  const bh=base?'<p><b>BTC conservé (coût 0,5 % aller-retour) :</b> '+pc(base.bhRet)+' sur la période, contre '+pc(base.ret)+' pour la stratégie. '+(base.ret>base.bhRet?'La stratégie surperforme sur cet historique.':'La stratégie ne surperforme pas le BTC conservé sur cet historique.')+'</p>':'<p>Données insuffisantes.</p>';
+  return '<table><tr><th>Coût A/R</th><th>Trades clôturés</th><th>Perf. nette</th><th>DD max.</th><th>CAGR</th><th>Temps exposé</th><th>Trades gagnants</th><th>Position finale</th></tr>'+cells+'</table>'+bh+'<h3>Robustesse par régime · coût 0,5 % A/R</h3>'+portfolioRegimeTable(base)+
+    '<p class="note">Simulation long-only : 100 % du cash engagé à chaque achat, aucun levier ni renfort, signaux non provisoires uniquement, exécution à l’ouverture suivant le signal. Coût aller-retour réparti à moitié à l’entrée et à la sortie. Capital marqué au marché à chaque clôture ; position finale non liquidée. Le buy-and-hold entre à l’ouverture de la 2e bougie. CAGR annualisé sur la période. Hors fiscalité, dépôts/retraits, frais de financement et contraintes de liquidité. Modèle simplifié : ne constitue pas une promesse de résultat.</p>';
+}
+function costSensitivity(d,I){
+  const n=d.length,H=30,hm=Math.max(1,Math.round(H*(I.bpd||1))),C=I.Cl;
+  const signals=I.sig.filter(s=>!s.prov&&!s.blocked&&s.t==='buy').map(s=>s.i);
+  const ref=[...Array(n).keys()].filter(i=>i%Math.max(1,Math.round(I.bpd||1))===0);
+  const series=idx=>{const chosen=[];let last=-Infinity;
+    [...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=0&&i+1+hm<n&&d[i+1].o>0&&i-last>=hm+1){chosen.push(i);last=i;}});
+    return chosen.map(i=>C[i+1+hm]/d[i+1].o-1).filter(Number.isFinite);};
+  const metrics=(gross,cost)=>{let eq=1,peak=1,maxDD=0,worst=0,sum=0,wins=0;
+    const net=gross.map(r=>(1+r)*(1-cost)-1);
+    net.forEach(r=>{eq*=1+r;peak=Math.max(peak,eq);maxDD=Math.max(maxDD,1-eq/peak);worst=Math.min(worst,r);sum+=r;if(r>0)wins++;});
+    return{n:net.length,hit:net.length?wins/net.length:null,avg:net.length?sum/net.length:null,total:net.length?eq-1:null,dd:net.length?maxDD:null,worst:net.length?worst:null};};
+  const a=series(signals),b=series(ref),costs=[.002,.005,.01];
+  return{costs,rows:[{name:'Achats du signal',gross:metrics(a,0),scenarios:costs.map(c=>metrics(a,c))},{name:'BTC référence',gross:metrics(b,0),scenarios:costs.map(c=>metrics(b,c))}],Hm:H};
+}
+function costSensitivityTable(O){
+  const pc=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(1)+' %';
+  const cell=x=>x.n?pc(x.avg)+' / '+pc(x.total)+' / '+pc(x.dd):'—';
+  const rows=O.rows.map(r=>'<tr><td>'+r.name+'</td><td>'+r.gross.n+'</td><td>'+cell(r.gross)+'</td>'+r.scenarios.map(x=>'<td>'+cell(x)+'</td>').join('')+'</tr>').join('');
+  return '<table><tr><th>Stratégie</th><th>N</th><th>Brut · moy./cumul./DD</th><th>Coût 0,2 %</th><th>Coût 0,5 %</th><th>Coût 1 %</th></tr>'+rows+'</table>'+
+  '<p class="note">Achats uniquement, horizon '+O.Hm+' j, entrée à l’ouverture suivante, événements espacés sans chevauchement. Chaque scénario applique un coût aller-retour par opération (frais + spread + slippage) : 0,2 %, 0,5 % ou 1 % ; hypothèses de sensibilité, pas tarifs constatés. « Moy. » = rendement net moyen par opération ; « cumul. » = capital composé à mise fractionnelle constante, cash entre opérations ; « DD » = drawdown maximal de cette courbe d’événements. Ni buy-and-hold ni simulation de portefeuille exécutable. Funding, fiscalité et sizing réel exclus.</p>';
+}
 const eur=v=>v>=1000?(v/1000).toFixed(1).replace('.0','').replace('.',',')+'k':String(v);
 const pc1=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+'%';
 const pc0=v=>v==null?'—':Math.round(v*100)+'%';
-function btTable(rows,L=['+30j','+90j']){return `<table><tr><th>Signal</th><th>N</th><th>${L[0]}</th><th>Juste</th><th>${L[1]}</th><th>Creux</th></tr>${rows.map(r=>{
+function btTable(rows,L=['+30j','+90j']){return `<table><tr><th>Signal</th><th>N 30j / 90j</th><th>Rend. moyen ${L[0]}</th><th>Part favorable</th><th>Rend. moyen ${L[1]}</th><th>Excursion adverse méd.</th></tr>${rows.map(r=>{
   const ok=r.hit30==null?'':r.hit30>=.6?'good':r.hit30<.45?'bad':'';
-  return `<tr><td>${r.name}</td><td>${r.n}</td><td>${pc1(r.avg30)}</td><td class="${ok}">${pc0(r.hit30)}</td><td>${pc1(r.avg90)}</td><td>${pc1(r.mae)}</td></tr>`;}).join('')}</table>`;}
+  return `<tr><td>${r.name}</td><td>${r.n} / ${r.n90}</td><td>${pc1(r.avg30)}</td><td class="${ok}">${pc0(r.hit30)}</td><td>${pc1(r.avg90)}</td><td>${pc1(r.mae)}</td></tr>`;}).join('')}</table><p>Étude d'événements : entrée à l'ouverture suivante, fenêtres sans chevauchement. Hors frais, spread, slippage et gestion réelle d'une position.</p>`;}
 /* v18 : acheter PENDANT le repli (prix sous le plus haut 30 j) vs l'ancien vert (achat Cipher B, qui arrive après le creux) */
 /* v19 : quelle liquidité prévoit le mieux le BTC ? Pente sur 14 j de la série décalée, 1 relevé / semaine */
 function liqTest(d){if(!macro)return null;const C=d.map(r=>r.c),grp=mkGrp(d,C,1,30,90),out=[],sc={};
@@ -994,9 +1286,14 @@ function rhythm(T,now){
   let last=T[T.length-1],a=last+lo*DAY,b=last+hi*DAY,shift=false;
   while(b<now){a+=med*DAY;b+=med*DAY;shift=true;}
   return{last,med,a,b,shift,hits,tot,n:T.length};}
-async function getDaily(){if(daily)return daily;await Promise.all([loadMacro(),loadFut()]);
-  try{const r=await loadLive('1d');const I=compute(r.rows);daily={rows:r.rows,ind:I,demo:false};}catch(e){const r=demo('1d');daily={rows:r.rows,ind:compute(r.rows),demo:true};}
-  return daily;}
+async function getDaily(){
+  /* Une démo n'est jamais figée : on retente la source réelle après 60 s pour récupérer d'une panne réseau. */
+  if(daily&&Date.now()-dailyAt<60000)return daily;
+  await Promise.all([loadMacro(),loadFut()]);
+  try{const r=await loadLive('1d');const I=compute(r.rows);daily={rows:r.rows,ind:I,demo:false};}
+  catch(e){const r=demo('1d');daily={rows:r.rows,ind:compute(r.rows),demo:true};}
+  dailyAt=Date.now();return daily;
+}
 /* ---- plan semaine par semaine (partagé entre l'onglet Projection et le graphe) ---- */
 function buildPlan(D,nW){
   const d=D.rows,I=D.ind,now=Date.now();
@@ -1064,31 +1361,40 @@ function buildCone(D,maxH=92){
   const Q=memo('cone',key,()=>{
     // Conditionnement sur la volatilité réalisée 30 j, en plus du régime de tendance/liquidité.
     const rv=new Array(n).fill(null);for(let i=30;i<n;i++){let a=0,b=0,c=0;for(let j=i-29;j<=i;j++){if(C[j]>0&&C[j-1]>0){const x=Math.log(C[j]/C[j-1]);a+=x;b+=x*x;c++;}}if(c>=25){const m=a/c;rv[i]=Math.sqrt(Math.max(0,b/c-m*m)*365);}}
-    const valid=rv.slice(30,I.lastClosed+1).filter(x=>x!=null).sort((a,b)=>a-b),pct=x=>valid.length?valid.filter(v=>v<=x).length/valid.length:.5;
-    const curVol=rv[I.lastClosed],curPct=curVol==null?.5:pct(curVol),bucket=curPct<.33?0:curPct>.67?2:1;
-    const volBucket=i=>rv[i]==null?1:(pct(rv[i])<.33?0:pct(rv[i])>.67?2:1);
-    const all=[...Array(Math.max(0,n-1)).keys()],sameTrend=all.filter(i=>R[i]===rg),sameTrendLiq=sameTrend.filter(i=>LT[i]===lt),sameTrendVol=sameTrend.filter(i=>volBucket(i)===bucket);
+    // Classement causal : chaque volatilité est comparée uniquement aux valeurs déjà observées à cette date.
+    // Une distribution globale ferait fuiter des informations futures dans les régimes historiques.
+    const sortedVol=[],volBucketAt=new Array(n).fill(1);let curPct=.5;
+    for(let i=30;i<=I.lastClosed;i++){const v=rv[i];if(v==null)continue;
+      let lo=0,hi=sortedVol.length;while(lo<hi){const m=(lo+hi)>>1;if(sortedVol[m]<v)lo=m+1;else hi=m;}
+      sortedVol.splice(lo,0,v);const p=(lo+.5)/sortedVol.length;
+      volBucketAt[i]=p<.33?0:p>.67?2:1;if(i===I.lastClosed)curPct=p;}
+    const curVol=rv[I.lastClosed],bucket=curVol==null?1:volBucketAt[I.lastClosed];
+    const volBucket=i=>volBucketAt[i]??1;
+    // Seules les bougies closes et les rendements entièrement observés entrent dans l'échantillon.
+    const all=[...Array(Math.max(0,I.lastClosed)).keys()],sameTrend=all.filter(i=>R[i]===rg),sameTrendLiq=sameTrend.filter(i=>LT[i]===lt),sameTrendVol=sameTrend.filter(i=>volBucket(i)===bucket);
     let idx=sameTrendLiq.filter(i=>volBucket(i)===bucket),cond='tendance + liquidité + volatilité';
     if(idx.length<180){idx=sameTrendVol;cond='tendance + volatilité';}
     if(idx.length<180){idx=sameTrend;cond='tendance de fond';}
     if(idx.length<180){idx=all;cond='historique complet';}
-    const out=[null];for(let h=1;h<=maxH;h++){const v=[];idx.forEach(i=>{if(i+h<n)v.push(Math.log(C[i+h]/C[i]));});
+    const out=[null];for(let h=1;h<=maxH;h++){const v=[];idx.forEach(i=>{if(i+h<=I.lastClosed)v.push(Math.log(C[i+h]/C[i]));});
       if(v.length<60){out.push(out[h-1]);continue;}v.sort((x,y)=>x-y);
       out.push({p10:qs(v,.1),p25:qs(v,.25),p50:qs(v,.5),p75:qs(v,.75),p90:qs(v,.9),n:v.length});}
     /* lissage des courbes de quantiles (moyenne glissante ±7 j) : moins de dents de scie sur les longs horizons */
     const K5=['p10','p25','p50','p75','p90'],sm=out.map((x,h)=>{if(!x||h<8)return x;const o={...x};K5.forEach(k=>{let s=0,c=0;
       for(let j=Math.max(1,h-7);j<=Math.min(maxH,h+7);j++)if(out[j]){s+=out[j][k];c++;}o[k]=s/c;});return o;});
     out.splice(0,out.length,...sm);
-    const cal=maxH>=180?calibrate(C,R,[91,182,365].filter(h=>h<=maxH)):null;
+    const cal=maxH>=180?calibrate(C,R,[91,182,365].filter(h=>h<=maxH),I.lastClosed):null;
     return{q:out,cond,n:idx.length,cal,curVol,volPct:curPct,bucket};});
   /* application du facteur d'élargissement (interpolé entre 3, 6 et 12 mois) */
   let q2=Q.q;if(Q.cal){const S=Q.cal.map(c=>[c.h,c.s]);const sAt=h=>{if(h<=S[0][0])return S[0][1];for(let k=1;k<S.length;k++)if(h<=S[k][0]){const [h0,s0]=S[k-1],[h1,s1]=S[k];return s0+(s1-s0)*(h-h0)/(h1-h0);}return S[S.length-1][1];};
     q2=Q.q.map((x,h)=>{if(!x)return x;const s=sAt(h),m=x.p50,f=v=>m+(v-m)*s;return{...x,p10:f(x.p10),p25:f(x.p25),p75:f(x.p75),p90:f(x.p90)};});}
+  // Le point d'ancrage est le dernier prix observable (bougie en cours incluse) ; l'apprentissage reste limité aux bougies closes.
   return{q:q2,cond:Q.cond,rg,lt,base:C[n-1],t0:D.rows[n-1].t,n:Q.n,cal:Q.cal,curVol:Q.curVol,volPct:Q.volPct,bucket:Q.bucket,at:Date.now()};}
-function calibrate(C,R,HS){const n=C.length;
+function calibrate(C,R,HS,lastClosed=C.length-1){const n=C.length,end=Math.min(n-1,lastClosed);
   return HS.map(h=>{const tests=[];
-    for(let j=Math.max(700,h+300);j+h<n;j+=14){const v=[];for(let i=0;i+h<=j;i++)if(R[i]===R[j])v.push(Math.log(C[i+h]/C[i]));
+    for(let j=Math.max(700,h+300);j+h<=end;j+=14){const v=[];for(let i=0;i+h<=j;i++)if(R[i]===R[j])v.push(Math.log(C[i+h]/C[i]));
       if(v.length<150){v.length=0;for(let i=0;i+h<=j;i++)v.push(Math.log(C[i+h]/C[i]));}
+      if(v.length<60)continue;
       v.sort((x,y)=>x-y);tests.push({m:qs(v,.5),lo:qs(v,.1),hi:qs(v,.9),a:Math.log(C[j+h]/C[j])});}
     const cov=s=>tests.length?tests.filter(t=>t.a>=t.m+(t.lo-t.m)*s&&t.a<=t.m+(t.hi-t.m)*s).length/tests.length:null;
     const raw=cov(1);let s=1;for(const x of [1,1.1,1.2,1.35,1.5,1.75,2,2.5]){s=x;if(cov(x)>=.8)break;}
@@ -1157,8 +1463,8 @@ async function renderProj(){
   </section>
   ${(()=>{const K=buildCone(D,365);const r=h=>{const qq=K.q[h];return qq?`<tr><td>J+${h}</td><td>${fmt(K.base*Math.exp(qq.p10))}</td><td>${fmt(K.base*Math.exp(qq.p25))}</td><td><b>${fmt(K.base*Math.exp(qq.p50))}</b></td><td>${fmt(K.base*Math.exp(qq.p75))}</td><td>${fmt(K.base*Math.exp(qq.p90))}</td></tr>`:'';};
     return `<section><h2>Cône de prix<small>${K.cond} · ${K.n} observations · vol ${K.curVol==null?'—':(K.curVol*100).toFixed(1)+' % annualisée'}</small></h2>
-    <table><tr><th></th><th>10 %</th><th>25 %</th><th>Médiane</th><th>75 %</th><th>90 %</th></tr>${r(30)}${r(90)}${r(182)}${r(365)}</table>${K.cal?`<p>Calibrage (test en marche avant) : ${K.cal.map(c=>`${c.h===91?'3 mois':c.h===182?'6 mois':'1 an'} ${pc0(c.raw)} → ${pc0(c.cal)} (×${c.s})`).join(' · ')}</p>`:''}
-    <p>Ce n'est pas une prévision : c'est ce que BTC a fait dans le passé à partir d'une situation comparable. La couverture est évaluée sur des tests historiques chronologiques ; elle peut varier selon le régime et ne garantit pas la couverture future.</p></section>`;})()}
+    <table><tr><th></th><th>10 %</th><th>25 %</th><th>Médiane</th><th>75 %</th><th>90 %</th></tr>${r(30)}${r(90)}${r(182)}${r(365)}</table>${K.cal?`<p>Ajustement rétrospectif (couverture mesurée sur les mêmes tests, non indépendante) : ${K.cal.map(c=>`${c.h===91?'3 mois':c.h===182?'6 mois':'1 an'} ${pc0(c.raw)} → ${pc0(c.cal)} (×${c.s})`).join(' · ')}</p>`:''}
+    <p>Ce n'est pas une prévision : c'est ce que BTC a fait dans le passé à partir d'une situation comparable. Les tests historiques sont chronologiques mais leurs horizons se chevauchent et le facteur est ajusté sur ce même échantillon : la couverture corrigée est indicative, non une validation indépendante. Elle peut varier selon le régime et ne garantit pas la couverture future.</p></section>`;})()}
   <section><h2>Calendrier 16 semaines<small>daily</small></h2>
     <div class="weeks">${wk}</div>
     <div class="legend"><span><em style="background:color-mix(in srgb,var(--buy) 38%,var(--panel))"></em>Achat fort</span><span><em style="background:color-mix(in srgb,var(--buy) 16%,var(--panel))"></em>Achat</span><span><em></em>Neutre</span><span><em style="background:color-mix(in srgb,var(--down) 22%,var(--panel))"></em>Prudence</span></div>
@@ -1176,6 +1482,8 @@ async function renderProj(){
   <section><h2>Backtest des signaux<small>${dS(BT.from)} → ${dS(BT.to)} · daily</small></h2>
     ${btTable(BT.rows)}
     <p>« Juste » : part des achats en hausse (ou des ventes en baisse) 30 jours après. « Creux » : baisse médiane max subie dans les 30 jours après un achat (ou hausse max après une vente). Compare toujours à la ligne de référence : un signal qui ne la bat pas n'apporte rien.</p></section>
+  ${(()=>{const O=costSensitivity(d,I);return '<section><h2>Coûts & drawdown<small>achats daily · sensibilité 30 jours</small></h2>'+costSensitivityTable(O)+'</section>';})()}
+  ${(()=>'<section><h2>Simulation portefeuille<small>achats / ventes réels · long only · sans levier</small></h2>'+portfolioTable(d,I)+'</section>')()}
   <section><h2>Funding seul<small>${I.FU?'depuis le '+dS(I.FU.start)+' · '+I.FU.days+' j':''}</small></h2>
     ${BT.fr?btTable(BT.fr)+`<p>Compare chaque ligne à « Réf. depuis le funding ». Funding négatif qui fait mieux que la réf. = les shorts trop nombreux se font squeezer, le critère est utile. Sinon, il n'apporte rien et on le retire du score.</p>`:`<p class="pend">Pas de données funding (${fut.err||'—'}).</p>`}</section>
   <section><h2>Seuils WaveTrend testés<small>croisements bruts, sans filtre</small></h2>
@@ -1188,12 +1496,14 @@ async function renderProj(){
     <h2 style="font-size:12px">Ventes</h2>${optTable(RS,'1d',false)}</section>`;})()}
   ${(()=>{const O=optimize(d,I,'1d',true),OS=optimize(d,I,'1d',false);
     return `<section><h2>Optimiseur 1D<small>% juste à +${O.Hm} j · choisi avant le ${dS(O.cutT)}, vérifié après</small></h2>
-    <p>« Passé » = la période où l'optimiseur a cherché. « Récent » = la période qu'il n'a jamais vue : <b>c'est la seule colonne qui compte</b>. Vert = sur la période jamais vue, au moins 5 signaux et 10 points de mieux que le hasard. Rouge = il était juste collé au passé.</p>
+    <p>« Passé » = la période où l'optimiseur a cherché. « Récent » = la période qu'il n'a jamais vue : <b>c'est la seule colonne qui compte</b>. Vert = sur la période jamais vue, au moins 5 événements et 10 points de mieux que la référence BTC échantillonnée. Si la référence manque d'observations, aucun réglage ne peut être déclaré robuste. Rouge = pas d'avantage démontré.</p>
     <h2 style="font-size:12px">Achats</h2>${optTable(O,'1d',true)}
     <h2 style="font-size:12px">Ventes</h2>${optTable(OS,'1d',false)}
-    <p class="note">${O.best100} réglage(s) font 100 % sur le passé avec 2 signaux ou plus. C'est le piège : avec si peu de cas, 100 % ne veut rien dire. On ne garde que ce qui tient sur la colonne « Récent ».</p>
+    <p class="note">${O.best100} réglage(s) font 100 % sur l'apprentissage avec au moins ${O.minN} événements. Ce chiffre reste exploratoire : le classement utilise une borne de confiance et la validation doit tenir sur les données récentes.</p>
     <div class="row" style="display:flex;gap:8px"><button type="button" class="apply" data-k="1d" data-p="reset">Réglages d'origine 1D</button></div></section>`;})()}
 
+  ${(()=>{const R=regimeStudy(d,I);return `<section><h2>Signaux selon le régime<small>haussier · neutre · baissier</small></h2>${regimeStudyTable(R)}</section>`;})()}
+  ${(()=>{const A=walkForward(d,I,'1d',true),V=walkForward(d,I,'1d',false);return `<section><h2>Validation walk-forward<small>5 tests successifs · apprentissage sans regard vers le futur</small></h2><h2 style="font-size:12px">Achats</h2>${walkForwardTable(A)}<h2 style="font-size:12px">Ventes</h2>${walkForwardTable(V)}</section>`;})()}
   <section><h2>Rythme Cipher B<small>creux &lt; −53</small></h2>${rt(RT,'creux')}</section>
   <section><h2>Rythme Cipher B<small>sommets &gt; +53</small></h2>${rt(RP,'sommet')}</section>
   ${I.real?(()=>{const f=I.liqFut.filter(x=>x.v!=null),cur=I.liq[I.liq.length-1],end=f.length?f[f.length-1]:null,mx=f.reduce((m,x)=>x.v>m.v?x:m,f[0]||{v:-9}),mn=f.reduce((m,x)=>x.v<m.v?x:m,f[0]||{v:9});
@@ -1218,20 +1528,24 @@ function idxParts(I,i,ls,lsT,t,week){
   const P=[];
   if(ls){const a=(t-lsT)/DAY;if(a>=0&&a<=30){const v=25*(1-a/30)*(ls.t==='buy'?1:-1);P.push([v,ls.t==='buy'?'signal d\'achat récent':'signal de vente récent']);}}
   const w=I.wt2[i];if(w!=null){const v=-Math.max(-1,Math.min(1,w/60))*12;P.push([v,w<=-40?'marché en survente':w>=40?'marché en surchauffe':'élan neutre']);}
-  /* v14 : la M2 pèse jusqu'à ±20 points. Elle est décalée de 70 j, donc sa valeur « dans 30 j » est DÉJÀ connue aujourd'hui :
-     c'est la partie qui regarde vers l'avant (pente sur le mois à venir) + son niveau actuel. Sans M2 réelle : ±6 sur le proxy. */
+  /* v14 : la M2 pèse jusqu'à ±20 points. La pente à 30 j futurs n'est utilisée que si le décalage de publication la rend déjà observable ; sinon, pente passée. Sans M2 réelle : proxy momentum ±6. */
   const m2=m2Read(I,i);
   if(m2){const v=Math.max(-1,Math.min(1,m2.slope/0.08))*14+Math.max(-1,Math.min(1,m2.lvl))*6;
-    if(Math.abs(v)>=1)P.push([v,m2.slope>0.01?'M2 en hausse sur le mois à venir':m2.slope<-0.01?'M2 en baisse sur le mois à venir':(m2.lvl>0?'M2 élevée':'M2 faible')]);}
+    if(Math.abs(v)>=1)P.push([v,m2.slope>0.01?(m2.forward?'M2 en hausse sur le mois à venir':'M2 en hausse sur 30 j passés'):m2.slope<-0.01?(m2.forward?'M2 en baisse sur le mois à venir':'M2 en baisse sur 30 j passés'):(m2.lvl>0?'M2 élevée':'M2 faible')]);}
   else{const lt=(I.ltA||[])[i]||0;if(lt)P.push([lt*6,lt>0?'momentum en hausse':'momentum en baisse']);}
   if(I.FU&&I.FU.f7[i]!=null&&I.FU.f7[i]<0)P.push([6,'les shorts paient (funding négatif)']);
   if(week!=null&&week!==0){P.push([Math.max(-2,Math.min(2,week))*5,week>0?'semaine verte au calendrier':'semaine de prudence au calendrier']);}
   const score=Math.round(Math.max(0,Math.min(100,50+P.reduce((s,x)=>s+x[0],0))));
   return{score,parts:P.filter(x=>Math.abs(x[0])>=4).sort((x,y)=>Math.abs(y[0])-Math.abs(x[0]))};}
-function m2Read(I,i){if(!I.real||I.liq[i]==null)return null;const n=I.liq.length,bpd=I.bpd||1,k=Math.round(30*bpd);
-  let fut=null;if(i+k<n)fut=I.liq[i+k];else{const f=I.liqFut[i+k-n];fut=f?f.v:null;if(fut==null){const ok=I.liqFut.filter(x=>x.v!=null);fut=ok.length?ok[ok.length-1].v:null;}}
-  if(fut==null)return null;return{lvl:I.liq[i],fut,slope:fut-I.liq[i]};}
-/* v17 : backtest réel → seuls les extrêmes ont un avantage (≥70 : 74 % de hausse à 30 j ; ≤30 : 69 % de baisse). Entre les deux = hasard. */
+function m2Read(I,i){if(!I.real||I.liq[i]==null)return null;const n=I.liq.length,bpd=I.bpd||1,k=Math.max(1,Math.round(30*bpd)),lagBars=Math.round((+liqCfg.lag||0)*bpd);
+  let fut=null,slope=null,forward=false;
+  // La pente « mois à venir » n'est exploitable historiquement que si le décalage de publication couvre ces 30 jours.
+  if(lagBars>=k){if(i+k<n)fut=I.liq[i+k];else{const f=I.liqFut[i+k-n];fut=f?f.v:null;if(fut==null){const ok=I.liqFut.filter(x=>x.v!=null);fut=ok.length?ok[ok.length-1].v:null;}}
+    if(fut!=null){slope=fut-I.liq[i];forward=true;}}
+  // Avec un décalage plus court, on utilise exclusivement la pente passée pour éviter toute fuite temporelle.
+  if(slope==null){const prev=I.liq[i-k];if(prev==null)return null;slope=I.liq[i]-prev;fut=I.liq[i]+slope;}
+  return{lvl:I.liq[i],fut,slope,forward};}
+/* Seuils d'affichage de l'indice : hypothèse à vérifier avec les études d'événements actualisées, pas un avantage statistique garanti. */
 function idxLabel(v){return v>=70?['Acheter par petits bouts','var(--buy)']:v<=30?['Alléger','var(--down)']:['Neutre : pas d\'avantage, on attend','#A7B0BF'];}
 function idxHistory(d,I){const out=new Array(d.length).fill(null),S=I.sig.filter(s=>!s.prov&&!s.blocked);let k=-1;
   for(let i=0;i<d.length;i++){while(k+1<S.length&&S[k+1].i<=i)k++;const ls=k>=0?S[k]:null;out[i]=idxParts(I,i,ls,ls?d[ls.i].t:0,d[i].t,null).score;}return out;}
@@ -1273,19 +1587,42 @@ async function renderHome(){
   const why=[['Tendance',K.rg>0?'Haussière':K.rg<0?'Baissière':'Neutre',K.rg>0?'var(--up)':K.rg<0?'var(--down)':'var(--sub)','↗','#0a84ff'],
     ['Liquidité',!m?'—':m.slope>0.01?'En hausse':m.slope<-0.01?'En baisse':'Stable',!m?'var(--sub)':m.slope>0.01?'var(--up)':m.slope<-0.01?'var(--down)':'var(--sub)','$','#5e5ce6'],
     ['Cipher B',wt==null?'—':wt<=-40?'Survente':wt>=40?'Surachat':'Neutre',wt==null?'var(--sub)':wt<=-40?'var(--up)':wt>=40?'var(--down)':'var(--sub)','≈','#bf5af2']];
+  const p30=pUp(K.q[30]),p90=pUp(K.q[90]);
+  const regime=K.rg>0?['HAUSSIER','var(--up)']:K.rg<0?['BAISSIER','var(--down)']:['NEUTRE','var(--accent)'];
+  const probLabel=p=>p==null?'—':Math.round(p*100)+' %';
+  const fmtProb=(p)=>p==null?'Données insuffisantes':p>=.6?'Biais haussier':p<=.4?'Biais baissier':'Pas d’avantage net';
+  const actionTitle=trig?'Zone d’achat atteinte':td&&td.amt?'Ordre d’achat en attente':td&&td.sc<0?'Patience : risque de sommet':'Attendre un repli';
+  const actionDetail=trig?act.s:td&&td.amt?act.s:nb?'Prochaine zone surveillée : '+fmt(nb.zone)+' $':'Aucune zone d’achat imminente';
   el.innerHTML=`
-  <div class="hdr"><div><div class="ttl">Bitcoin <span class="lv ${isDemo?'dm':''}">${isDemo?'DÉMO':'LIVE'}</span></div><div class="price">${fmt(last.c)} $</div></div>
-    <span class="pill" style="color:${ch>=0?'var(--up)':'var(--down)'};background:${ch>=0?'rgba(48,209,88,.15)':'rgba(255,69,58,.15)'}">${ch>=0?'+':''}${ch.toFixed(2)} %</span></div>
-  <div class="gl">
-    <div class="seg">${[[30,'1 mois'],[91,'3 mois'],[182,'6 mois'],[365,'1 an']].map(([h,t])=>`<button type="button" data-h="${h}" class="${h===HZ?'on':''}">${t}</button>`).join('')}</div>
+  <div class="ck-top"><div class="ck-brand"><span class="ck-mark">₿</span><span>CRISTAL <b>BTC</b></span></div><span class="ck-live"><i></i>${isDemo?'MODE DÉMO':'MARCHÉ · '+($('src')?.textContent||'LIVE')}</span></div>
+  <section class="ck-hero">
+    <div class="ck-eyebrow">BITCOIN / USD <span>·</span> VUE D’ENSEMBLE</div>
+    <div class="ck-price-row"><div class="ck-price">${fmt(last.c)} <small>$</small></div><span class="ck-change ${ch>=0?'positive':'negative'}">${ch>=0?'+':''}${ch.toFixed(2)} % <small>24 H</small></span></div>
+    <div class="ck-regime"><span class="ck-regime-dot" style="background:${regime[1]}"></span> RÉGIME <b style="color:${regime[1]}">${regime[0]}</b><span class="ck-sep">/</span><span class="ck-muted">Source : ${$('src')?.textContent||'—'}</span></div>
+  </section>
+  <section class="ck-decision">
+    <div class="ck-section-head"><span>LECTURE DU MARCHÉ</span><span class="ck-tag">SYNTHÈSE</span></div>
+    <div class="ck-decision-main"><div class="ck-decision-icon" style="color:${act.c}">${trig?'↗':td&&td.amt?'◎':td&&td.sc<0?'Ⅱ':'…'}</div><div><h2>${actionTitle}</h2><p>${actionDetail}</p></div></div>
+    <div class="ck-decision-foot">Décision indicative · pas un ordre automatique</div>
+  </section>
+  <div class="ck-section-head ck-forecast-head"><span>SCÉNARIOS HISTORIQUES</span><span class="ck-muted">Probabilité de clôturer plus haut</span></div>
+  <div class="ck-prob-grid">
+    <div class="ck-prob"><span>30 JOURS</span><strong>${probLabel(p30)}</strong><small>${fmtProb(p30)}</small></div>
+    <div class="ck-prob"><span>90 JOURS</span><strong>${probLabel(p90)}</strong><small>${fmtProb(p90)}</small></div>
+  </div>
+  <section class="ck-chart-card">
+    <div class="ck-section-head"><span>TRAJECTOIRE CONDITIONNELLE</span><span class="ck-muted">Fourchette historique</span></div>
+    <div class="seg">${[[30,'30 J'],[91,'90 J'],[182,'6 M'],[365,'1 AN']].map(([h,t])=>`<button type="button" data-h="${h}" class="${h===HZ?'on':''}">${t}</button>`).join('')}</div>
     <canvas id="orb"></canvas>
-    <div class="hint">Glisse le doigt sur la zone violette pour choisir une date</div></div>
-  <div class="sc" id="orbRead"></div>
-  <div class="gh">Aujourd'hui</div>
-  <div class="grp"><div class="row"><span class="ic" style="background:${actIc[1]}">${actIc[0]}</span><span class="rl"><b>${act.t}</b>${act.s?`<small>${act.s}</small>`:''}</span><span></span></div></div>
-  <div class="gh">Pourquoi</div>
-  <div class="grp">${why.map(([l,v,c,i,bg])=>`<div class="row"><span class="ic" style="background:${bg}">${i}</span><span class="rl"><b>${l}</b></span><span class="tag" style="color:${c}">${v}</span></div>`).join('')}</div>
-  <p class="foot">Le cône montre ce que le Bitcoin a fait dans des situations comparables (même tendance, même liquidité), recalé pour tomber juste 8 fois sur 10. Une probabilité, pas une certitude.<br>v21 · ${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</p>`;
+    <div class="ck-chart-hint">Touchez le graphique pour explorer une échéance</div>
+  </section>
+  <div class="sc ck-readout" id="orbRead"></div>
+  <div class="ck-section-head"><span>FACTEURS SUIVIS</span><span class="ck-muted">Dernières bougies clôturées</span></div>
+  <div class="ck-factors">
+    ${why.map(([l,v,c,i])=>`<div class="ck-factor"><span class="ck-factor-icon">${i}</span><span>${l}</span><b style="color:${c}">${v}</b></div>`).join('')}
+  </div>
+  <p class="ck-disclaimer">Les probabilités et fourchettes décrivent des observations historiques comparables. Elles ne constituent pas une prévision garantie. La qualité dépend des données et du régime de marché.</p>`;
+
   el.scrollTop=sc0;
   const c=$('orb'),read=k=>{const x=fut(k);if(!x){$('orbRead').innerHTML='';return;}
     const pu=Math.round(x.up*100),dt=new Date(T0+k*DAY).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:k>200?'numeric':undefined});
@@ -1480,12 +1817,14 @@ new ResizeObserver(resize).observe(stage);
 resize();load();
 /* ---------- temps réel : flux WebSocket Binance (bougie en cours 1D + 1W) ---------- */
 let ws=null,wsOk=false,wsRetry=0,lastFull=0,lastCalc=0,calcT=null,lastPlan=0,lastSimple=0,dailyDirty=false;
-function setBadge(){const b=$('badge');b.textContent=isDemo?'Démo · données simulées':wsOk?'Live · temps réel':'Live · 1 min';b.className='badge '+(isDemo?'demo':'live');}
+function setBadge(){const b=$('badge'),src=$('src')?.textContent||'';b.textContent=isDemo?'DÉMO · SIMULÉ':src==='Coinbase'?'COINBASE · SECOURS':wsOk?'BINANCE · LIVE':'BINANCE · ACTUALISÉ';b.className='badge '+(isDemo?'demo':'live');}
 function upd(rows,row){if(!rows||!rows.length)return false;const L=rows[rows.length-1];if(row.t===L.t){L.h=Math.max(L.h,row.h);L.l=Math.min(L.l,row.l);L.c=row.c;L.v=row.v??L.v;L.qv=row.qv??L.qv;L.trades=row.trades??L.trades;L.takerBuy=row.takerBuy??L.takerBuy;return true;}
   if(row.t>L.t){rows.push(row);return true;}return false;}
 function connectWS(){
-  if(isDemo||(ws&&ws.readyState<2))return;
-  try{ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@kline_1d/btcusdt@kline_1w/btcusdt@kline_4h');}catch(e){return;}
+  /* Ne jamais mélanger le flux Binance avec un historique Coinbase ou une série de démonstration. */
+  if(isDemo||$('src')?.textContent!=='Binance'){if(ws&&ws.readyState<2){try{ws.close();}catch(e){}}wsOk=false;setBadge();return;}
+  if(ws&&ws.readyState<2)return;
+  try{ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@kline_1d/btcusdt@kline_1w/btcusdt@kline_4h/btcusdt@kline_1M');}catch(e){return;}
   ws.onopen=()=>{wsOk=true;wsRetry=0;setBadge();};
   ws.onclose=()=>{wsOk=false;setBadge();if(document.visibilityState==='visible'){const dl=Math.min(30,2**wsRetry++)*1000;setTimeout(connectWS,dl);}};
   ws.onerror=()=>{try{ws.close();}catch(e){}};

@@ -2,27 +2,32 @@
   "id": "./",
   "name": "Cristal · BTC",
   "short_name": "Cristal BTC",
-  "description": "Analyse probabiliste et multi-facteurs du marché Bitcoin · V22",
+  "description": "Analyse multi-facteurs, signaux et suivi du marché Bitcoin.",
   "lang": "fr-FR",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#07090d",
-  "theme_color": "#07090d",
+  "background_color": "#090d12",
+  "theme_color": "#090d12",
   "icons": [
-    "icons": [
-  {
-    "src": "./icon-192.png",
-    "sizes": "192x192",
-    "type": "image/png",
-    "purpose": "any"
-  },
-  {
-    "src": "./icon-512.png",
-    "sizes": "512x512",
-    "type": "image/png",
-    "purpose": "any"
-  }
-]
-      
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
