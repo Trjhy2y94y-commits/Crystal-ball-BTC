@@ -553,6 +553,58 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
 #stage{overflow:hidden;}
 .probability-panel{width:100%;min-width:0;box-sizing:border-box;}
 .overlay-legend{left:8px;right:8px;max-width:none;}
+
+/* ===== CRYSTAL QUANT TERMINAL · premium motion layer ===== */
+:root{--bg:#050a12;--panel:#0b1421;--panel2:#101e2d;--grid:rgba(89,145,177,.13);--line:rgba(107,177,207,.19);--fg:#e9f5ff;--muted:#7893a8;--sub:#a8bdcb;--accent:#54e6ff;--violet:#a78bfa;--up:#36f2a0;--down:#ff5478;--buy:#36f2a0;--pink:#ff5db1;--blue:#4aa8ff;--mono:"SFMono-Regular",ui-monospace,Menlo,monospace;--cond:-apple-system,"SF Pro Display",system-ui,sans-serif}
+body{background:radial-gradient(ellipse at 50% -18%,rgba(15,106,143,.24),transparent 48%),#050a12;color:var(--fg)}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.16;background-image:linear-gradient(rgba(84,230,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(84,230,255,.035) 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(to bottom,#000,transparent 78%)}
+.app{isolation:isolate;background:transparent}.view{position:relative;z-index:1}
+header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));border-bottom:1px solid rgba(84,230,255,.18);box-shadow:0 10px 35px rgba(0,0,0,.18)}
+.sym{color:#8baabd;letter-spacing:.16em}.sym b{color:var(--accent);text-shadow:0 0 16px rgba(84,230,255,.45)}
+.px{font-size:clamp(25px,6vw,34px);font-weight:750;letter-spacing:-.045em;text-shadow:0 0 24px rgba(84,230,255,.12)}
+.badge.live{color:var(--up);border-color:rgba(54,242,160,.55);background:rgba(54,242,160,.08)}.badge.demo{color:#ffc56b;border-color:rgba(255,197,107,.5);background:rgba(255,197,107,.08)}
+.toolbar{background:rgba(7,15,25,.96);border-bottom:1px solid var(--line);gap:7px;padding-block:9px}
+.toolbar button{border-radius:8px;background:rgba(255,255,255,.025);color:#8da8bb;border-color:var(--line);font-size:11px;letter-spacing:.08em}
+.toolbar button.on{background:rgba(84,230,255,.15);color:var(--accent);border-color:rgba(84,230,255,.5);box-shadow:inset 0 0 14px rgba(84,230,255,.08),0 0 16px rgba(84,230,255,.08)}
+.quant-terminal{position:relative;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:10px;padding:10px 14px 11px;background:linear-gradient(110deg,rgba(10,27,42,.98),rgba(7,17,29,.97));border-bottom:1px solid rgba(84,230,255,.22);overflow:hidden;isolation:isolate}
+.quant-terminal:before{content:"";position:absolute;inset:-80% -20%;z-index:-1;background:linear-gradient(110deg,transparent 38%,rgba(84,230,255,.055) 48%,rgba(84,230,255,.12) 50%,transparent 61%);transform:translateX(-55%);animation:qtSweep 7s linear infinite}
+.quant-terminal:after{content:"";position:absolute;left:0;right:0;top:-100%;height:70%;pointer-events:none;background:linear-gradient(transparent,rgba(84,230,255,.045),transparent);animation:qtScan 6s linear infinite}
+.qt-main,.qt-side{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:7px}
+.qt-kicker{display:flex;align-items:center;gap:7px;font:700 9px var(--mono);letter-spacing:.16em;color:#8aa9bd;text-transform:uppercase}
+.qt-pulse{width:7px;height:7px;flex:none;border-radius:50%;background:var(--up);box-shadow:0 0 0 0 rgba(54,242,160,.55);animation:qtPulse 1.7s infinite}
+.qt-headline{display:flex;align-items:baseline;gap:8px;min-width:0}.qt-label{font:700 17px var(--cond);letter-spacing:.02em;color:#f0f9ff;white-space:nowrap}
+.qt-price{font:700 17px var(--mono);color:var(--accent);letter-spacing:-.05em;white-space:nowrap;text-shadow:0 0 15px rgba(84,230,255,.3)}
+.qt-change{font:700 10px var(--mono);white-space:nowrap;color:var(--sub)}
+.qt-tape{overflow:hidden;white-space:nowrap;font:9px var(--mono);color:#7592a7;letter-spacing:.04em}.qt-tape span{display:inline-block;padding-left:100%;animation:qtTicker 24s linear infinite}
+.qt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.qt-cell{padding:7px 8px;border:1px solid rgba(111,171,199,.14);border-radius:8px;background:rgba(255,255,255,.025);min-width:0}
+.qt-cell small{display:block;font:8px var(--mono);letter-spacing:.1em;color:#7592a7;text-transform:uppercase;margin-bottom:4px}
+.qt-cell b{display:block;font:700 12px var(--mono);color:#e7f5ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qt-cell b.pos{color:var(--up)}.qt-cell b.neg{color:var(--down)}.qt-cell b.neu{color:#b4c6d2}
+.qt-wave{height:15px;display:flex;align-items:flex-end;gap:3px;overflow:hidden}
+.qt-wave i{display:block;flex:1;min-width:2px;border-radius:2px 2px 0 0;background:linear-gradient(180deg,#54e6ff,#3479a8);opacity:.8;animation:qtBars 1.4s ease-in-out infinite alternate}
+.qt-wave i:nth-child(3n){animation-delay:-.7s}.qt-wave i:nth-child(2n){animation-delay:-.35s}
+.overlay-legend{z-index:2;top:8px}.overlay-legend button{background:rgba(5,14,24,.84)!important;border-color:rgba(84,230,255,.22)!important;color:#a7c1d2!important;backdrop-filter:blur(12px)}
+.overlay-legend button.on{color:var(--accent)!important;border-color:rgba(84,230,255,.6)!important;box-shadow:0 0 12px rgba(84,230,255,.1)}
+.stage{background:linear-gradient(180deg,rgba(7,16,27,.7),rgba(5,10,18,.94))}
+.tip{background:rgba(7,18,30,.92);border-color:rgba(84,230,255,.25);backdrop-filter:blur(12px)}
+.tabbar{background:rgba(5,11,19,.92);border-top:1px solid rgba(84,230,255,.2)}.tabbar button.on{color:var(--accent);text-shadow:0 0 14px rgba(84,230,255,.35)}
+.hm .card,.hm .tile,.orb .ot,.simple .card{background:linear-gradient(145deg,#101e2c,#0a1420)!important;border:1px solid rgba(108,173,204,.15)!important;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+.hm .ban{background:linear-gradient(110deg,rgba(84,230,255,.09),rgba(11,20,33,.96));border:1px solid rgba(84,230,255,.2)}
+.hm .price,.orb .price{color:#f1fbff;text-shadow:0 0 22px rgba(84,230,255,.18)}.hm .score{color:var(--accent);text-shadow:0 0 24px rgba(84,230,255,.2)}
+.hm .seg,.seg{background:rgba(84,230,255,.07)}.hm .seg button.on,.seg button.on{background:rgba(84,230,255,.2);color:var(--accent);box-shadow:0 0 12px rgba(84,230,255,.1)}
+.orb .ball{background:radial-gradient(120% 90% at 70% 35%,rgba(84,230,255,.13),rgba(76,141,255,.04) 55%,transparent 80%),linear-gradient(145deg,#0c1a29,#07111d);border-color:rgba(84,230,255,.24)}
+.orb .rp{color:#e9fbff;text-shadow:0 0 22px rgba(84,230,255,.4)}.proj h2{color:var(--accent)}.sheet{background:#0b1724;border-color:rgba(84,230,255,.25)}
+@keyframes qtPulse{0%{box-shadow:0 0 0 0 rgba(54,242,160,.5)}70%{box-shadow:0 0 0 7px rgba(54,242,160,0)}100%{box-shadow:0 0 0 0 rgba(54,242,160,0)}}
+@keyframes qtSweep{0%{transform:translateX(-55%)}100%{transform:translateX(55%)}}@keyframes qtScan{0%{top:-80%}100%{top:150%}}
+@keyframes qtTicker{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}@keyframes qtBars{from{height:22%}to{height:100%}}
+@media(max-width:520px){.quant-terminal{grid-template-columns:minmax(0,1fr) 116px;gap:8px;padding:9px 10px}.qt-label{font-size:15px}.qt-price{font-size:14px}.qt-change{font-size:9px}.qt-grid{gap:4px}.qt-cell{padding:6px}.qt-cell small{font-size:7px}.qt-cell b{font-size:10px}.toolbar{gap:4px;padding-inline:8px}.toolbar button{padding:6px 7px;font-size:10px}.overlay-legend{top:6px;left:6px;right:6px;gap:4px}.overlay-legend button{font-size:9px!important;padding:5px 6px!important}}
+@media(max-width:370px){.quant-terminal{grid-template-columns:minmax(0,1fr) 102px}.qt-label{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.quant-terminal:before,.quant-terminal:after,.qt-pulse,.qt-tape span,.qt-wave i{animation:none!important}}
+
+
+/* Keep the thumb navigation above chart canvases and probability overlays on touch devices */
+.tabbar{position:relative;z-index:50;flex-shrink:0;pointer-events:auto}
 </style>
 
 <div class="app">
@@ -581,6 +633,15 @@ html,body{width:100%;max-width:100%;overflow-x:hidden!important;}
     <span class="sp"></span>
     <button type="button" id="bZones" aria-label="Réglages">Réglages</button>
   </div>
+  <section class="quant-terminal" id="quantTerminal" aria-label="Terminal quantitatif en direct">
+    <div class="qt-main"><div class="qt-kicker"><i class="qt-pulse"></i><span>CRYSTAL QUANT · LIVE SCAN</span><span id="qtFeed">INITIALISATION</span></div>
+      <div class="qt-headline"><span class="qt-label">BTC / USD</span><b class="qt-price" id="qtPrice">—</b><span class="qt-change" id="qtChange">—</span></div>
+      <div class="qt-wave" aria-hidden="true"><i style="height:18%"></i><i style="height:55%"></i><i style="height:92%"></i><i style="height:50%"></i><i style="height:87%"></i><i style="height:45%"></i><i style="height:82%"></i><i style="height:40%"></i><i style="height:77%"></i><i style="height:35%"></i><i style="height:72%"></i><i style="height:30%"></i><i style="height:67%"></i><i style="height:25%"></i><i style="height:62%"></i><i style="height:20%"></i><i style="height:57%"></i><i style="height:94%"></i><i style="height:52%"></i><i style="height:89%"></i><i style="height:47%"></i><i style="height:84%"></i></div>
+      <div class="qt-tape"><span>M2 LIQUIDITY · MARKET STRUCTURE · FVG DAILY / WEEKLY / MONTHLY · VOLUME PROFILE · WYCKOFF · SMC · ELLIOTT · RSI DIVERGENCE · WALK-FORWARD VALIDATION ·</span></div>
+    </div><div class="qt-side"><div class="qt-grid">
+      <div class="qt-cell"><small>WAVETREND</small><b id="qtWT" class="neu">—</b></div><div class="qt-cell"><small>RSI 14</small><b id="qtRSI" class="neu">—</b></div>
+      <div class="qt-cell"><small>STRUCTURE</small><b id="qtBias" class="neu">—</b></div><div class="qt-cell"><small>DATA FEED</small><b id="qtSource" class="neu">—</b></div>
+    </div></div></section>
   <div class="stage" id="stage">
     <canvas id="cv"></canvas>
     <div class="overlay-legend" id="overlayLegend" aria-label="Couches d'analyse">
@@ -2620,6 +2681,7 @@ $('zSave').addEventListener('click',()=>{const n=s=>parseFloat(String(s).replace
   $('sheet').hidden=true;if(changed){macro=null;daily=null;load(true);}else draw();});
 document.querySelectorAll('[data-tf]').forEach(x=>x.classList.toggle('on',x.dataset.tf===tf));
 
+setInterval(updateQuantTerminal,2000);
 window.addEventListener('resize',resize);
 new ResizeObserver(resize).observe(stage);
 resize();load();
@@ -2642,6 +2704,21 @@ function connectWS(){
     if(k.i==='1d'&&daily&&daily.rows!==data){upd(daily.rows,row);dailyDirty=true;}
     if(k.x){setTimeout(()=>load(true),4000);return;} /* bougie close : rechargement complet pour figer les signaux */
     tick();};
+}
+function updateQuantTerminal(){
+  if(!$('quantTerminal'))return;
+  const price=liveSpotPrice>0?liveSpotPrice:(data&&data.length?data[data.length-1].c:NaN);
+  const p=$('qtPrice'),ch=$('qtChange'),feed=$('qtFeed'),src=$('src')?.textContent||'—';
+  if(Number.isFinite(price)&&price>0)p.textContent='$'+Math.round(price).toLocaleString('en-US');
+  if(data&&data.length>1){const delta=(data[data.length-1].c/data[data.length-2].c-1)*100;ch.textContent=(delta>=0?'+':'')+delta.toFixed(2)+'% · 24H';ch.style.color=delta>=0?'var(--up)':'var(--down)';}
+  const idx=ind?.lastClosed??(ind?.rsiD?.length-1),wt=ind?.wt2?.[idx],rsi=ind?.rsiD?.[idx];
+  const w=$('qtWT'),r=$('qtRSI'),bias=$('qtBias'),source=$('qtSource');
+  if(w){w.textContent=Number.isFinite(wt)?wt.toFixed(1):'—';w.className=Number.isFinite(wt)?(wt<=-40?'pos':wt>=40?'neg':'neu'):'neu';}
+  if(r){r.textContent=Number.isFinite(rsi)?rsi.toFixed(1):'—';r.className=Number.isFinite(rsi)?(rsi<35?'pos':rsi>65?'neg':'neu'):'neu';}
+  const trend=idx!=null&&ind?.sma200?.[idx]!=null&&data?.length?data[Math.min(idx,data.length-1)].c>ind.sma200[idx]?'HAUSSE':'BAISSE':'NEUTRE';
+  if(bias){bias.textContent=trend;bias.className=trend==='HAUSSE'?'pos':trend==='BAISSE'?'neg':'neu';}
+  if(source){source.textContent=isDemo?'DÉMO':wsOk?'WS LIVE':src.toUpperCase();source.className=isDemo?'neu':wsOk?'pos':'neu';}
+  if(feed)feed.textContent=isDemo?'SIMULATION':wsOk?'STREAM CONNECTÉ':'SCAN ACTIF';
 }
 function tick(){const now=Date.now();if(now-lastCalc<2000){if(!calcT)calcT=setTimeout(()=>{calcT=null;tick();},2000-(now-lastCalc));return;}
   lastCalc=now;
