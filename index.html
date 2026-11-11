@@ -927,11 +927,13 @@ function cycleInfo(d){if(!d||!d.length)return null;const after=d.filter(r=>r.t>=
 /* backtest des signaux sur l'historique chargé (rendements à +h jours, bougie close du signal) */
 /* Étude d'événements à +Hm et +Hl : une observation retenue par horizon non chevauchant. */
 function mkGrp(d,C,bpd,Hm,Hl){const n=d.length,hm=Math.max(1,Math.round(Hm*bpd)),hl=Math.max(1,Math.round(Hl*bpd));
-  const fwd=(i,h,buy)=>i+h<n?(C[i+h]/C[i]-1)*(buy?1:-1):null;
+  // Un signal calculé à la clôture n'est exécutable qu'à l'ouverture de la bougie suivante.
+  const entry=i=>d[i+1]&&d[i+1].o>0?d[i+1].o:null;
+  const fwd=(i,h,buy)=>i+h<n&&entry(i)!=null?(C[i+h]/entry(i)-1)*(buy?1:-1):null;
   /* Écarte les fenêtres qui se chevauchent : les observations ne sont plus comptées comme indépendantes à tort. */
-  const spaced=(idx,h)=>{const out=[];let last=-Infinity;[...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=0&&i+h<n&&i-last>=h){out.push(i);last=i;}});return out;};
-  /* Excursion adverse positive dans les deux sens : baisse après achat, hausse après vente. */
-  const adverse=(i,h,buy)=>{let x=buy?Infinity:-Infinity;for(let j=i+1;j<=i+h;j++)x=buy?Math.min(x,d[j].l):Math.max(x,d[j].h);return buy?C[i]/x-1:x/C[i]-1;};
+  const spaced=(idx,h)=>{const out=[];let last=-Infinity;[...new Set(idx)].sort((a,b)=>a-b).forEach(i=>{if(i>=0&&i+h<n&&entry(i)!=null&&i-last>=h){out.push(i);last=i;}});return out;};
+  /* Excursion adverse positive depuis l'entrée réellement simulée : baisse après achat, hausse après vente. */
+  const adverse=(i,h,buy)=>{const e=entry(i);let x=buy?Infinity:-Infinity;for(let j=i+1;j<=i+h;j++)x=buy?Math.min(x,d[j].l):Math.max(x,d[j].h);return buy?e/x-1:x/e-1;};
   return(name,idx,buy)=>{const a30=spaced(idx,hm),a90=spaced(idx,hl),vm=a30.map(i=>fwd(i,hm,buy)),vl=a90.map(i=>fwd(i,hl,buy));
     const r={name,buy,n:vm.length,n90:vl.length,signals:idx.length};
     r.avg30=vm.length?vm.reduce((s,x)=>s+x,0)/vm.length:null;r.hit30=vm.length?vm.filter(x=>x>0).length/vm.length:null;
@@ -1015,7 +1017,7 @@ const pc1=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+'%';
 const pc0=v=>v==null?'—':Math.round(v*100)+'%';
 function btTable(rows,L=['+30j','+90j']){return `<table><tr><th>Signal</th><th>N 30j / 90j</th><th>Rend. moyen ${L[0]}</th><th>Part favorable</th><th>Rend. moyen ${L[1]}</th><th>Excursion adverse méd.</th></tr>${rows.map(r=>{
   const ok=r.hit30==null?'':r.hit30>=.6?'good':r.hit30<.45?'bad':'';
-  return `<tr><td>${r.name}</td><td>${r.n} / ${r.n90}</td><td>${pc1(r.avg30)}</td><td class="${ok}">${pc0(r.hit30)}</td><td>${pc1(r.avg90)}</td><td>${pc1(r.mae)}</td></tr>`;}).join('')}</table><p>Étude d'événements, pas simulation de portefeuille : fenêtres sans chevauchement, hors frais, spread, slippage et règles d'exécution.</p>`;}
+  return `<tr><td>${r.name}</td><td>${r.n} / ${r.n90}</td><td>${pc1(r.avg30)}</td><td class="${ok}">${pc0(r.hit30)}</td><td>${pc1(r.avg90)}</td><td>${pc1(r.mae)}</td></tr>`;}).join('')}</table><p>Étude d'événements : entrée à l'ouverture suivante, fenêtres sans chevauchement. Hors frais, spread, slippage et gestion réelle d'une position.</p>`;}
 /* v18 : acheter PENDANT le repli (prix sous le plus haut 30 j) vs l'ancien vert (achat Cipher B, qui arrive après le creux) */
 /* v19 : quelle liquidité prévoit le mieux le BTC ? Pente sur 14 j de la série décalée, 1 relevé / semaine */
 function liqTest(d){if(!macro)return null;const C=d.map(r=>r.c),grp=mkGrp(d,C,1,30,90),out=[],sc={};
