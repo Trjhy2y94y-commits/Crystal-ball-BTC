@@ -157,6 +157,13 @@ jobs:
               assert page.locator(".tabbar").is_visible(), "Bottom navigation is missing"
               assert page.locator("#home").is_visible(), "Home view is not visible"
               assert page.locator("#home").inner_text().strip(), "Home view did not render"
+              assert page.locator("#homeQuant").is_visible(), "Redesigned Crystal Quant cockpit is missing from the first screen"
+              assert page.locator("#homeQtPrice").is_visible(), "Cockpit BTC price is missing"
+              assert page.locator("#homeQtBias").is_visible(), "Cockpit market regime is missing"
+              assert not page.locator("#home .ck-hero").is_visible(), "Legacy duplicate price hero is still visible under the new cockpit"
+              cockpit = page.locator("#homeQuant").bounding_box()
+              assert cockpit and cockpit["width"] >= 340 and cockpit["height"] >= 180, f"Cockpit layout is unexpectedly collapsed: {cockpit}"
+              page.screenshot(path="artifacts/iphone-cockpit.png")
 
               page.locator('.tabbar button[data-tab="chart"]').click()
               assert page.locator("#vChart").is_visible(), "Chart tab did not open"
@@ -191,5 +198,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cristal-btc-iphone-emulation
-          path: artifacts/iphone-emulation.png
+          path: artifacts/*.png
           if-no-files-found: ignore
