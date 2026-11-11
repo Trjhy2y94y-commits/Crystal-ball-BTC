@@ -1132,15 +1132,15 @@ function portfolioSimulation(d,I,roundTripCost){
   const n=d.length,fee=roundTripCost/2;
   if(n<3)return null;
   const events=I.sig.filter(s=>!s.prov&&!s.blocked&&(s.t==='buy'||s.t==='sell')).slice().sort((a,b)=>a.i-b.i);
-  let cash=1,units=0,entryPx=null,entryDate=null,position=false,peak=1,maxDD=0,exposed=0,tradeCount=0,wins=0,tradeSum=0;
+  let cash=1,units=0,entryPx=null,entryDate=null,entryRegime=0,position=false,peak=1,maxDD=0,exposed=0,tradeCount=0,wins=0,tradeSum=0;
   const curve=[],trades=[];let ptr=0;
   for(let j=0;j<n;j++){
     while(ptr<events.length&&events[ptr].i+1===j){
       const s=events[ptr++],px=d[j].o;
       if(!(px>0))continue;
-      if(s.t==='buy'&&!position&&cash>0){entryPx=px;entryDate=d[j].t;units=cash*(1-fee)/px;cash=0;position=true;}
+      if(s.t==='buy'&&!position&&cash>0){entryPx=px;entryDate=d[j].t;entryRegime=I.rgA&&Number.isFinite(I.rgA[s.i])?I.rgA[s.i]:0;units=cash*(1-fee)/px;cash=0;position=true;}
       else if(s.t==='sell'&&position){const proceeds=units*px*(1-fee),ret=proceeds/(entryPx?units*entryPx/(1-fee):1)-1;
-        cash=proceeds;trades.push({ret,entry:entryDate,exit:d[j].t});tradeCount++;if(ret>0)wins++;tradeSum+=ret;units=0;entryPx=null;entryDate=null;position=false;}
+        cash=proceeds;trades.push({ret,entry:entryDate,exit:d[j].t,regime:entryRegime});tradeCount++;if(ret>0)wins++;tradeSum+=ret;units=0;entryPx=null;entryDate=null;entryRegime=0;position=false;}
     }
     if(position)exposed++;
     const equity=position?units*d[j].c*(1-fee):cash; // valeur liquidative, frais de sortie inclus même si position encore ouverte
@@ -1151,13 +1151,22 @@ function portfolioSimulation(d,I,roundTripCost){
   const avg=tradeCount?tradeSum/tradeCount:null;
   return{end:finalEquity,ret:finalEquity-1,dd:maxDD,cagr,exposure:exposed/n,trades:tradeCount,win:tradeCount?wins/tradeCount:null,avgTrade:avg,open:position,curve,bhEnd,bhRet:bhEnd-1};
 }
+/* Résultat des trades clôturés, attribués au régime observé au signal d'entrée.
+   Les rendements ne sont pas recomposés par régime : les trades s'enchaînent dans un seul portefeuille. */
+function portfolioRegimeTable(sim){
+  if(!sim||!sim.trades.length)return '<p class="note">Aucun trade clôturé pour cette analyse.</p>';
+  const labels={1:'Haussier',0:'Neutre',[-1]:'Baissier'},stats={1:{n:0,w:0,sum:0},0:{n:0,w:0,sum:0},[-1]:{n:0,w:0,sum:0}};
+  sim.trades.forEach(t=>{const k=Object.prototype.hasOwnProperty.call(stats,t.regime)?t.regime:0,z=stats[k];z.n++;if(t.ret>0)z.w++;z.sum+=t.ret;});
+  const pc=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(1)+' %';
+  return '<table><tr><th>Régime à l\'entrée</th><th>Trades</th><th>Gagnants</th><th>Rendement moyen net</th><th>Somme des rendements nets</th></tr>'+[1,0,-1].map(k=>{const z=stats[k];return '<tr><td>'+labels[k]+'</td><td>'+z.n+'</td><td>'+(z.n?Math.round(z.w/z.n*100)+' %':'—')+'</td><td>'+(z.n?pc(z.sum/z.n):'—')+'</td><td>'+(z.n?pc(z.sum):'—')+'</td></tr>';}).join('')+'</table><p class="note">Attribution selon le régime au signal d\'achat (tendance calculée uniquement avec les données disponibles à cette date). Trades clôturés uniquement, frais aller-retour inclus à 0,5 %. La somme des rendements par régime n\'est pas une performance composée ni un portefeuille autonome. Les positions encore ouvertes ne sont pas comptées.</p>';
+}
 function portfolioTable(d,I){
   const costs=[.002,.005,.01],rows=costs.map(c=>({cost:c,sim:portfolioSimulation(d,I,c)}));
   const pc=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(1)+' %';
   const cells=rows.map(r=>{const s=r.sim;return '<tr><td>'+(r.cost*100).toFixed(1)+' %</td><td>'+(s?s.trades:'—')+'</td><td>'+(s?pc(s.ret):'—')+'</td><td>'+(s?pc(s.dd):'—')+'</td><td>'+(s?pc(s.cagr):'—')+'</td><td>'+(s?Math.round(s.exposure*100)+' %':'—')+'</td><td>'+(s?pc(s.win):'—')+'</td><td>'+(s?(s.open?'Ouverte':'Fermée'):'—')+'</td></tr>';}).join('');
   const base=rows[1].sim;
   const bh=base?'<p><b>BTC conservé (coût 0,5 % aller-retour) :</b> '+pc(base.bhRet)+' sur la période, contre '+pc(base.ret)+' pour la stratégie. '+(base.ret>base.bhRet?'La stratégie surperforme sur cet historique.':'La stratégie ne surperforme pas le BTC conservé sur cet historique.')+'</p>':'<p>Données insuffisantes.</p>';
-  return '<table><tr><th>Coût A/R</th><th>Trades clôturés</th><th>Perf. nette</th><th>DD max.</th><th>CAGR</th><th>Temps exposé</th><th>Trades gagnants</th><th>Position finale</th></tr>'+cells+'</table>'+bh+
+  return '<table><tr><th>Coût A/R</th><th>Trades clôturés</th><th>Perf. nette</th><th>DD max.</th><th>CAGR</th><th>Temps exposé</th><th>Trades gagnants</th><th>Position finale</th></tr>'+cells+'</table>'+bh+'<h3>Robustesse par régime · coût 0,5 % A/R</h3>'+portfolioRegimeTable(base)+
     '<p class="note">Simulation long-only : 100 % du cash engagé à chaque achat, aucun levier ni renfort, signaux non provisoires uniquement, exécution à l’ouverture suivant le signal. Coût aller-retour réparti à moitié à l’entrée et à la sortie. Capital marqué au marché à chaque clôture ; position finale non liquidée. Le buy-and-hold entre à l’ouverture de la 2e bougie. CAGR annualisé sur la période. Hors fiscalité, dépôts/retraits, frais de financement et contraintes de liquidité. Modèle simplifié : ne constitue pas une promesse de résultat.</p>';
 }
 function costSensitivity(d,I){
