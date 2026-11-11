@@ -1075,12 +1075,14 @@ function walkForwardTable(O){
   const regimes=[[-1,'Baissier'],[0,'Neutre'],[1,'Haussier']];
   const regimeRows=regimes.map(([k,label])=>{const a=z.byRegime[k]||{n:0},b=z.referenceByRegime[k]||{n:0};
     const cell=x=>x.n>=10?pc(x.hit)+' ('+x.n+') · IC '+ci(x.hit,x.n):x.n?'<span class="pend">Échantillon faible · '+x.n+'</span>':'—';
-    return `<tr><td>${label}</td><td>${cell(a)}</td><td>${cell(b)}</td><td>${a.n>=10?avg(a.avg):'—'}</td></tr>`;}).join('');
+    const mean=(x,y)=>x.n>=10?avg(x.avg):'—';
+    const edge=a.n>=10&&b.n>=10?avg(a.avg-b.avg):'—';
+    return `<tr><td>${label}</td><td>${cell(a)}</td><td>${cell(b)}</td><td>${mean(a)}</td><td>${mean(b)}</td><td>${edge}</td></tr>`;}).join('');
   return `<table><tr><th>Fenêtre</th><th>N apprent.</th><th>Signal · % favorable</th><th>BTC réf. · % favorable</th><th>Réglage choisi avant test</th></tr>${rows}
     <tr><td><b>Total tests</b></td><td>—</td><td class="${ok?'good':z.n?'bad':''}"><b>${pc(z.hit)} (${z.n})</b></td><td><b>${pc(z.refHit)} (${z.refN})</b></td><td>Rend. moyen signal ${avg(z.avg)} · réf. ${avg(z.refAvg)}</td></tr></table>
     <p class="note">IC 95 % de Wilson sur les taux de réussite : une fourchette large signale une forte incertitude. Cohérence : ${z.foldsBeat}/${z.foldsCompared} fenêtres comparables battent la référence.</p>
     <h2 style="font-size:12px">Résultats hors apprentissage · par régime</h2>
-    <table><tr><th>Régime au signal</th><th>Signal · % favorable (IC 95 %)</th><th>BTC réf. · % favorable (IC 95 %)</th><th>Rend. moyen signal</th></tr>${regimeRows}</table>
+    <table><tr><th>Régime au signal</th><th>Signal · % favorable (IC 95 %)</th><th>BTC réf. · % favorable (IC 95 %)</th><th>Rend. moyen signal</th><th>Rend. moyen réf.</th><th>Écart signal − réf.</th></tr>${regimeRows}</table>
     <p class="note">5 tests chronologiques successifs. À chaque test, réglage choisi uniquement sur le passé, puis gelé. Entrée à l'ouverture suivante, horizon ${O.Hm} j, fenêtres sans chevauchement. Apprentissage minimal : ${O.minN} événements. Vert uniquement si ≥30 événements signal et référence, avantage ≥5 points et avantage dans au moins 60 % des fenêtres comparables (minimum 3). Les IC par régime sont indicatifs car les événements et les fenêtres ne sont pas totalement indépendants. Hors frais, spread, slippage, funding et gestion réelle : ce n'est pas un P&amp;L exécutable.</p>`;
 }
 /* test dédié : le réglage actuel avec / sans RSI (jour, hebdo), en bonus ou obligatoire */
