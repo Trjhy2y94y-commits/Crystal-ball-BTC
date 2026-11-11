@@ -26,7 +26,6 @@ jobs:
           from pathlib import Path
           from urllib.parse import urlsplit, unquote
           import json
-          import re
           import subprocess
           import tempfile
 
@@ -43,10 +42,15 @@ jobs:
 
           sw = (root / "service-worker.js").read_text(encoding="utf-8")
           subprocess.run(["node", "--check", "service-worker.js"], check=True)
-          shell_match = re.search(r"const\\s+SHELL\\s*=\\s*\\[(.*?)\\]", sw, re.S)
-          if not shell_match:
+          start = sw.find("const SHELL = [")
+          end = sw.find("];", start)
+          if start < 0 or end < 0:
               raise SystemExit("Service worker shell list not found")
-          for asset in re.findall(r"['\\"]([^'\\"]+)['\\"]", shell_match.group(1)):
+          shell_lines = sw[start:end].splitlines()[1:]
+          for line in shell_lines:
+              asset = line.strip().rstrip(",").strip().strip("'").strip('"')
+              if not asset:
+                  continue
               local = root / unquote(urlsplit(asset).path).removeprefix("./")
               if asset == "./":
                   local = root / "index.html"
