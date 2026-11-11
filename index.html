@@ -1060,8 +1060,39 @@ function area(vis,a,X,Y,c){const z=Y(0);ctx.fillStyle=c;ctx.beginPath();let st=n
 
 // ===== Confluence chartiste + probabilités empiriques =====
 const overlayLayers={wyckoff:true,smc:true,elliott:true,patterns:true};
-const money=v=>v==null?'—':Math.round(v).toLocaleString('fr-FR')+' 
-  const n=data.length,d=data[n-1],p=data[n-2];$('px').textContent=fmt(d.c)+' $';
+const money=v=>v==null?'—':Math.round(v).toLocaleString('fr-FR')+' '+String.fromCharCode(36);
+function confluenceSnapshot(D){
+  const d=D.rows,I=D.ind;if(!d||d.length<220||!I)return null;
+  const n=Math.min(I.lastClosed??d.length-1,d.length-1),p=d[n].c,ma=I.sma200?.[n],r=I.rsiD?.[n];
+  const trend=ma==null?0:p>ma?1:-1;
+  const hi=Math.max(...d.slice(Math.max(0,n-30),n+1).map(x=>x.h)),lo=Math.min(...d.slice(Math.max(0,n-30),n+1).map(x=>x.l));
+  const prevHi=Math.max(...d.slice(Math.max(0,n-90),Math.max(1,n-30)).map(x=>x.h)),prevLo=Math.min(...d.slice(Math.max(0,n-90),Math.max(1,n-30)).map(x=>x.l));
+  const avgVol=d.slice(Math.max(0,n-20),n).reduce((a,x)=>a+(x.v||0),0)/Math.max(1,Math.min(20,n));
+  const volRatio=avgVol?d[n].v/avgVol:1,compression=(hi-lo)/p<.12;
+  const breakout=p>prevHi*1.003?'Cassure haussière':p<prevLo*.997?'Cassure baissière':compression?'Compression / triangle possible':'Range / structure en formation';
+  const wy=trend>0&&p>prevHi?'Markup / SOS possible':trend<0&&p<prevLo?'Markdown / SOW possible':'Range : accumulation ou distribution à confirmer';
+  const smc=p>prevHi?'BOS haussier potentiel':p<prevLo?'BOS baissier potentiel':(d[n].l<d[n-1].l&&p>d[n-1].c)?'Sweep de liquidité bas possible':'Structure sans rupture confirmée';
+  const ell=trend>0?'Biais impulsif haussier (décompte non confirmé)':trend<0?'Biais impulsif baissier (décompte non confirmé)':'Structure corrective / indéterminée';
+  const scores=[trend,r==null?0:r>55?1:r<45?-1:0,volRatio>1.4?(p>d[n-1].c?1:-1):0,breakout.includes('haussière')?1:breakout.includes('baissière')?-1:0];
+  const bias=scores.reduce((a,b)=>a+b,0),labels={wyckoff:wy,smc,elliott:ell,patterns:breakout},probs={};
+  [30,90,365].forEach(h=>{
+    const vals=[];for(let i=60;i+h<=n;i++){const m=I.sma200?.[i];if(m==null)continue;if((d[i].c>m?1:-1)===trend)vals.push(Math.log(d[i+h].c/d[i].c));}
+    vals.sort((a,b)=>a-b);const q=k=>vals.length?Math.exp(vals[Math.min(vals.length-1,Math.floor((vals.length-1)*k))])*p:null;
+    probs[h]={lo:q(.1),mid:q(.5),hi:q(.9),count:vals.length,up:vals.length?vals.filter(x=>x>0).length/vals.length:null};
+  });
+  return {p,trend,bias,labels,probs,volRatio,rsi:r};
+}
+async function renderConfluence(){
+  const panel=$('probabilityPanel');if(!panel)return;
+  const D=await getDaily(),z=confluenceSnapshot(D);if(!z){$('probConfidence').textContent='Historique insuffisant';return;}
+  [30,90,365].forEach(h=>{const q=z.probs[h];$('prob'+h).textContent=q&&q.mid?money(q.mid):'—';});
+  const minN=Math.min(...[30,90,365].map(h=>z.probs[h].count));
+  $('probConfidence').textContent=minN>=100?'Échantillon historique · robuste':minN>=40?'Échantillon limité':'Confiance faible · peu de cas comparables';
+  $('probLayers').innerHTML=Object.entries(z.labels).filter(([k])=>overlayLayers[k]).map(([k,v])=>'<span class="prob-layer"><b>'+({wyckoff:'Wyckoff',smc:'SMC',elliott:'Elliott',patterns:'Figures'}[k])+'</b> · '+v+'</span>').join('');
+  $('probNote').textContent='Biais '+(z.bias>1?'haussier':z.bias< -1?'baissier':'neutre')+' · RSI '+(z.rsi==null?'—':z.rsi.toFixed(0))+' · volume x'+z.volRatio.toFixed(1)+' · médianes et intervalles historiques conditionnés à la tendance. Effectifs : 30j '+z.probs[30].count+' / 90j '+z.probs[90].count+' / 12m '+z.probs[365].count+'.';
+}
+document.querySelectorAll('#overlayLegend [data-layer]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.layer;overlayLayers[k]=!overlayLayers[k];b.classList.toggle('on',overlayLayers[k]);renderConfluence();}));
+function updateHeader(){,d=data[n-1],p=data[n-2];$('px').textContent=fmt(d.c)+' $';
   const ch=(d.c-p.c)/p.c*100,el=$('chg');el.textContent=`${ch>=0?'+':''}${fmt(d.c-p.c)} (${ch>=0?'+':''}${ch.toFixed(2)} %)`;el.className='chg '+(ch>=0?'up':'dn');
   const yr=data.slice(-(tf==='1w'?52:tf==='4h'?2190:365));$('hl').textContent=`H ${fmt(Math.max(...yr.map(x=>x.h)))} · L ${fmt(Math.min(...yr.map(x=>x.l)))}`;
   const w=ind.wt2[n-1],lv=ind.liq[n-1]??ind.liq[ind.lastClosed];
