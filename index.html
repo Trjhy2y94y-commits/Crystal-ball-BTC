@@ -1013,7 +1013,8 @@ function optimize(d,I,kind,buy){
 function walkForward(d,I,kind,buy){
   const n=d.length,bpd=I.bpd||1,Hm=I.intra?7:30,hm=Math.max(1,Math.round(Hm*bpd));
   const initial=Math.floor(n*.5),block=Math.floor(n*.1),base=getParams(kind);
-  const minN=I.intra?10:6,folds=[],grid=[];
+  /* Le grand nombre de réglages testés impose un minimum d'apprentissage plus élevé. */
+  const minN=I.intra?15:12,folds=[],grid=[];
   const TH=[45,53,60,70],MIN=I.intra?[1,2,2.5,3]:[2,2.5,3,3.5,4];
   TH.forEach(th=>MIN.forEach(min=>[0,1].forEach(a=>[0,1].forEach(b=>{
     const P={...base,th,min};
@@ -1034,7 +1035,7 @@ function walkForward(d,I,kind,buy){
   /* Calculer les signaux de chaque réglage une seule fois : limite le travail sur mobile. */
   const candidates=grid.map(P=>({P,idx:scoreAll(I.cands,P,I.real)
     .filter(x=>!x.blocked&&!x.prov&&x.t===(buy?'buy':'sell')).map(x=>x.i)}));
-  const pool={n:0,wins:0,sum:0,refN:0,refWins:0,refSum:0,regime:{},referenceRegime:{}};
+  const pool={n:0,wins:0,sum:0,refN:0,refWins:0,refSum:0,regime:{},referenceRegime:{},foldsCompared:0,foldsBeat:0};
   for(let k=0;k<5;k++){
     const lo=initial+k*block,hi=k===4?n:Math.min(n,lo+block);
     if(hi-lo<=hm+1)continue;
@@ -1047,6 +1048,7 @@ function walkForward(d,I,kind,buy){
     folds.push({k:k+1,lo,hi,trained:chosen.tr.n,test,ref,P:chosen.P});
     if(test.n){pool.n+=test.n;pool.wins+=test.hit*test.n;pool.sum+=test.avg*test.n;}
     if(ref.n){pool.refN+=ref.n;pool.refWins+=ref.hit*ref.n;pool.refSum+=ref.avg*ref.n;}
+    if(test.n>=3&&ref.n>=3){pool.foldsCompared++;if(test.hit>ref.hit)pool.foldsBeat++;}
     test.events.forEach(x=>{const z=pool.regime[x.regime]||(pool.regime[x.regime]={n:0,wins:0,sum:0});
       z.n++;if(x.ret>0)z.wins++;z.sum+=x.ret;});
     ref.events.forEach(x=>{const z=pool.referenceRegime[x.regime]||(pool.referenceRegime[x.regime]={n:0,wins:0,sum:0});
@@ -1055,21 +1057,29 @@ function walkForward(d,I,kind,buy){
   const metrics=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,{n:v.n,hit:v.n?v.wins/v.n:null,avg:v.n?v.sum/v.n:null}]));
   return{folds,pool:{n:pool.n,hit:pool.n?pool.wins/pool.n:null,avg:pool.n?pool.sum/pool.n:null,
     refN:pool.refN,refHit:pool.refN?pool.refWins/pool.refN:null,refAvg:pool.refN?pool.refSum/pool.refN:null,
+    foldsCompared:pool.foldsCompared,foldsBeat:pool.foldsBeat,
     byRegime:metrics(pool.regime),referenceByRegime:metrics(pool.referenceRegime)},Hm,initial,block,minN};
+}
+function wilson(w,n){
+  if(!n)return null;const z=1.96,p=w/n,z2=z*z,den=1+z2/n,mid=(p+z2/(2*n))/den;
+  const rad=z*Math.sqrt((p*(1-p)+z2/(4*n))/n)/den;return[Math.max(0,mid-rad),Math.min(1,mid+rad)];
 }
 function walkForwardTable(O){
   const pc=x=>x==null?'—':Math.round(x*100)+'%',avg=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(1)+'%';
+  const ci=(hit,n)=>{if(hit==null||!n)return'—';const v=wilson(Math.round(hit*n),n);return Math.round(v[0]*100)+'–'+Math.round(v[1]*100)+' %';};
   const p=x=>x?('seuil '+x.th+' · score ≥'+x.min):'Aucun réglage avec assez de cas';
   const rows=O.folds.map(f=>`<tr><td>Test ${f.k}</td><td>${f.trained||'—'}</td><td>${f.test?pc(f.test.hit)+' ('+f.test.n+')':'—'}</td><td>${f.ref?pc(f.ref.hit)+' ('+f.ref.n+')':'—'}</td><td>${p(f.P)}</td></tr>`).join('');
-  const z=O.pool,ok=z.n>=10&&z.refN>=10&&z.hit!=null&&z.refHit!=null&&z.hit>=z.refHit+.05;
+  const z=O.pool,ok=z.n>=30&&z.refN>=30&&z.hit!=null&&z.refHit!=null&&z.hit>=z.refHit+.05&&z.foldsCompared>=3&&z.foldsBeat>=Math.ceil(z.foldsCompared*.6);
   const regimes=[[-1,'Baissier'],[0,'Neutre'],[1,'Haussier']];
   const regimeRows=regimes.map(([k,label])=>{const a=z.byRegime[k]||{n:0},b=z.referenceByRegime[k]||{n:0};
-    return `<tr><td>${label}</td><td>${a.n?pc(a.hit)+' ('+a.n+')':'—'}</td><td>${b.n?pc(b.hit)+' ('+b.n+')':'—'}</td><td>${avg(a.avg)}</td></tr>`;}).join('');
+    const cell=x=>x.n>=10?pc(x.hit)+' ('+x.n+') · IC '+ci(x.hit,x.n):x.n?'<span class="pend">Échantillon faible · '+x.n+'</span>':'—';
+    return `<tr><td>${label}</td><td>${cell(a)}</td><td>${cell(b)}</td><td>${a.n>=10?avg(a.avg):'—'}</td></tr>`;}).join('');
   return `<table><tr><th>Fenêtre</th><th>N apprent.</th><th>Signal · % favorable</th><th>BTC réf. · % favorable</th><th>Réglage choisi avant test</th></tr>${rows}
     <tr><td><b>Total tests</b></td><td>—</td><td class="${ok?'good':z.n?'bad':''}"><b>${pc(z.hit)} (${z.n})</b></td><td><b>${pc(z.refHit)} (${z.refN})</b></td><td>Rend. moyen signal ${avg(z.avg)} · réf. ${avg(z.refAvg)}</td></tr></table>
+    <p class="note">IC 95 % de Wilson sur les taux de réussite : une fourchette large signale une forte incertitude. Cohérence : ${z.foldsBeat}/${z.foldsCompared} fenêtres comparables battent la référence.</p>
     <h2 style="font-size:12px">Résultats hors apprentissage · par régime</h2>
-    <table><tr><th>Régime au signal</th><th>Signal · % favorable</th><th>BTC réf. · % favorable</th><th>Rend. moyen signal</th></tr>${regimeRows}</table>
-    <p class="note">5 tests chronologiques successifs. À chaque test, le réglage est choisi uniquement sur les données antérieures, puis gelé pendant le test. Entrée à l'ouverture suivante, horizon ${O.Hm} j, fenêtres sans chevauchement. Le régime est celui connu à la clôture du signal (MA causale). Vert seulement si ≥10 événements signal et référence et +5 points de taux favorable. Hors frais, spread, slippage, funding et gestion réelle : ce n'est pas un P&amp;L exécutable. Si les historiques sont trop courts, les résultats restent insuffisants.</p>`;
+    <table><tr><th>Régime au signal</th><th>Signal · % favorable (IC 95 %)</th><th>BTC réf. · % favorable (IC 95 %)</th><th>Rend. moyen signal</th></tr>${regimeRows}</table>
+    <p class="note">5 tests chronologiques successifs. À chaque test, réglage choisi uniquement sur le passé, puis gelé. Entrée à l'ouverture suivante, horizon ${O.Hm} j, fenêtres sans chevauchement. Apprentissage minimal : ${O.minN} événements. Vert uniquement si ≥30 événements signal et référence, avantage ≥5 points et avantage dans au moins 60 % des fenêtres comparables (minimum 3). Les IC par régime sont indicatifs car les événements et les fenêtres ne sont pas totalement indépendants. Hors frais, spread, slippage, funding et gestion réelle : ce n'est pas un P&amp;L exécutable.</p>`;
 }
 /* test dédié : le réglage actuel avec / sans RSI (jour, hebdo), en bonus ou obligatoire */
 function rsiTest(d,I,kind,buy){const O=optimize(d,I,kind,buy),n=d.length,C=I.Cl,hm=Math.round(O.Hm*(I.bpd||1)),cut=Math.floor(n*.7),base=getParams(kind);
