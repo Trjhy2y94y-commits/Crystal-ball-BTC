@@ -411,6 +411,59 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .tabbar button{font-size:10px;letter-spacing:.01em}
 @media(min-width:600px){.cockpit{max-width:620px;margin:0 auto}.ck-prob strong{font-size:31px}}
 
+
+/* CRISTAL UI REFRESH — harmonisation de toutes les vues */
+:root{
+ --bg:#080d13;--panel:#111a24;--panel2:#172331;--grid:#202d3b;--line:#263646;
+ --fg:#edf3f8;--muted:#91a0af;--sub:#bdc8d2;--accent:#d9b66c;
+ --up:#35d39a;--down:#ff6878;--buy:#35d39a;
+}
+body{background:var(--bg);background-image:radial-gradient(ellipse at 50% -20%,rgba(67,94,120,.18),transparent 55%);}
+.app{background:transparent}
+.view{background:transparent}
+.tabbar{background:rgba(8,13,19,.96);border-top:1px solid #263646;backdrop-filter:blur(18px);padding-top:8px}
+.tabbar button{font-size:10px;letter-spacing:.04em;gap:4px;color:#8493a2}
+.tabbar button.on{color:var(--accent)}
+.tabbar svg{width:21px;height:21px}
+.proj{gap:13px;padding-top:16px;padding-bottom:30px;background:transparent;font-size:13px;line-height:1.55}
+.proj>section,.proj>div>section{
+ background:linear-gradient(145deg,rgba(21,33,46,.96),rgba(14,23,32,.96));
+ border:1px solid #263747;border-radius:16px;padding:14px;
+ box-shadow:0 8px 22px rgba(0,0,0,.12);min-width:0;
+}
+.proj h2{font-size:11px;letter-spacing:.12em;color:#e0c17e;line-height:1.4}
+.proj h2 small{display:block;margin:3px 0 0;font-size:11px;letter-spacing:.01em;color:#8fa0b0}
+.proj p{font-size:12px;line-height:1.55;color:#9eacba}
+.proj .k{gap:7px 12px;font-size:12px}
+.proj .k span:nth-child(even){text-align:right;color:#e1e8ef;font-weight:600}
+.proj table{display:block;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;border-collapse:separate;border-spacing:0;font-size:11px;white-space:nowrap;scrollbar-width:thin;scrollbar-color:#526477 transparent}
+.proj th,.proj td{padding:9px 10px;border-bottom:1px solid rgba(123,147,169,.16)}
+.proj th{position:sticky;top:0;background:#172432;color:#aebdca;font-size:10px;letter-spacing:.04em}
+.proj td{color:#dce5ed}
+.proj th:first-child,.proj td:first-child{position:sticky;left:0;background:#14212d;z-index:1}
+.proj .apply,.toolbar button,.sheet button,footer button{border-radius:10px;min-height:38px;padding:8px 12px;border-color:#34495d;background:#14212d;color:#d5e0e9}
+.proj .apply{color:var(--accent);border-color:rgba(217,182,108,.5)}
+.toolbar{background:rgba(10,16,23,.96);border-color:#263646;padding-top:8px;padding-bottom:8px;gap:7px}
+.toolbar button{font-size:11px;letter-spacing:.02em}
+.toolbar button.on{background:var(--accent);color:#101820;border-color:var(--accent)}
+header{border-color:#263646;background:rgba(10,16,23,.94)}
+.toast{white-space:normal;max-width:calc(100vw - 28px);width:max-content;text-align:center;line-height:1.35;font-size:12px;letter-spacing:.025em;padding:10px 14px;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.ck-hero,.ck-decision,.ck-chart-card,.ck-prob,.ck-factors{box-shadow:0 10px 28px rgba(0,0,0,.16)}
+#vChart .proj,.proj{scrollbar-width:thin;scrollbar-color:#34485b transparent}
+.proj button{touch-action:manipulation}
+.proj input,.proj select{max-width:100%;border-radius:9px}
+@media(max-width:430px){
+ .proj{padding-left:12px;padding-right:12px;gap:11px}
+ .proj>section,.proj>div>section{padding:12px;border-radius:14px}
+ .proj .k{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:6px 9px}
+ .proj table{font-size:10px}
+ .proj th,.proj td{padding:8px 9px}
+ .toolbar{overflow-x:auto;scrollbar-width:none}
+ .toolbar::-webkit-scrollbar{display:none}
+ .toast{top:8px;font-size:11px}
+}
+@media(min-width:700px){.proj{max-width:760px;width:100%;margin:0 auto}.toolbar{justify-content:center}}
+
 </style>
 
 <div class="app">
