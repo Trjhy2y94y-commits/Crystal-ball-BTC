@@ -474,9 +474,9 @@ function compute(d,ctx){
      - pente de liquidité mesurée sur ~14 jours (et plus sur 2 bougies, trop bruité)
      - divergences WaveTrend (le cœur de Cipher B)
      - régime de tendance : SMA200 en 1D, MA50 semaine en 1W (pénalise les signaux contre‑tendance) */
-  const step=d.length>1?d[1].t-d[0].t:864e5,mo=step>25*864e5,wk=step>3*864e5&&!mo,intra=step<864e5,bpd=mo?30.4375:864e5/step;
+  const step=d.length>1?d[1].t-d[0].t:864e5,mo=step>25*864e5,wk=step>3*864e5&&!mo,intra=step<864e5,bpd=mo?1/30.4375:864e5/step;
   const trendMA=mo?sma(Cl,20):wk?sma(Cl,50):intra?sma(Cl,Math.round(200*bpd)):sma200;
-  const kL=Math.max(2,Math.round(14*bpd)),lookDiv=mo?24:wk?40:90;
+  const kL=mo?14:Math.max(2,Math.round(14*bpd)),lookDiv=mo?24:wk?40:90;
   const closedAt=i=>d[i].t+step<=Date.now();
   const regime=i=>{const m=trendMA[i];if(m==null)return 0;return Cl[i]>m*1.02?1:Cl[i]<m*0.98?-1:0;};
   const liqTrend=i=>{if(liq[i]==null||liq[i-kL]==null)return 0;const s=liq[i]-liq[i-kL];return s>0.02?1:s<-0.02?-1:0;};
