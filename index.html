@@ -1003,6 +1003,23 @@ function draw(){
   vis.forEach(i=>{const d=data[i],x=X(i),up=d.c>=d.o;ctx.strokeStyle=ctx.fillStyle=up?COL.up:COL.down;
     ctx.beginPath();ctx.moveTo(Math.round(x)+.5,Y(d.h));ctx.lineTo(Math.round(x)+.5,Y(d.l));ctx.stroke();
     const y1=Y(Math.max(d.o,d.c)),y2=Y(Math.min(d.o,d.c));ctx.fillRect(x-cwid/2,y1,cwid,Math.max(1,y2-y1));});
+  /* Volume Profile overlays : 90D primary, 30D/12M context, HVN/LVN nearby */
+  if(vpChartContext){
+    const vp=vpChartContext,levels=[];
+    const add=(v,name,color,dash,width)=>{if(Number.isFinite(v))levels.push({v,name,color,dash,width});};
+    const p30=vp.profiles?.[30],p90=vp.profiles?.[90],p365=vp.profiles?.[365];
+    if(p365)add(p365.poc,'POC 12M','#8b91a3',[2,5],1);
+    if(p30)add(p30.poc,'POC 30J','#e0a44b',[3,3],1);
+    if(p90){add(p90.vah,'VAH 90J',COL.up,[5,3],1.2);add(p90.val,'VAL 90J',COL.down,[5,3],1.2);add(p90.poc,'POC 90J',COL.accent,[],1.8);
+      (p90.hvn||[]).slice(0,2).forEach((v,i)=>add(v,'HVN '+(i+1),'#b18cff',[2,4],.9));
+      (p90.lvn||[]).slice(0,2).forEach((v,i)=>add(v,'LVN '+(i+1),'#e0a44b',[1,4],.9));}
+    ctx.save();ctx.beginPath();ctx.rect(0,p0.y,cw,p0.h);ctx.clip();
+    levels.forEach(l=>{const y=Y(l.v);if(y<=p0.y+3||y>=p0.y+p0.h-3)return;
+      ctx.strokeStyle=l.color;ctx.globalAlpha=l.name.startsWith('POC 90')?0.95:0.62;ctx.lineWidth=l.width;ctx.setLineDash(l.dash);
+      ctx.beginPath();ctx.moveTo(0,Math.round(y)+.5);ctx.lineTo(cw,Math.round(y)+.5);ctx.stroke();ctx.setLineDash([]);
+      ctx.font=`600 8px ${MONO}`;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillStyle=l.color;ctx.fillText(l.name+' '+fmt(l.v),5,Math.max(p0.y+10,y-2));
+    });ctx.globalAlpha=1;ctx.restore();
+  }
   drawStructureOverlays(p0,vis,first,last,X,Y,cw,bw);
   /* plancher du cycle (plus bas depuis le sommet) : sa cassure invalide le scénario « creux déjà fait » */
   const cy=cycleInfo(data);if(cy&&cy.low){const y=Y(cy.low);ctx.strokeStyle=COL.buy;ctx.globalAlpha=.7;ctx.setLineDash([6,4]);
@@ -1159,6 +1176,7 @@ function area(vis,a,X,Y,c){const z=Y(0);ctx.fillStyle=c;ctx.beginPath();let st=n
 
 // ===== Confluence chartiste + probabilités empiriques =====
 const overlayLayers={wyckoff:true,smc:true,elliott:true,patterns:true,rsiDiv:true};
+let vpChartContext=null;
 const money=v=>v==null?'—':Math.round(v).toLocaleString('fr-FR')+' '+String.fromCharCode(36);
 /* ===== FVG ICT multi-unité : zones causales, mitigation et taux de comblement ===== */
 function buildFvgContext(D){
@@ -1277,6 +1295,8 @@ function confluenceSnapshot(D){
 async function renderConfluence(){
   const panel=$('probabilityPanel');if(!panel)return;
   const D=await getDaily(),z=confluenceSnapshot(D);if(!z){$('probConfidence').textContent='Historique insuffisant';return;}
+  vpChartContext=z.vp||null;
+  if(typeof draw==='function')draw();
   const K=buildCone(D,365),hs=[30,90,365],fmtScenario=v=>v?money(v):'—';
   hs.forEach(h=>{
     const q=K.q[h],base=K.base;
