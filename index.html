@@ -1824,8 +1824,28 @@ function buildTrajectory(D,K,count=1200){
  if(hs.some(h=>samples[h].length!==count))return{n:0,reason:'Simulation incomplète : échantillons de trajectoires non conformes'};
  const q=(a,p)=>{if(!a.length)return null;a.sort((x,y)=>x-y);const x=(a.length-1)*p,i=Math.floor(x);return a[i]+(a[Math.min(i+1,a.length-1)]-a[i])*(x-i);};
  // IC de Wilson : incertitude Monte Carlo sur la fréquence observée, pas calibration prédictive.
- const wilson=k=>{const z=1.96,p=k/count,z2=z*z,den=1+z2/count,mid=(p+z2/(2*count))/den,half=z*Math.sqrt((p*(1-p)+z2/(4*count))/count)/den;return{lo:Math.max(0,mid-half),hi:Math.min(1,mid+half)};};
- return{n:count,blockDays:7,pool:pool.length,rows:hs.map(h=>({h,n:samples[h].length,p10:q(samples[h],.1),p50:q(samples[h],.5),p90:q(samples[h],.9)})),probDD20:dd20/count,probDD20CI:wilson(dd20),probUp20:up20/count,probUp20CI:wilson(up20),avgMaxDD:ddSum/count};
+ const wilson=(k,n)=>{const z=1.96,p=k/n,z2=z*z,den=1+z2/n,mid=(p+z2/(2*n))/den,half=z*Math.sqrt((p*(1-p)+z2/(4*n))/n)/den;return{lo:Math.max(0,mid-half),hi:Math.min(1,mid+half)};};
+ // Sensibilité au découpage temporel : contrôle 1 / 7 / 14 jours, sans modifier le scénario principal.
+ const runSensitivity=(blockDays,n=400)=>{
+  const valid=i=>i>=200&&i+blockDays<=end&&Array.from({length:blockDays},(_,k)=>Number.isFinite(C[i+k])&&Number.isFinite(C[i+k+1])&&C[i+k]>0&&C[i+k+1]>0).every(Boolean);
+  const starts=[];for(let i=200;i+blockDays<=end;i++)if(valid(i)&&R[i]===K.rg&&LT[i]===K.lt&&mb(i)===curM)starts.push(i);
+  if(starts.length<40){starts.length=0;for(let i=200;i+blockDays<=end;i++)if(valid(i)&&R[i]===K.rg)starts.push(i);}
+  if(starts.length<40){starts.length=0;for(let i=200;i+blockDays<=end;i++)if(valid(i))starts.push(i);}
+  if(starts.length<20)return null;
+  let sd=((end+1)*2654435761+Math.round(C[end]*100)+blockDays*2246822519)>>>0;if(!sd)sd=0x9e3779b9;
+  const random=()=>{sd^=sd<<13;sd^=sd>>>17;sd^=sd<<5;return(sd>>>0)/4294967296;};
+  const terminal=[];let ddCount=0;
+  for(let x=0;x<n;x++){let price=K.base,peak=price,maxDD=0,day=0;
+   while(day<365){const origin=starts[Math.floor(random()*starts.length)],len=Math.min(blockDays,365-day);
+    for(let k=1;k<=len;k++){const j=origin+k;price*=C[j]/C[j-1];peak=Math.max(peak,price);maxDD=Math.max(maxDD,1-price/peak);day++;}
+   }
+   terminal.push(price);if(maxDD>=.20)ddCount++;
+  }
+  terminal.sort((a,b)=>a-b);
+  return{blockDays,n,p50:terminal[Math.floor((n-1)*.5)],dd20:ddCount/n,pool:starts.length};
+ };
+ const sensitivity=[runSensitivity(1),{blockDays:7,n:count,p50:q(samples[365],.5),dd20:dd20/count,pool:pool.length},runSensitivity(14)].filter(Boolean);
+ return{n:count,blockDays:7,pool:pool.length,rows:hs.map(h=>({h,n:samples[h].length,p10:q(samples[h],.1),p50:q(samples[h],.5),p90:q(samples[h],.9)})),probDD20:dd20/count,probDD20CI:wilson(dd20,count),probUp20:up20/count,probUp20CI:wilson(up20,count),avgMaxDD:ddSum/count,sensitivity};
 }
 /* Audit de précision du prix : chaque prévision historique est recalculée avec les seules données connues à sa date.
    Le modèle conditionne sur tendance, régime de liquidité M2 (si disponible), momentum et volatilité.
@@ -2348,7 +2368,307 @@ async function renderHome(){
   <section class="ck-forecast-table" id="trajectoryRisk">
     <div class="ck-section-head"><span>SIMULATION DE TRAJECTOIRES</span><span class="ck-muted">1 200 chemins · blocs de 7 jours</span></div>
     ${SIM.n?`<div class="ck-forecast-grid"><div class="ck-fh">Horizon</div><div class="ck-fh">P10</div><div class="ck-fh">P50</div><div class="ck-fh">P90</div><div class="ck-fh">Scénarios</div>${SIM.rows.map(x=>`<div class="ck-fv">${x.h} J</div><div class="ck-fv">${fmt(r5(x.p10))}</div><div class="ck-fv ck-central">${fmt(r5(x.p50))}</div><div class="ck-fv">${fmt(r5(x.p90))}</div><div class="ck-fv">${x.n.toLocaleString("fr-FR")}</div>`).join("")}</div><div class="ck-prob-grid"><div class="ck-prob"><span>RISQUE DE -20 % EN COURS DE ROUTE</span><strong>${Math.round(SIM.probDD20*100)} %</strong><small>Drawdown maximal moyen : ${(SIM.avgMaxDD*100).toFixed(1)} % · IC Monte Carlo 95 % : ${(SIM.probDD20CI.lo*100).toFixed(1)}–${(SIM.probDD20CI.hi*100).toFixed(1)} %</small></div><div class="ck-prob"><span>CHANCE DE +20 % À 12 MOIS</span><strong>${Math.round(SIM.probUp20*100)} %</strong><small>IC Monte Carlo 95 % : ${(SIM.probUp20CI.lo*100).toFixed(1)}–${(SIM.probUp20CI.hi*100).toFixed(1)} % · Base : ${fmt(K.base)} $ · ${SIM.pool} départs comparables</small></div></div>`:`<p>${SIM.reason}</p>`}
-    <p class="ck-forecast-note">Bootstrap historique conditionné au régime, à la liquidité et au momentum, par blocs de 7 jours. Les IC Monte Carlo à 95 % quantifient uniquement l’erreur d’échantillonnage des simulations, pas l’incertitude du modèle ni sa capacité prédictive. Scénarios empiriques non calibrés : aucune fiabilité prédictive n’est revendiquée avant validation walk-forward indépendante.</p>
+    <p class="ck-forecast-note">Bootstrap historique conditionné au régime, à la liquidité et au momentum, par blocs de 7 jours. Sensibilité du P50 à 12 mois selon des blocs de 1 / 7 / 14 jours : ${SIM.sensitivity.length===3?SIM.sensitivity.map(x=>x.blockDays+' j : '+fmt(r5(x.p50))+' 
+  </section>
+  <section class="ck-chart-card">
+    <div class="ck-section-head"><span>TRAJECTOIRE CONDITIONNELLE</span><span class="ck-muted">Fourchette historique</span></div>
+    <div class="seg">${[[30,'30 J'],[91,'90 J'],[182,'6 M'],[365,'1 AN']].map(([h,t])=>`<button type="button" data-h="${h}" class="${h===HZ?'on':''}">${t}</button>`).join('')}</div>
+    <canvas id="orb"></canvas>
+    <div class="ck-chart-hint">Touchez le graphique pour explorer une échéance</div>
+  </section>
+  <div class="sc ck-readout" id="orbRead"></div>
+  <div class="ck-section-head"><span>FACTEURS SUIVIS</span><span class="ck-muted">Dernières bougies clôturées</span></div>
+  <div class="ck-factors">
+    ${why.map(([l,v,c,i])=>`<div class="ck-factor"><span class="ck-factor-icon">${i}</span><span>${l}</span><b style="color:${c}">${v}</b></div>`).join('')}
+  </div>
+  <p class="ck-disclaimer">Les probabilités et fourchettes décrivent des observations historiques comparables. Elles ne constituent pas une prévision garantie. La qualité dépend des données et du régime de marché.</p>`;
+
+  el.scrollTop=sc0;
+  const c=$('orb'),read=k=>{const x=fut(k);if(!x){$('orbRead').innerHTML='';return;}
+    const pu=Math.round(x.up*100),dt=new Date(T0+k*DAY).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:k>200?'numeric':undefined});
+    const q=K.q[Math.max(1,Math.min(365,k))],p25=K.base*Math.exp(q.p25),p75=K.base*Math.exp(q.p75);
+    const pc=v=>{const r=(v/last.c-1)*100;return (r>=0?'+':'')+r.toFixed(0)+' %';};
+    const pv=pu>=60?['Plutôt haussier','var(--up)']:pu<=40?['Plutôt baissier','var(--down)']:['Pas d\'avantage','var(--sub)'];
+    $('orbRead').innerHTML=`<div class="sch"><b>Le ${dt}</b><span>dans ${k} j</span></div>
+      <div class="row"><span class="ic" style="background:var(--up)">↑</span><span class="rl"><b>Haut</b><small>1 chance sur 10 d'aller au‑delà</small></span><span class="rv">${fmt(r5(x.hi))} $<small>${pc(x.hi)}</small></span></div>
+      <div class="row mid"><span class="ic" style="background:var(--violet)">●</span><span class="rl"><b>Probable</b><small>1 chance sur 2 entre ${k$(p25)} et ${k$(p75)}</small></span><span class="rv">${fmt(r5(x.mid))} $<small>${pc(x.mid)}</small></span></div>
+      <div class="row"><span class="ic" style="background:var(--down)">↓</span><span class="rl"><b>Bas</b><small>1 chance sur 10 d'aller en dessous</small></span><span class="rv">${fmt(r5(x.lo))} $<small>${pc(x.lo)}</small></span></div>
+      <div class="pb"><div class="pbt"><span>Plus haut qu'aujourd'hui</span><b style="color:${pv[1]}">${pu} % · ${pv[0]}</b></div><div class="track"><i style="width:${pu}%"></i></div></div>`;};
+  const go=()=>{drawOrb(c,d,K,PL,HZ,sel());read(sel());};go();
+  const pick=e=>{const g=c._g;if(!g)return;const r=c.getBoundingClientRect(),x=e.clientX-r.left,t=g.tA+(x-g.padL)/(g.w-g.padL-g.padR)*(g.tB-g.tA);
+    const k=Math.round((t-g.t1)/DAY);if(k<1)return;orbSel=Math.min(HZ,k);go();};
+  c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);pick(e);});c.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')pick(e);});
+  el.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{homeH=+b.dataset.h;orbSel=null;store.set('btcz_homeH',homeH);renderHome();}));
+}
+function drawOrb(c,d,K,PL,HZ,sel){
+  const r=c.getBoundingClientRect(),dp=Math.min(window.devicePixelRatio||1,3),w=r.width,h=r.height;c.width=w*dp;c.height=h*dp;
+  const g=c.getContext('2d');g.setTransform(dp,0,0,dp,0,0);g.clearRect(0,0,w,h);
+  const n=d.length,t1=d[n-1].t,back=Math.max(45,Math.round(HZ*.6)),tA=t1-back*DAY,tB=t1+HZ*DAY,padL=6,padR=46,padT=14,padB=34;
+  const past=d.filter(x=>x.t>=tA),E=v=>K.base*Math.exp(v);
+  const st=Math.max(1,Math.round(HZ/120)),cp=[{t:t1,p10:K.base,p25:K.base,p50:K.base,p75:K.base,p90:K.base}];
+  for(let k=st;k<=HZ;k+=st){const qq=K.q[k];if(qq)cp.push({t:t1+k*DAY,p10:E(qq.p10),p25:E(qq.p25),p50:E(qq.p50),p75:E(qq.p75),p90:E(qq.p90)});}
+  let lo=Math.min(...past.map(x=>x.l),...cp.map(x=>x.p10)),hi=Math.max(...past.map(x=>x.h),...cp.map(x=>x.p90));const pd=(hi-lo)*.05;lo-=pd;hi+=pd;
+  const LG=v=>Math.log(v),X=t=>padL+(t-tA)/(tB-tA)*(w-padL-padR),Y=v=>padT+(LG(hi)-LG(v))/(LG(hi)-LG(lo))*(h-padT-padB);
+  c._g={tA,tB,padL,padR,w,t1};
+  /* grille prix */
+  const span=hi-lo,stp=[2000,5000,10000,20000,25000,50000].find(s=>span/s<=5)||50000;
+  g.font=`11px ${MONO}`;g.textAlign='left';g.textBaseline='middle';
+  for(let v=Math.ceil(lo/stp)*stp;v<=hi;v+=stp){const y=Y(v);g.strokeStyle='rgba(255,255,255,.05)';g.beginPath();g.moveTo(padL,y);g.lineTo(w-padR,y);g.stroke();g.fillStyle=COL.muted;g.fillText(Math.round(v/1000)+'k',w-padR+6,y);}
+  /* cône : halo 80 % puis cœur 50 % */
+  const band=(a,b,col)=>{g.fillStyle=col;g.beginPath();cp.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p[a])):g.moveTo(X(p.t),Y(p[a])));[...cp].reverse().forEach(p=>g.lineTo(X(p.t),Y(p[b])));g.closePath();g.fill();};
+  const x0=X(t1),gr=g.createLinearGradient(x0,0,w-padR,0);gr.addColorStop(0,'rgba(191,90,242,.30)');gr.addColorStop(1,'rgba(191,90,242,.10)');band('p10','p90',gr);
+  const gr2=g.createLinearGradient(x0,0,w-padR,0);gr2.addColorStop(0,'rgba(191,90,242,.55)');gr2.addColorStop(1,'rgba(191,90,242,.28)');band('p25','p75',gr2);
+  g.strokeStyle='rgba(235,240,255,.9)';g.lineWidth=1.6;g.setLineDash([4,4]);g.beginPath();cp.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.p50)):g.moveTo(X(p.t),Y(p.p50)));g.stroke();g.setLineDash([]);
+  /* prix passé */
+  g.strokeStyle=COL.accent;g.lineWidth=2.2;g.lineJoin='round';g.beginPath();past.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.c)):g.moveTo(X(p.t),Y(p.c)));g.stroke();
+  g.fillStyle=COL.accent;g.beginPath();g.arc(x0,Y(K.base),4,0,7);g.fill();
+  /* bande des phases sous le graphe : vert = zone d'achat, rouge = sommet */
+  const yb=h-padB+8;g.fillStyle='rgba(255,255,255,.06)';g.fillRect(x0,yb,w-padR-x0,6);
+  PL.days.forEach(z=>{if(z.a<t1-DAY||z.a>tB)return;const c2=z.sc>=2?'#30d158':z.sc>=1?'#1f8a3c':z.sc<0?'#ff453a':null;if(!c2)return;
+    const xa=Math.max(x0,X(z.a)),xb=X(z.a+DAY);g.fillStyle=c2;g.fillRect(xa,yb,Math.max(1,xb-xa),6);});
+  /* repères de temps */
+  g.fillStyle=COL.muted;g.font=`11px ${MONO}`;g.textAlign='center';g.textBaseline='top';
+  g.fillText("auj.",x0,yb+10);
+  const marks=HZ<=31?[7,14,21,30]:HZ<=91?[30,60,91]:HZ<=182?[30,91,182]:[91,182,273,365];
+  marks.filter(k=>k<=HZ&&X(t1+k*DAY)-x0>=44).forEach(k=>{const x=X(t1+k*DAY);g.fillText(new Date(t1+k*DAY).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}).replace('.',''),Math.min(x,w-padR-18),yb+10);});
+  g.strokeStyle='rgba(255,255,255,.18)';g.beginPath();g.moveTo(x0,padT);g.lineTo(x0,yb-2);g.stroke();
+  /* curseur de lecture */
+  if(sel){const qq=K.q[sel];if(qq){const x=X(t1+sel*DAY);g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=1;g.beginPath();g.moveTo(x,padT);g.lineTo(x,yb-2);g.stroke();
+    g.strokeStyle='rgba(255,255,255,.35)';g.beginPath();g.moveTo(x-6,Y(E(qq.p10)));g.lineTo(x+6,Y(E(qq.p10)));g.moveTo(x-6,Y(E(qq.p90)));g.lineTo(x+6,Y(E(qq.p90)));g.stroke();
+    g.fillStyle='#fff';g.shadowColor='rgba(191,90,242,.9)';g.shadowBlur=14;g.beginPath();g.arc(x,Y(E(qq.p50)),5.5,0,7);g.fill();g.shadowBlur=0;
+    const lab=Math.round(E(qq.p50)/1000)+'k $';g.font=`700 13px ${MONO}`;const tw=g.measureText(lab).width+14,bx=Math.max(padL,Math.min(x-tw/2,w-padR-tw)),by=Math.max(2,Y(E(qq.p50))-34);
+    g.fillStyle='rgba(44,44,46,.95)';g.beginPath();g.roundRect?g.roundRect(bx,by,tw,22,7):g.rect(bx,by,tw,22);g.fill();g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(lab,bx+tw/2,by+11);}}
+}
+/* grille du mois, jour par jour (partagée par l'accueil et l'onglet Calendrier) */
+function monthGrid(d,K,PL,calOff,calSel,quiet){
+  const px=v=>K.base*Math.exp(v),at=h=>{const qq=K.q[Math.max(1,Math.min(365,Math.round(h)))];return qq?{lo:px(qq.p10),mid:px(qq.p50),hi:px(qq.p90)}:null;};
+  const k$=v=>Math.round(v/1000)+'k',r5=v=>v>=100000?Math.round(v/1000)*1000:Math.round(v/500)*500;
+  const C3={g:'#3DDC84',g2:'#1F7A4A',r:'#EF5350',n:'#3A4252'},wc=w=>w.sc>=2?C3.g:w.sc>=1?C3.g2:w.sc<0?C3.r:C3.n;
+  const now=new Date(),today0=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  const m0=new Date(now.getFullYear(),now.getMonth()+calOff,1),y=m0.getFullYear(),mo=m0.getMonth(),nd=new Date(y,mo+1,0).getDate(),lead=(m0.getDay()+6)%7;
+  const dayCell=t=>PL.days&&PL.days.find(x=>t+12*36e5>=x.a&&t+12*36e5<=x.b);
+  const closeAt=t=>{const r=d.find(x=>{const dt=new Date(x.t);return dt.getFullYear()===new Date(t).getFullYear()&&dt.getMonth()===new Date(t).getMonth()&&dt.getDate()===new Date(t).getDate();});return r||null;};
+  let cells='';for(let k=0;k<lead;k++)cells+='<span class="void"></span>';
+  for(let dd=1;dd<=nd;dd++){const t=new Date(y,mo,dd).getTime(),past=t<today0,c=dayCell(t);
+    const bg=past?'#1A202B':c?wc(c):'#1A202B',fg=!past&&c&&c.sc>=2?'#0B0E14':'var(--fg)',am=!past&&c&&c.amt?`<small>${eur(c.amt)}</small>`:'';
+    cells+=`<button type="button" data-t="${t}" class="${past?'past':''}${t===today0?' today':''}${calSel===t?' sel':''}" style="background:${bg};color:${fg}" aria-label="${dd}">${dd}${am}</button>`;}
+  const st=calSel??(calOff?m0.getTime():today0),sc=dayCell(st),pr=closeAt(st),hd=(st+12*36e5-K.t0)/DAY,x=st>=today0?at(Math.max(1,hd)):null;
+  const verdict=sc?(sc.sc>=2?['Zone d\'achat forte',C3.g]:sc.sc>=1?['Zone d\'achat (repli)',C3.g]:sc.sc<0?['Sommet probable : on n\'achète pas',C3.r]:['On attend le prochain repli','var(--fg)']):['—','var(--muted)'];
+  const detail=`<div style="display:grid;gap:3px;border-top:1px solid var(--grid);padding-top:10px">
+    <span style="font-size:15px;font-weight:700">${new Date(st).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</span>
+    ${st<today0?`<span class="why">Clôture : ${pr?fmt(pr.c)+' $':'—'}</span>`:`<span style="font-size:15px;font-weight:700;color:${verdict[1]}">${verdict[0]}</span>
+    ${sc&&sc.amt?`<span style="font-size:15px;font-weight:700">Achète ${sc.amt.toLocaleString('fr-FR')} € si BTC ≤ ${fmt(sc.zone)} $</span><span class="why">soit −${Math.round(sc.dd*100)} % sous ${st<today0+DAY?'le plus haut des 30 derniers jours':'le prix probable au début du repli'} · ${sc.fond>0?'fond porteur (M2 / cycle) : montant renforcé':sc.fond<0?'fond contraire : montant réduit':'fond neutre'}</span>`:''}
+    <span class="why">Prix probable ≈ ${x?fmt(r5(x.mid))+' $ · 8 fois sur 10 entre '+k$(x.lo)+' et '+k$(x.hi):'—'}</span>
+    <span class="why">${sc&&sc.why.length?sc.why.join(' · '):'pas de repère particulier ce jour‑là'}</span>`}</div>`;
+  const det2=quiet&&calSel==null?'':detail;
+  const html=`<div style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:17px;font-weight:700;text-transform:capitalize">${m0.toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}</span>
+      <div class="seg mseg"><button type="button" data-off="0" class="${calOff===0?'on':''}">Ce mois</button><button type="button" data-off="1" class="${calOff===1?'on':''}">Suivant</button></div></div>
+    <div class="cal7">${['L','M','M','J','V','S','D'].map(x=>`<span class="dh">${x}</span>`).join('')}${cells}</div>
+    <div class="foot" style="display:flex;gap:14px;flex-wrap:wrap"><span><span class="dot" style="display:inline-block;background:${C3.g}"></span> creux</span><span><span class="dot" style="display:inline-block;background:${C3.g2}"></span> repli</span><span><span class="dot" style="display:inline-block;background:${C3.n}"></span> attendre</span><span><span class="dot" style="display:inline-block;background:${C3.r}"></span> sommet</span><span>chiffre = € du jour</span></div>
+    ${det2}`;
+  return{html};}
+function bindGrid(el,setOff,setSel){el.querySelectorAll('.cal7 button').forEach(b=>b.addEventListener('click',()=>setSel(+b.dataset.t)));
+  el.querySelectorAll('.mseg button').forEach(b=>b.addEventListener('click',()=>setOff(+b.dataset.off)));}
+let calOff=0,calSel=null,homeOff=0,homeSel=null;
+async function renderCal(){
+  const el=$('cal');let D;try{D=await getDaily();}catch(e){return;}const d=D.rows,I=D.ind;
+  const K=buildCone(D,365),PL=buildPlan(D,53);
+  const px=v=>K.base*Math.exp(v),at=h=>{const qq=K.q[Math.max(1,Math.min(365,Math.round(h)))];return qq?{lo:px(qq.p10),mid:px(qq.p50),hi:px(qq.p90)}:null;};
+  const k$=v=>Math.round(v/1000)+'k',r5=v=>v>=100000?Math.round(v/1000)*1000:Math.round(v/500)*500;
+  const C3={g:'#3DDC84',r:'#EF5350',n:'#3A4252'},wc=w=>w.sc>=1?C3.g:w.sc<0?C3.r:C3.n;
+  const G=monthGrid(d,K,PL,calOff,calSel);
+  const months=[];PL.weeks.forEach(w=>{const k=new Date(w.a+3*DAY).toLocaleDateString('fr-FR',{month:'short',year:'2-digit'});let m=months[months.length-1];if(!m||m.k!==k){m={k,w:[]};months.push(m);}m.w.push(wc(w));});
+  const rows=PL.weeks.map((w,k)=>{const x=at(Math.max(1,(w.a+3.5*DAY-K.t0)/DAY));const t=w.sc>=1?['ACHAT',C3.g]:w.sc<0?['SOMMET',C3.r]:['ATTENDRE','#8B95A7'];
+    return `<div class="wrow"${k===0?' style="background:color-mix(in srgb,var(--accent) 12%,transparent)"':''}><span class="dot" style="background:${t[1]}"></span><span style="width:62px;color:#A7B0BF">${new Date(w.a).toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}).replace('.','')}</span><span style="flex:1">≈ ${x?fmt(r5(x.mid)):'—'}</span><span style="width:78px;color:var(--muted);font-size:11px">${x?k$(x.lo)+' – '+k$(x.hi):''}</span><span style="font-family:var(--cond);font-weight:700;font-size:12px;color:${t[1]};width:62px;text-align:right">${w.amt?eur(w.amt)+' €':t[0]}</span></div>`;}).join('');
+  const sc0=el.scrollTop;
+  el.className='proj page hm';
+  el.innerHTML=`<h1 class="lt">Calendrier</h1>
+  <div class="card"><span class="lbl2">Budget par repli</span>
+    <div style="display:flex;gap:8px;align-items:center"><input id="budIn" inputmode="numeric" value="${PL.budget}" style="flex:1;min-width:0;font-family:var(--mono);font-size:18px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px"><span style="font-size:17px">€</span><button type="button" id="budOk" style="font-family:var(--cond);font-weight:700;font-size:14px;background:var(--accent);color:var(--bg);border:0;border-radius:8px;padding:10px 14px">OK</button></div>
+    <span class="why">Réparti sur les jours verts de chaque repli : un peu au début de la baisse, le plus gros dans le creux. Plus haut 30 j : ${fmt(PL.hi30)} $.</span></div>
+  <div class="card">${G.html}</div>
+  <details class="more"><summary>12 mois et semaine par semaine</summary><div class="morein">
+  <div class="card"><span class="lbl2">12 mois · semaine par semaine</span>${months.map(m=>`<div class="mrow"><span class="mn" style="width:58px">${m.k}</span><div class="bars">${m.w.map(c=>`<span class="bar" style="background:${c}"></span>`).join('')}</div></div>`).join('')}
+    <div class="foot">Vert = repli ou creux, on achète · gris = montée, on attend · rouge = sommet probable. Les replis lointains suivent le rythme Cipher B : indicatifs.</div></div>
+  <div class="card" style="gap:0"><span class="lbl2" style="margin-bottom:6px">Semaine par semaine · prix probable · 8 fois sur 10</span>${rows}</div></div></details>`;
+  el.scrollTop=sc0;
+  bindGrid(el,o=>{calOff=o;calSel=null;renderCal();},t=>{calSel=t;renderCal();});
+  $('budOk').addEventListener('click',()=>{const v=Math.max(0,parseInt(String($('budIn').value).replace(/\s/g,''),10)||0);store.set('btcz_budget',v);renderCal();refreshPlan();});
+}
+function drawSimple(c,d,I,K,PL,cy,HZ=365){
+  const r=c.getBoundingClientRect(),dp=Math.min(window.devicePixelRatio||1,3),w=r.width,h=r.height;c.width=w*dp;c.height=h*dp;
+  const g=c.getContext('2d');g.setTransform(dp,0,0,dp,0,0);
+  const n=d.length,t1=d[n-1].t,tA=t1-Math.max(110,HZ*.55)*DAY,tB=t1+(HZ+6)*DAY,padL=8,padR=40,padT=26,padB=26;
+  const past=d.filter(x=>x.t>=tA);
+  const conePts=[];for(let k=0;k<=HZ;k+=Math.max(1,Math.round(HZ/90))){const qq=K.q[k];const t=t1+k*DAY;
+    conePts.push(k===0?{t,p10:K.base,p25:K.base,p50:K.base,p75:K.base,p90:K.base}:qq?{t,p10:K.base*Math.exp(qq.p10),p25:K.base*Math.exp(qq.p25),p50:K.base*Math.exp(qq.p50),p75:K.base*Math.exp(qq.p75),p90:K.base*Math.exp(qq.p90)}:null);}
+  const cp=conePts.filter(Boolean);
+  let lo=Math.min(...past.map(x=>x.c),...cp.map(x=>x.p25)),hi=Math.max(...past.map(x=>x.c),...cp.map(x=>x.p75)); /* la zone 80 % peut déborder : on garde la courbe lisible */
+  if(cy&&cy.low)lo=Math.min(lo,cy.low);const pad=(hi-lo)*.06;lo-=pad;hi+=pad;
+  const X=t=>padL+(t-tA)/(tB-tA)*(w-padL-padR),Y=v=>padT+(hi-v)/(hi-lo)*(h-padT-padB);
+  /* fond : semaines vertes / rouges dans le futur */
+  PL.weeks.forEach(wk=>{if(wk.sc===0)return;const x1=Math.max(X(wk.a),X(t1)),x2=X(wk.b);if(x2<=x1)return;
+    g.fillStyle=wk.sc>=1?'rgba(61,220,132,.10)':'rgba(239,83,80,.10)';g.fillRect(x1,padT,x2-x1,h-padT-padB);});
+  /* grille prix */
+  const st=[5000,10000,20000,25000,50000].find(s=>(hi-lo)/s<=6)||50000;
+  g.font=`11px ${MONO}`;g.textAlign='left';g.textBaseline='middle';
+  for(let v=Math.ceil(lo/st)*st;v<=hi;v+=st){const y=Y(v);g.strokeStyle=COL.grid;g.beginPath();g.moveTo(padL,y);g.lineTo(w-padR,y);g.stroke();g.fillStyle=COL.muted;g.fillText(Math.round(v/1000)+'k',w-padR+6,y);}
+  /* mois (1 sur 2 pour rester lisible sur 18 mois) */
+  g.textAlign='center';g.textBaseline='bottom';let lmx=-1e9;
+  for(let m=new Date(tA);m.getTime()<=tB;m.setUTCMonth(m.getUTCMonth()+1)){const t=Date.UTC(m.getUTCFullYear(),m.getUTCMonth(),1);if(t<tA)continue;
+    if(X(t)-lmx<40)continue;lmx=X(t);g.fillStyle=COL.muted;g.fillText(new Date(t).toLocaleDateString('fr-FR',{month:'short'}).replace('.',''),X(t),h-6);}
+  /* ligne à ne pas casser */
+  if(cy&&cy.low){g.strokeStyle=COL.down;g.setLineDash([6,5]);g.globalAlpha=.8;g.beginPath();g.moveTo(padL,Y(cy.low));g.lineTo(w-padR,Y(cy.low));g.stroke();g.setLineDash([]);g.globalAlpha=1;
+    g.fillStyle=COL.down;g.textAlign='left';g.textBaseline='bottom';g.font=`600 11px ${MONO}`;g.fillText('🛑 '+Math.round(cy.low/1000)+'k',padL+2,Y(cy.low)-3);}
+  /* zone probable */
+  const band=(a,b,col)=>{g.fillStyle=col;g.beginPath();cp.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p[a])):g.moveTo(X(p.t),Y(p[a])));[...cp].reverse().forEach(p=>g.lineTo(X(p.t),Y(p[b])));g.closePath();g.fill();};
+  g.save();g.beginPath();g.rect(padL,padT,w-padL-padR,h-padT-padB);g.clip();
+  band('p10','p90','rgba(76,141,255,.16)');band('p25','p75','rgba(76,141,255,.28)');
+  g.strokeStyle='#e8f0ff';g.lineWidth=2;g.setLineDash([5,5]);g.beginPath();cp.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.p50)):g.moveTo(X(p.t),Y(p.p50)));g.stroke();g.setLineDash([]);g.restore();
+  /* prix passé */
+  g.strokeStyle=COL.accent;g.lineWidth=2.5;g.beginPath();past.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.c)):g.moveTo(X(p.t),Y(p.c)));g.stroke();g.lineWidth=1;
+  /* aujourd'hui */
+  const xn=X(t1);g.strokeStyle=COL.fg;g.globalAlpha=.4;g.beginPath();g.moveTo(xn,padT-6);g.lineTo(xn,h-padB);g.stroke();g.globalAlpha=1;
+  g.fillStyle=COL.fg;g.font=`600 12px ${MONO}`;g.textAlign='right';g.textBaseline='bottom';g.fillText("aujourd'hui",xn+4,padT-8);
+  /* repères 3 et 6 mois */
+  [[91,'3m'],[182,'6m'],[365,'1 an']].filter(([k])=>k<=HZ).forEach(([k,lab])=>{const qq=K.q[k];if(!qq)return;const t=t1+k*DAY,x=X(t),v=K.base*Math.exp(qq.p50);
+    g.strokeStyle=COL.muted;g.setLineDash([2,4]);g.beginPath();g.moveTo(x,padT);g.lineTo(x,h-padB);g.stroke();g.setLineDash([]);
+    g.fillStyle='#fff';g.beginPath();g.arc(x,Y(v),5,0,7);g.fill();
+    g.font=`600 12px ${MONO}`;g.textAlign=k>=HZ-5?'right':'center';g.textBaseline='bottom';g.fillText(lab,k>=HZ-5?w-padR+2:x,padT-8);
+    g.textBaseline='top';g.fillText(Math.round(v/1000)+'k',k>=HZ-5?x-6:x,Y(v)+8);});
+  /* points d'achat / vente (12 derniers mois, bougies closes) */
+  let lastX=-1e9;I.sig.filter(s=>!s.prov&&!s.blocked&&d[s.i].t>=tA).forEach(s=>{const x=X(d[s.i].t),y=Y(d[s.i].c),buy=s.t==='buy';
+    g.fillStyle=buy?COL.buy:COL.down;g.strokeStyle=COL.bg;g.lineWidth=2;g.beginPath();g.arc(x,y,s.strong?8:6.5,0,7);g.fill();g.stroke();g.lineWidth=1;
+    if(x-lastX>34){g.fillStyle=buy?COL.buy:COL.down;g.font=`700 11px ${MONO}`;g.textAlign='center';g.textBaseline=buy?'top':'bottom';
+      g.fillText(buy?'ACHÈTE':'VENDS',x,buy?y+11:y-11);lastX=x;}});
+}
+/* ---------- boutons ---------- */
+$('proj').addEventListener('click',e=>{const b=e.target.closest('.apply');if(!b)return;const k=b.dataset.k,v=b.dataset.p;
+  if(v==='reset')delete userP[k];else{try{userP[k]=JSON.parse(v);}catch(x){return;}}
+  store.set('btcz_params_v13',userP);
+  if(daily)daily.ind=compute(daily.rows);ind=compute(data,tf==='4h'?daily:null);if(tf==='1d')daily={rows:data,ind,demo:isDemo};
+  updateHeader();draw();refreshPlan();b.textContent='✓';setTimeout(renderProj,300);});
+document.querySelectorAll('[data-tf]').forEach(b=>b.addEventListener('click',()=>{tf=b.dataset.tf;store.set('btcz_tf',tf);
+  document.querySelectorAll('[data-tf]').forEach(x=>x.classList.toggle('on',x===b));view.cross=null;load();}));
+/* vue « 3 mois » : ~2 mois d'historique + les 3 mois projetés */
+$('b3m').addEventListener('click',()=>{if(!data.length)return;const F=futBars(),back=tf==='1w'?13:tf==='4h'?120:60;view.bw=Math.max(1.5,(W-AX)/(F+back+2));view.right=data.length-1+F+1;view.cross=null;
+  draw();});
+/* Export texte des statistiques RSI pour analyse externe, sans capture d'écran. */
+async function copyRsiStatisticsReport(button){
+  const status=$('proj').querySelector('[data-rsi-copy-status]');
+  const original=button.textContent;
+  try{
+    const D=await getDaily(),d=D.rows;
+    if(D.demo)throw new Error('Mode démo : aucun résultat réel à exporter.');
+    if(!d||d.length<100)throw new Error('Historique daily insuffisant.');
+    const B=rsiDivergenceBacktest(d),pct=x=>x==null?'—':(x*100).toFixed(2)+' %',ret=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(3)+' %';
+    const lines=[
+      'CRYSTAL BTC — RAPPORT DE FIABILITÉ DES DIVERGENCES RSI',
+      'Données : BTC daily | RSI 14 | pivots confirmés après 3 bougies',
+      'Test : derniers 30 % de l’historique, entrée à la clôture de confirmation',
+      'Début du segment test (70 % apprentissage) : '+dS(d[B.cut]?.t||d[d.length-1].t),
+      'Bougies daily disponibles : '+d.length,
+      'Signaux détectés dans le segment test : '+B.events,
+      'Définition : divergence haussière = prix plus bas + RSI supérieur de >2 points ; baissière = prix plus haut + RSI inférieur de >2 points.',
+      'Les rendements sont mesurés dans le sens du signal. Référence = tous les jours éligibles du segment test dans le même sens.',
+      'Taux et IC Wilson affichés uniquement si au moins 20 cas. Les horizons incomplets sont exclus.',
+      '',
+      'SIGNAL | HORIZON | N | GAGNANTS | TAUX | IC95% | RENDEMENT MOYEN | TAUX RÉFÉRENCE | ÉCART TAUX | RENDEMENT RÉF. | ÉCART RENDEMENT'
+    ];
+    for(const x of B.stats)for(const h of x.horizons){
+      lines.push([x.dir>0?'HAUSSIÈRE':'BAISSIÈRE','+'+h.h+'j',h.n,h.wins,pct(h.win),h.ci?pct(h.ci[0])+' à '+pct(h.ci[1]):'—',ret(h.avg),pct(h.baseWin),ret(h.winEdge),ret(h.base),ret(h.excess)].join(' | '));
+    }
+    const audit=rsiDivergenceEventAudit(d,B);
+    lines.push('','AUDIT DES CHEVAUCHEMENTS','Règle de sensibilité : conserver le premier signal par direction, puis ignorer les suivants pendant 60 bougies daily.','Sensibilité aux coûts : rendements nets après coût total aller-retour théorique de 0,2 %, 0,5 % et 1,0 % (frais + slippage), hypothèses identiques dans les deux sens ; pas les frais réels d’un exchange.');
+    for(const x of audit){
+      lines.push((x.dir>0?'HAUSSIÈRE':'BAISSIÈRE')+' | signaux bruts '+x.events.length+' | écartés '+x.removed);
+      for(const h of x.horizons){lines.push('+'+h.h+'j | chevauchants '+h.overlapped+' | brut '+h.raw.n+' cas, '+h.raw.w+' gagnants, moy. '+ret(h.raw.avg)+' | dédoublonné '+h.dedup.n+' cas, '+h.dedup.w+' gagnants, moy. '+ret(h.dedup.avg));for(const c of h.costs)lines.push('  Coût total '+(c.cost*100).toFixed(1)+' % | brut net '+c.raw.w+'/'+c.raw.n+' gagnants, moy. '+ret(c.raw.avg)+' | dédoublonné net '+c.dedup.w+'/'+c.dedup.n+' gagnants, moy. '+ret(c.dedup.avg));}
+      for(const e of x.events)lines.push('ÉVÉNEMENT '+(x.dir>0?'HAUSSIER':'BAISSIER')+' | pivot '+dS(d[e.pivot].t)+' | entrée '+dS(d[e.known].t)+' | prix '+e.entry+' | '+(x.kept.includes(e)?'retenu':'écarté par filtre 60 j'));
+    }
+    lines.push('','Note : backtest historique, pas une garantie de performance future. Les résultats dépendent de la qualité et de la longueur de l’historique chargé.');
+    const report=lines.join('\n');
+    try{
+      if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(report);
+      else throw new Error('clipboard unavailable');
+    }catch(_){
+      const area=document.createElement('textarea');area.value=report;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();
+      const ok=document.execCommand('copy');area.remove();if(!ok)throw new Error('Copie bloquée par le navigateur');
+    }
+    button.textContent='✓ Rapport copié';if(status)status.textContent=' Colle-le directement dans ChatGPT.';
+    setTimeout(()=>{button.textContent=original;if(status)status.textContent='';},5000);
+  }catch(err){
+    button.textContent='Copie impossible';if(status)status.textContent=' '+(err.message||'Erreur');setTimeout(()=>{button.textContent=original;},4000);
+  }
+}
+$('proj').addEventListener('click',e=>{const b=e.target.closest('[data-copy-rsi-report]');if(b){e.preventDefault();copyRsiStatisticsReport(b);}});
+/* ---------- onglets ---------- */
+let curTab='home';
+function showTab(t){curTab=t;
+  [['home','vHome'],['chart','vChart'],['cal','vCal'],['stats','vStats']].forEach(([k,id])=>{$(id).hidden=k!==t;});
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  if(t==='chart'){requestAnimationFrame(resize);renderConfluence();}
+  if(t==='home')renderHome();if(t==='cal')renderCal();if(t==='stats'){$('proj').innerHTML='<p>Calcul…</p>';$('proj').dataset.compact='0';renderProj().then(()=>{compactStats();});}}
+document.querySelectorAll('.tabbar button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+$('bZones').addEventListener('click',()=>{$('zR').value=zones.r;$('zS').value=zones.s;$('zX').value=(zones.x||[]).join(', ');$('lUrl').value=liqCfg.url||'';$('lLag').value=liqCfg.lag;$('lMode').value=liqCfg.mode||'mix';$('sheet').hidden=false;});
+$('zCancel').addEventListener('click',()=>{$('sheet').hidden=true;});
+$('zSave').addEventListener('click',()=>{const n=s=>parseFloat(String(s).replace(/\s/g,'').replace(',','.'));
+  zones={r:n($('zR').value)||zones.r,s:n($('zS').value)||zones.s,x:$('zX').value.split(/[;,]\s*(?=\d)/).map(n).filter(v=>!isNaN(v))};
+  store.set('btcz_zones',zones);
+  const nu=$('lUrl').value.trim(),nl=Math.max(0,Math.min(180,parseInt($('lLag').value,10)||70));
+  const nm=$('lMode').value||'mix',changed=nu!==liqCfg.url||nl!==liqCfg.lag||nm!==(liqCfg.mode||'mix');liqCfg={url:nu,lag:nl,mode:nm};store.set('btcz_liq',liqCfg);
+  $('sheet').hidden=true;if(changed){macro=null;daily=null;load(true);}else draw();});
+document.querySelectorAll('[data-tf]').forEach(x=>x.classList.toggle('on',x.dataset.tf===tf));
+
+window.addEventListener('resize',resize);
+new ResizeObserver(resize).observe(stage);
+resize();load();
+/* ---------- temps réel : flux WebSocket Binance (bougie en cours 1D + 1W) ---------- */
+let ws=null,wsOk=false,wsRetry=0,lastFull=0,lastCalc=0,calcT=null,lastPlan=0,lastSimple=0,dailyDirty=false,liveSpotPrice=0,liveSpotAt=0;
+function setBadge(){const b=$('badge'),src=$('src')?.textContent||'';b.textContent=isDemo?'DÉMO · SIMULÉ':src==='Coinbase'?'COINBASE · SECOURS':wsOk?'BINANCE · LIVE':'BINANCE · ACTUALISÉ';b.className='badge '+(isDemo?'demo':'live');}
+function upd(rows,row){if(!rows||!rows.length)return false;const L=rows[rows.length-1];if(row.t===L.t){L.h=Math.max(L.h,row.h);L.l=Math.min(L.l,row.l);L.c=row.c;L.v=row.v??L.v;L.qv=row.qv??L.qv;L.trades=row.trades??L.trades;L.takerBuy=row.takerBuy??L.takerBuy;return true;}
+  if(row.t>L.t){rows.push(row);return true;}return false;}
+function connectWS(){
+  /* Ne jamais mélanger le flux Binance avec un historique Coinbase ou une série de démonstration. */
+  if(isDemo||$('src')?.textContent!=='Binance'){if(ws&&ws.readyState<2){try{ws.close();}catch(e){}}wsOk=false;setBadge();return;}
+  if(ws&&ws.readyState<2)return;
+  try{ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@miniTicker/btcusdt@kline_1d/btcusdt@kline_1w/btcusdt@kline_4h/btcusdt@kline_1M');}catch(e){return;}
+  ws.onopen=()=>{wsOk=true;wsRetry=0;setBadge();};
+  ws.onclose=()=>{wsOk=false;setBadge();if(document.visibilityState==='visible'){const dl=Math.min(30,2**wsRetry++)*1000;setTimeout(connectWS,dl);}};
+  ws.onerror=()=>{try{ws.close();}catch(e){}};
+  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch(x){return;}const payload=m.data;if(payload&&payload.e==='24hrMiniTicker'){const px=+payload.c;if(Number.isFinite(px)&&px>0){liveSpotPrice=px;liveSpotAt=Date.now();tick();}return;}const k=payload&&payload.k;if(!k||!data.length)return;
+    const row={t:k.t,o:+k.o,h:+k.h,l:+k.l,c:+k.c,v:+k.v,qv:+k.q,trades:+k.n,takerBuy:+k.V};
+    if(k.i===tf)upd(data,row);
+    if(k.i==='1d'&&daily&&daily.rows!==data){upd(daily.rows,row);dailyDirty=true;}
+    if(k.x){setTimeout(()=>load(true),4000);return;} /* bougie close : rechargement complet pour figer les signaux */
+    tick();};
+}
+function tick(){const now=Date.now();if(now-lastCalc<2000){if(!calcT)calcT=setTimeout(()=>{calcT=null;tick();},2000-(now-lastCalc));return;}
+  lastCalc=now;
+  if(tf!=='1d'&&dailyDirty&&daily){daily.ind=compute(daily.rows);dailyDirty=false;}
+  ind=compute(data,tf==='4h'?daily:null);
+  if(tf==='1d')daily={rows:data,ind,demo:false};
+  updateHeader();draw();if(curTab==='chart')renderConfluence();
+  if(now-lastPlan>30e3&&daily){lastPlan=now;try{plan=buildPlan(daily,16);cone=buildCone(daily,365);}catch(e){}draw();}
+  if(curTab==='home'&&now-lastSimple>10e3){lastSimple=now;renderHome();}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||isDemo)return;connectWS();load(true);});
+/* filet de sécurité : rechargement complet toutes les 5 min avec le flux, toutes les minutes sans */
+setInterval(()=>{if(isDemo||document.visibilityState!=='visible')return;if(!wsOk||Date.now()-lastFull>300e3)load(true);},60000);
+})();
+</script>
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./service-worker.js").catch((err) => {
+            console.warn("Service worker non enregistré", err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
+).join(' · '):'historique insuffisant pour comparer les découpages'}. Les IC Monte Carlo à 95 % quantifient uniquement l’erreur d’échantillonnage des simulations, pas l’incertitude du modèle ni sa capacité prédictive. Scénarios empiriques non calibrés : aucune fiabilité prédictive n’est revendiquée avant validation walk-forward indépendante.</p>
   </section>
   <section class="ck-chart-card">
     <div class="ck-section-head"><span>TRAJECTOIRE CONDITIONNELLE</span><span class="ck-muted">Fourchette historique</span></div>
