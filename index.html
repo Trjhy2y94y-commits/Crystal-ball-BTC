@@ -1801,13 +1801,19 @@ function buildCone(D,maxH=92){
 /* Bootstrap de blocs conditionné au régime/liquidité/momentum ; scénarios empiriques, non prédiction garantie. */
 function buildTrajectory(D,K,count=1200){
  const I=D.ind,C=I.Cl,end=I.lastClosed,R=I.rgA||[],LT=I.ltA||[],mom=I.wt2||[];
- const mb=i=>mom[i]==null?0:mom[i]<=-40?-1:mom[i]>=40?1:0,curM=mb(end),starts=[];
- for(let i=200;i+8<=end;i++)if(R[i]===K.rg&&LT[i]===K.lt&&mb(i)===curM)starts.push(i);
- let pool=starts;
- if(pool.length<40){pool=[];for(let i=200;i+8<=end;i++)if(R[i]===K.rg)pool.push(i);}
- if(pool.length<40){pool=[];for(let i=200;i+8<=end;i++)pool.push(i);}
+ count=Math.floor(Number(count));
+ if(!Number.isFinite(count)||count<100||count>5000)return{n:0,reason:'Nombre de trajectoires invalide'};
+ if(!Number.isInteger(end)||end<208||!Number.isFinite(K?.base)||K.base<=0||!Number.isFinite(C?.[end])||C[end]<=0)return{n:0,reason:'Données de départ invalides'};
+ const mb=i=>mom[i]==null?0:mom[i]<=-40?-1:mom[i]>=40?1:0,curM=mb(end);
+ // Un départ n'est admissible que si les 7 rendements du bloc sont présents, finis et strictement positifs.
+ const validStart=i=>i>=200&&i+7<=end&&Array.from({length:7},(_,k)=>C[i+k]>0&&C[i+k+1]>0&&Number.isFinite(C[i+k])&&Number.isFinite(C[i+k+1])).every(Boolean);
+ const collect=test=>{const a=[];for(let i=200;i+7<=end;i++)if(validStart(i)&&test(i))a.push(i);return a;};
+ let pool=collect(i=>R[i]===K.rg&&LT[i]===K.lt&&mb(i)===curM);
+ if(pool.length<40)pool=collect(i=>R[i]===K.rg);
+ if(pool.length<40)pool=collect(()=>true);
  if(pool.length<20)return{n:0,reason:'Historique comparable insuffisant'};
  let seed=((end+1)*2654435761+Math.round(C[end]*100))>>>0;
+ if(seed===0)seed=0x9e3779b9;
  const rand=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return(seed>>>0)/4294967296;};
  const hs=[30,90,180,365],samples={30:[],90:[],180:[],365:[]};let dd20=0,up20=0,ddSum=0;
  for(let s=0;s<count;s++){let price=K.base,peak=price,maxDD=0,day=0;
