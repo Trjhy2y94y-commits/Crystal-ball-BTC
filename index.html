@@ -2639,7 +2639,7 @@ async function renderHome(){
       <div class="row mid"><span class="ic" style="background:var(--violet)">●</span><span class="rl"><b>Probable</b><small>1 chance sur 2 entre ${k$(p25)} et ${k$(p75)}</small></span><span class="rv">${fmt(r5(x.mid))} $<small>${pc(x.mid)}</small></span></div>
       <div class="row"><span class="ic" style="background:var(--down)">↓</span><span class="rl"><b>Bas</b><small>1 chance sur 10 d'aller en dessous</small></span><span class="rv">${fmt(r5(x.lo))} $<small>${pc(x.lo)}</small></span></div>
       <div class="pb"><div class="pbt"><span>Plus haut qu'aujourd'hui</span><b style="color:${pv[1]}">${pu} % · ${pv[0]}</b></div><div class="track"><i style="width:${pu}%"></i></div></div>`;};
-  const go=()=>{drawOrb(c,d,K,PL,HZ,sel());read(sel());};go();
+  const go=()=>{drawOrb(c,d,K,PL,HZ,sel(),I);read(sel());};go();
   const pick=e=>{const g=c._g;if(!g)return;const r=c.getBoundingClientRect(),x=e.clientX-r.left,t=g.tA+(x-g.padL)/(g.w-g.padL-g.padR)*(g.tB-g.tA);
     const k=Math.round((t-g.t1)/DAY);if(k<1)return;orbSel=Math.min(HZ,k);go();};
   c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);pick(e);});c.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')pick(e);});
@@ -2869,11 +2869,11 @@ setInterval(updateQuantTerminal,2000);
 
 /* V4 — trajectoires quotidiennes bootstrap : chemins réels rééchantillonnés,
    conditionnés au régime/liquidité/momentum courant. Déterministes entre deux bougies. */
-drawOrb=function(c,d,K,PL,HZ,sel){
+drawOrb=function(c,d,K,PL,HZ,sel,Iarg){
  const r=c.getBoundingClientRect(),dp=Math.min(window.devicePixelRatio||1,3),w=r.width,h=r.height;
  if(!w||!h)return;c.width=w*dp;c.height=h*dp;
  const g=c.getContext('2d');g.setTransform(dp,0,0,dp,0,0);g.clearRect(0,0,w,h);
- const I=d.ind||daily?.ind||ind,C=I?.Cl||[],end=I?.lastClosed??C.length-1;
+ const I=Iarg||daily?.ind||ind,C=I?.Cl||[],end=I?.lastClosed??C.length-1;
  const n=d.length,t1=d[n-1].t,back=Math.max(45,Math.round(HZ*.6)),tA=t1-back*DAY,tB=t1+HZ*DAY;
  const padL=8,padR=48,padT=18,padB=43,E=v=>K.base*Math.exp(v),LG=v=>Math.log(Math.max(1,v));
  const past=d.filter(x=>x.t>=tA);
@@ -3030,7 +3030,7 @@ setInterval(()=>{if(isDemo||document.visibilityState!=='visible')return;if(!wsOk
       <div class="row mid"><span class="ic" style="background:var(--violet)">●</span><span class="rl"><b>Probable</b><small>1 chance sur 2 entre ${k$(p25)} et ${k$(p75)}</small></span><span class="rv">${fmt(r5(x.mid))} $<small>${pc(x.mid)}</small></span></div>
       <div class="row"><span class="ic" style="background:var(--down)">↓</span><span class="rl"><b>Bas</b><small>1 chance sur 10 d'aller en dessous</small></span><span class="rv">${fmt(r5(x.lo))} $<small>${pc(x.lo)}</small></span></div>
       <div class="pb"><div class="pbt"><span>Plus haut qu'aujourd'hui</span><b style="color:${pv[1]}">${pu} % · ${pv[0]}</b></div><div class="track"><i style="width:${pu}%"></i></div></div>`;};
-  const go=()=>{drawOrb(c,d,K,PL,HZ,sel());read(sel());};go();
+  const go=()=>{drawOrb(c,d,K,PL,HZ,sel(),I);read(sel());};go();
   const pick=e=>{const g=c._g;if(!g)return;const r=c.getBoundingClientRect(),x=e.clientX-r.left,t=g.tA+(x-g.padL)/(g.w-g.padL-g.padR)*(g.tB-g.tA);
     const k=Math.round((t-g.t1)/DAY);if(k<1)return;orbSel=Math.min(HZ,k);go();};
   c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);pick(e);});c.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')pick(e);});
