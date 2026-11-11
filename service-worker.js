@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v24-shell";
+const CACHE = "cristal-btc-v25-shell";
 const SHELL = [
   "./",
   "./index.html",
@@ -8,10 +8,12 @@ const SHELL = [
   "./apple-touch-icon.png",
   "./favicon.png"
 ];
+
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
   self.skipWaiting();
 });
+
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
@@ -20,10 +22,31 @@ self.addEventListener("activate", (event) => {
   );
   self.clients.claim();
 });
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
+
+  /* Navigation : réseau d'abord pour recevoir les nouvelles versions.
+     En cas de coupure, retour à la dernière page mise en cache. */
+  if (request.mode === "navigate") {
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request);
+        if (response.ok) {
+          const cache = await caches.open(CACHE);
+          await cache.put("./index.html", response.clone());
+        }
+        return response;
+      } catch (error) {
+        return (await caches.match("./index.html")) || Response.error();
+      }
+    })());
+    return;
+  }
+
+  /* Ressources statiques : cache d'abord, réseau en secours. */
   event.respondWith(
     caches.match(request).then((cached) => cached || fetch(request).then((response) => {
       if (response.ok) {
@@ -31,6 +54,6 @@ self.addEventListener("fetch", (event) => {
         caches.open(CACHE).then((cache) => cache.put(request, copy));
       }
       return response;
-    }).catch(() => caches.match("./index.html")))
+    }))
   );
 });
