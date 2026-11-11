@@ -1949,7 +1949,8 @@ function priceForecastAudit(D){
       regimeResults.push({regime:regimeAt(i),err:Math.abs(Math.exp(dp50-actual)-1),dir:Math.sign(dp50)===Math.sign(actual),cover:actual>=dp10&&actual<=dp90,up:actualUp?1:0,p:pUp});
       const make=(median,lo,hi)=>({err:Math.abs((C[i]*Math.exp(median))/priceActual-1),dir:Math.sign(median)===Math.sign(actual),cover:actual>=lo&&actual<=hi});
       const mk=a=>{const z=a.map(x=>x.r);return make(q(z,.5),q(z,.1),q(z,.9));};
-      core.push(make(p50,p10,p90));enhanced.push(make(fp50,fp10,fp90));advancedModel.push(make(pp50,pp10,pp90));divergenceModel.push(make(dp50,dp10,dp90));\n      fvgOnly.push(mk(fvgA));vpOnly.push(mk(vpA));flowOnly.push(mk(flowA));rsiOnly.push(mk(rsiA));
+      core.push(make(p50,p10,p90));enhanced.push(make(fp50,fp10,fp90));advancedModel.push(make(pp50,pp10,pp90));divergenceModel.push(make(dp50,dp10,dp90));
+      fvgOnly.push(mk(fvgA));vpOnly.push(mk(vpA));flowOnly.push(mk(flowA));rsiOnly.push(mk(rsiA));
       base.push(make(b50,q(b,.1),q(b,.9)));origins++;
     }
     const bins=Array.from({length:10},(_,k)=>{const z=probabilityChecks.filter(x=>Math.min(9,Math.floor(x.p*10))===k);return{lo:k/10,hi:(k+1)/10,n:z.length,p:z.length?z.reduce((v,x)=>v+x.p,0)/z.length:null,observed:z.length?z.reduce((v,x)=>v+x.y,0)/z.length:null};}).filter(x=>x.n>0);
