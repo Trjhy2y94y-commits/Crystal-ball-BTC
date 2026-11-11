@@ -872,13 +872,15 @@ const fmtD=t=>{const d=new Date(t);return d.toLocaleDateString('fr-FR',{day:'2-d
 
 function drawStructureOverlays(p0,vis,first,last,X,Y,cw,bw){
   const keys=overlayLayers;if(!keys.wyckoff&&!keys.smc&&!keys.elliott&&!keys.patterns)return;
-  const start=Math.max(3,first,last-150),end=Math.min(data.length-4,last);
+  // Pivot affiché à sa bougie de confirmation (3 clôtures après le pivot), jamais dans le passé.
+  const start=Math.max(3,first-3,last-153),end=Math.min(data.length-4,last-3);
   const piv=[];
   for(let i=start;i<=end;i++){
     let ph=true,pl=true;
     for(let k=1;k<=3;k++){if(data[i].h<=data[i-k].h||data[i].h<data[i+k].h)ph=false;if(data[i].l>=data[i-k].l||data[i].l>data[i+k].l)pl=false;}
-    if(ph)piv.push({i,v:data[i].h,t:'H'});
-    if(pl)piv.push({i,v:data[i].l,t:'L'});
+    const known=i+3;
+    if(ph)piv.push({i:known,pivotI:i,v:data[i].h,t:'H'});
+    if(pl)piv.push({i:known,pivotI:i,v:data[i].l,t:'L'});
   }
   piv.sort((a,b)=>a.i-b.i);
   const swings=[];for(const q of piv){const z=swings[swings.length-1];if(z&&z.t===q.t){if((q.t==='H'&&q.v>z.v)||(q.t==='L'&&q.v<z.v))swings[swings.length-1]=q;}else swings.push(q);}
