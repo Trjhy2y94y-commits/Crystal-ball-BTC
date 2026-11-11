@@ -480,9 +480,10 @@ function compute(d,ctx){
   const closedAt=i=>{if(mo){const z=new Date(d[i].t);return Date.UTC(z.getUTCFullYear(),z.getUTCMonth()+1,1)<=Date.now();}return d[i].t+step<=Date.now();};
   const regime=i=>{const m=trendMA[i];if(m==null)return 0;return Cl[i]>m*1.02?1:Cl[i]<m*0.98?-1:0;};
   const liqTrend=i=>{if(liq[i]==null||liq[i-kL]==null)return 0;const s=liq[i]-liq[i-kL];return s>0.02?1:s<-0.02?-1:0;};
-  const trough=(i,dir)=>{let wi=i,pi=i;for(let j=Math.max(0,i-8);j<=i;j++){if(wt2[j]==null)continue;
-      if(dir>0){if(wt2[j]<wt2[wi])wi=j;if(L[j]<L[pi])pi=j;}else{if(wt2[j]>wt2[wi])wi=j;if(H[j]>H[pi])pi=j;}}
-    return{w:wt2[wi],p:dir>0?L[pi]:H[pi]};};
+  /* Le WT est lu sur la même bougie que le pivot de prix : pas de mélange de deux extrêmes distincts. */
+  const trough=(i,dir)=>{let pi=-1;for(let j=Math.max(0,i-8);j<=i;j++){if(wt2[j]==null)continue;
+      if(pi<0||(dir>0?L[j]<L[pi]:H[j]>H[pi]))pi=j;}
+    return pi<0?null:{i:pi,w:wt2[pi],p:dir>0?L[pi]:H[pi]};};
   const FU=memo('fu',d.length+':'+d[0].t+':'+fut.at,()=>buildFund(d));
   /* v7 : on extrait d'abord tous les croisements « candidats » avec leurs critères, puis on les note avec des réglages (P).
      Ça permet à l'optimiseur de tester des dizaines de réglages sans tout recalculer. */
@@ -496,8 +497,9 @@ function compute(d,ctx){
   dots.forEach(o=>{const i=o.i,w=wt2[i],buy=o.t==='up';
     if(buy?w>-40:w<40)return;
     const tr=trough(i,buy?1:-1),pv=prevEx[o.t];
-    const div=!!(pv&&i-pv.i<=lookDiv&&(buy?(tr.p<pv.p&&tr.w>pv.w+3):(tr.p>pv.p&&tr.w<pv.w-3)));
-    prevEx[o.t]={i,w:tr.w,p:tr.p};
+    if(!tr)return;
+    const div=!!(pv&&tr.i-pv.i>=3&&tr.i-pv.i<=lookDiv&&(buy?(tr.p<pv.p&&tr.w>pv.w+3):(tr.p>pv.p&&tr.w<pv.w-3)));
+    prevEx[o.t]={i:tr.i,w:tr.w,p:tr.p};
     const f=FU&&FU.f7[i],z=FU&&FU.fz[i];
     cands.push({i,buy,w,div,lt:liqTrend(i),rg:regime(i),mfT:mf[i]!=null&&mf[i-5]!=null?Math.sign(mf[i]-mf[i-5]):0,
       fneg:f!=null&&(f<0||(z!=null&&z<-1)),rD:rsiD[i],rW:rsiWk[i],gate:gateAt?gateAt(d[i].t+step,buy):1,prov:!closedAt(i)});});
