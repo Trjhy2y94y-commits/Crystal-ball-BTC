@@ -1126,6 +1126,40 @@ function optTable(O,kind,buy){
     <tr><td>BTC sans signal (échantillon fixe)</td><td>${cell(O.ref.tr)}</td><td>${cell(O.ref.te)}</td><td></td></tr>
     ${row(O.cur)}${O.top.map(row).join('')}</table><p class="note">Test chronologique unique 70/30, à considérer comme exploratoire. Réglage choisi sur 70 % anciens par borne basse de Wilson, puis gelé sur les 30 % récents. Vert uniquement si au moins 20 signaux et 20 références, avantage ≥5 points et IC 95 % du signal entièrement au-dessus de celui de la référence. Gris = preuve insuffisante ; rouge = rendement moyen négatif avec échantillon suffisant. Entrée à l'ouverture suivante, fenêtres sans chevauchement. Hors frais, spread, slippage, funding et gestion réelle du portefeuille : ce n'est pas un P&amp;L exécutable.</p>`;}
 /* Sensibilité aux coûts : achats, entrée prochaine ouverture, sortie à 30 j. Coûts hypothétiques, pas tarifs exchange. */
+/* Portefeuille long-only séquentiel : achat/vente sur signaux clôturés, exécution à l'ouverture suivante.
+   100 % du capital disponible par position, sans levier ni renfort. Comparaison buy-and-hold sur mêmes dates. */
+function portfolioSimulation(d,I,roundTripCost){
+  const n=d.length,fee=roundTripCost/2;
+  if(n<3)return null;
+  const events=I.sig.filter(s=>!s.prov&&!s.blocked&&(s.t==='buy'||s.t==='sell')).slice().sort((a,b)=>a.i-b.i);
+  let cash=1,units=0,entryPx=null,entryDate=null,position=false,peak=1,maxDD=0,exposed=0,tradeCount=0,wins=0,tradeSum=0;
+  const curve=[],trades=[];let ptr=0;
+  for(let j=0;j<n;j++){
+    while(ptr<events.length&&events[ptr].i+1===j){
+      const s=events[ptr++],px=d[j].o;
+      if(!(px>0))continue;
+      if(s.t==='buy'&&!position&&cash>0){entryPx=px;entryDate=d[j].t;units=cash*(1-fee)/px;cash=0;position=true;}
+      else if(s.t==='sell'&&position){const proceeds=units*px*(1-fee),ret=proceeds/(entryPx?units*entryPx/(1-fee):1)-1;
+        cash=proceeds;trades.push({ret,entry:entryDate,exit:d[j].t});tradeCount++;if(ret>0)wins++;tradeSum+=ret;units=0;entryPx=null;entryDate=null;position=false;}
+    }}
+    if(position)exposed++;
+    const equity=position?units*d[j].c:cash;
+    curve.push(equity);peak=Math.max(peak,equity);maxDD=Math.max(maxDD,peak>0?1-equity/peak:0);
+  }
+  const end=curve[curve.length-1],days=Math.max(1,(d[n-1].t-d[0].t)/864e5),cagr=end>0?Math.pow(end,365.25/days)-1:null;
+  const bhUnits=(1-fee)/d[1].o,bhEnd=bhUnits*d[n-1].c;
+  const avg=tradeCount?tradeSum/tradeCount:null;
+  return{end,ret:end-1,dd:maxDD,cagr,exposure:exposed/n,trades:tradeCount,win:tradeCount?wins/tradeCount:null,avgTrade:avg,open:position,curve,bhEnd,bhRet:bhEnd-1};
+}
+function portfolioTable(d,I){
+  const costs=[.002,.005,.01],rows=costs.map(c=>({cost:c,sim:portfolioSimulation(d,I,c)}));
+  const pc=x=>x==null?'—':(x>=0?'+':'')+(x*100).toFixed(1)+' %';
+  const cells=rows.map(r=>{const s=r.sim;return '<tr><td>'+(r.cost*100).toFixed(1)+' %</td><td>'+(s?s.trades:'—')+'</td><td>'+(s?pc(s.ret):'—')+'</td><td>'+(s?pc(s.dd):'—')+'</td><td>'+(s?pc(s.cagr):'—')+'</td><td>'+(s?Math.round(s.exposure*100)+' %':'—')+'</td><td>'+(s?pc(s.win):'—')+'</td><td>'+(s?(s.open?'Ouverte':'Fermée'):'—')+'</td></tr>';}).join('');
+  const base=rows[1].sim;
+  const bh=base?'<p><b>BTC conservé (coût 0,5 % aller-retour) :</b> '+pc(base.bhRet)+' sur la période, contre '+pc(base.ret)+' pour la stratégie. '+(base.ret>base.bhRet?'La stratégie surperforme sur cet historique.':'La stratégie ne surperforme pas le BTC conservé sur cet historique.')+'</p>':'<p>Données insuffisantes.</p>';
+  return '<table><tr><th>Coût A/R</th><th>Trades clôturés</th><th>Perf. nette</th><th>DD max.</th><th>CAGR</th><th>Temps exposé</th><th>Trades gagnants</th><th>Position finale</th></tr>'+cells+'</table>'+bh+
+    '<p class="note">Simulation long-only : 100 % du cash engagé à chaque achat, aucun levier ni renfort, signaux non provisoires uniquement, exécution à l’ouverture suivant le signal. Coût aller-retour réparti à moitié à l’entrée et à la sortie. Capital marqué au marché à chaque clôture ; position finale non liquidée. Le buy-and-hold entre à l’ouverture de la 2e bougie. CAGR annualisé sur la période. Hors fiscalité, dépôts/retraits, frais de financement et contraintes de liquidité. Modèle simplifié : ne constitue pas une promesse de résultat.</p>';
+}
 function costSensitivity(d,I){
   const n=d.length,H=30,hm=Math.max(1,Math.round(H*(I.bpd||1))),C=I.Cl;
   const signals=I.sig.filter(s=>!s.prov&&!s.blocked&&s.t==='buy').map(s=>s.i);
@@ -1386,6 +1420,7 @@ async function renderProj(){
     ${btTable(BT.rows)}
     <p>« Juste » : part des achats en hausse (ou des ventes en baisse) 30 jours après. « Creux » : baisse médiane max subie dans les 30 jours après un achat (ou hausse max après une vente). Compare toujours à la ligne de référence : un signal qui ne la bat pas n'apporte rien.</p></section>
   ${(()=>{const O=costSensitivity(d,I);return '<section><h2>Coûts & drawdown<small>achats daily · sensibilité 30 jours</small></h2>'+costSensitivityTable(O)+'</section>';})()}
+  ${(()=>'<section><h2>Simulation portefeuille<small>achats / ventes réels · long only · sans levier</small></h2>'+portfolioTable(d,I)+'</section>')()}
   <section><h2>Funding seul<small>${I.FU?'depuis le '+dS(I.FU.start)+' · '+I.FU.days+' j':''}</small></h2>
     ${BT.fr?btTable(BT.fr)+`<p>Compare chaque ligne à « Réf. depuis le funding ». Funding négatif qui fait mieux que la réf. = les shorts trop nombreux se font squeezer, le critère est utile. Sinon, il n'apporte rien et on le retire du score.</p>`:`<p class="pend">Pas de données funding (${fut.err||'—'}).</p>`}</section>
   <section><h2>Seuils WaveTrend testés<small>croisements bruts, sans filtre</small></h2>
