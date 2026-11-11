@@ -1336,7 +1336,7 @@ async function renderHome(){
   <div class="grp"><div class="row"><span class="ic" style="background:${actIc[1]}">${actIc[0]}</span><span class="rl"><b>${act.t}</b>${act.s?`<small>${act.s}</small>`:''}</span><span></span></div></div>
   <div class="gh">Pourquoi</div>
   <div class="grp">${why.map(([l,v,c,i,bg])=>`<div class="row"><span class="ic" style="background:${bg}">${i}</span><span class="rl"><b>${l}</b></span><span class="tag" style="color:${c}">${v}</span></div>`).join('')}</div>
-  <p class="foot">Le cône montre ce que le Bitcoin a fait dans des situations comparables (même tendance, même liquidité), recalé pour tomber juste 8 fois sur 10. Une probabilité, pas une certitude.<br>v21 · ${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</p>`;
+  <p class="foot">Le cône décrit les rendements observés dans des situations historiques comparables. Les fourchettes sont recalibrées sur des tests chronologiques ; leur couverture passée est affichée dans les statistiques. Ce n’est ni une probabilité garantie ni une promesse de prix.<br>v23 · ${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</p>`;
   el.scrollTop=sc0;
   const c=$('orb'),read=k=>{const x=fut(k);if(!x){$('orbRead').innerHTML='';return;}
     const pu=Math.round(x.up*100),dt=new Date(T0+k*DAY).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:k>200?'numeric':undefined});
