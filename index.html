@@ -919,6 +919,7 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
           <form class="jv-compose" id="jvForm"><input id="jvInput" autocomplete="off" placeholder="Parle-moi du marché ou demande une analyse…" aria-label="Message à JARVIS"><button class="jv-btn primary" type="submit">ENVOYER</button></form>
         </div>
         <div class="jv-actions"><button class="jv-btn" type="button" id="jvMic">🎙 PARLER</button><button class="jv-btn" type="button" id="jvStop">■ ARRÊTER LA VOIX</button></div>
+        <div class="jv-chat" style="padding:12px;display:grid;gap:8px"><label for="jvEndpoint" style="font:700 10px var(--mono);color:#8bdcff;letter-spacing:.12em">PASSERELLE IA SÉCURISÉE</label><input id="jvEndpoint" type="url" inputmode="url" autocomplete="url" placeholder="https://ton-worker.workers.dev/api/jarvis" style="width:100%;box-sizing:border-box;background:#0c1b28;border:1px solid #29485c;border-radius:10px;color:#e8f7ff;padding:12px;font-size:12px"><div class="jv-actions"><button class="jv-btn" type="button" id="jvConnect">CONNECTER / TESTER</button><button class="jv-btn" type="button" id="jvForget">DÉCONNECTER</button></div><div class="jv-note" id="jvConnection">Aucune passerelle distante configurée. Le mode local reste disponible.</div></div>
         <div class="jv-note">Prototype vocal local. La reconnaissance vocale dépend du navigateur et de ses autorisations. La conversation IA complète nécessite un backend sécurisé et un fournisseur de modèle configuré. Aucune clé API ne doit être placée dans cette application publique. Aucune transaction n'est autorisée depuis ce canal.</div>
       </div>
     </div>
@@ -3097,7 +3098,18 @@ setInterval(updateQuantTerminal,2000);
  const add=(who,msg)=>{const el=document.createElement('div');el.className='jv-msg '+who;el.textContent=msg;log.appendChild(el);log.scrollTop=log.scrollHeight;};
  const say=msg=>{if(!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(msg);u.lang='fr-FR';u.rate=1.02;u.onstart=()=>core.classList.add('speaking');u.onend=()=>core.classList.remove('speaking');window.speechSynthesis.speak(u);};
  const market=()=>{const p=$('homeQtPrice')?.textContent||$('px')?.textContent||'non disponible';const bias=$('homeQtBias')?.textContent||$('badge')?.textContent||'non déterminé';const wt=$('homeQtWT')?.textContent||$('wtNow')?.textContent||'—';const rsi=$('homeQtRSI')?.textContent||'—';return {p,bias,wt,rsi};};
- const respond=q=>{const x=q.toLowerCase(),m=market();let a='';
+ const history=[];let endpoint=store.get('jarvis_endpoint','');const endpointInput=$j('jvEndpoint'),connection=$j('jvConnection');
+ endpointInput.value=endpoint;
+ const remoteAsk=async q=>{const m=market();const snapshot={price:m.p,regime:m.bias,wavetrend:m.wt,rsi:m.rsi,source:$('homeQtSource')?.textContent||$('qtSource')?.textContent||'non précisée',capturedAt:new Date().toISOString()};
+  const payload={message:q,history:history.slice(-12),market:snapshot,locale:'fr-FR'};
+  const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(45000)});
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const data=await res.json();if(!data||typeof data.reply!=='string'||!data.reply.trim())throw new Error('Réponse invalide du backend');
+  history.push({role:'user',content:q},{role:'assistant',content:data.reply});if(history.length>16)history.splice(0,history.length-16);
+  return data.reply;
+ };
+ const respond=async q=>{const x=q.toLowerCase(),m=market();let a='';
+  if(endpoint){$j('jvStatus').textContent='JARVIS analyse la demande…';try{a=await remoteAsk(q);}catch(err){a='La passerelle IA ne répond pas ('+String(err.message||err)+'). Vérifie son URL, son déploiement et sa configuration serveur. Je ne bascule pas silencieusement vers une réponse simulée.';$j('jvConnection').textContent='Erreur de connexion : '+String(err.message||err);}$j('jvStatus').textContent='JARVIS · '+new Date().toLocaleTimeString('fr-FR');add('bot',a);say(a);return a;}
   if(/prix|cours|bitcoin|btc/.test(x)&&/prix|cours|combien|état|btc|bitcoin/.test(x))a='Prix affiché dans Crystal Ball : '+m.p+'. Régime : '+m.bias+'. WaveTrend : '+m.wt+'. RSI : '+m.rsi+'. Ces valeurs reflètent les données actuellement affichées par l’application, pas une prévision garantie.';
   else if(/actualis|rafraî|refresh|recharg/.test(x)){if(typeof load==='function')load(true);a='Je demande une actualisation des données du terminal. Vérifie l’horodatage et la source dans Analyse.';}
   else if(/analyse|graphique|chart/.test(x)){document.querySelector('[data-tab="chart"]')?.click();a='J’ouvre le terminal Analyse. Les indicateurs affichés restent à interpréter avec leur validation historique.';}
@@ -3108,6 +3120,8 @@ setInterval(updateQuantTerminal,2000);
   add('bot',a);$j('jvStatus').textContent='Réponse locale · '+new Date().toLocaleTimeString('fr-FR');say(a);return a;
  };
  $j('jvForm').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q)return;add('user',q);input.value='';respond(q);});
+ $j('jvConnect').addEventListener('click',async()=>{const candidate=endpointInput.value.trim();if(!candidate){connection.textContent='Renseigne l’URL de ton Worker avant de tester.';return;}try{const u=new URL(candidate);if(u.protocol!=='https:')throw new Error('HTTPS obligatoire');endpoint=u.toString();store.set('jarvis_endpoint',endpoint);connection.textContent='Test de connexion…';const res=await fetch(endpoint,{method:'OPTIONS'});if(!res.ok&&res.status!==204)throw new Error('HTTP '+res.status);connection.textContent='Passerelle joignable. Envoie un message pour tester le modèle IA.';$j('jvEngineState').textContent='PASSERELLE CONFIGURÉE';$j('jvBrain').textContent='Backend configuré';}catch(err){connection.textContent='Test impossible : '+String(err.message||err)+' · Vérifie CORS et le déploiement.';}});
+ $j('jvForget').addEventListener('click',()=>{endpoint='';endpointInput.value='';store.set('jarvis_endpoint','');history.length=0;connection.textContent='Passerelle déconnectée. Mode local actif.';$j('jvEngineState').textContent='MOTEUR IA À CONNECTER';$j('jvBrain').textContent='Non connecté';});
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  $j('jvVoice').textContent=SR?'Disponible si autorisé':'Non pris en charge ici';
  $j('jvMic').addEventListener('click',()=>{if(!SR){$j('jvStatus').textContent='Dictée iOS du clavier disponible en alternative.';input.focus();return;}
