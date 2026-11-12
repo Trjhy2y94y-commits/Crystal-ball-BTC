@@ -3281,22 +3281,22 @@ setInterval(updateQuantTerminal,2000);
  $j('jvForget').addEventListener('click',()=>{endpoint='';endpointInput.value='';store.set('jarvis_endpoint','');history.length=0;connection.textContent='Passerelle déconnectée. Mode local actif.';$j('jvEngineState').textContent='MOTEUR IA À CONNECTER';$j('jvBrain').textContent='Non connecté';});
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  $j('jvVoice').textContent=SR?'Mot-clé vocal · autorisation requise':'Reconnaissance vocale indisponible ici';
- let rtc=null,rtcStream=null,rtcAudio=null,rtcChannel=null,wakeRecognition=null,wakeArmed=false,wakeStarting=false;
+ let rtc=null,rtcStream=null,rtcAudio=null,rtcChannel=null,wakeRecognition=null,wakeArmed=false,wakeStarting=false,voiceStarting=false;
  const stopWakeWord=()=>{wakeArmed=false;wakeStarting=false;if(wakeRecognition){try{wakeRecognition.onend=null;wakeRecognition.stop();}catch(e){}wakeRecognition=null;}};
  const startWakeWord=()=>{
   if(!SR){$j('jvStatus').textContent='Ce navigateur ne prend pas en charge le mot-clé vocal. Utilise PARLER DIRECTEMENT.';return;}
-  if(!wakeArmed||rtc||wakeStarting)return;
+  if(!wakeArmed||rtc||wakeStarting||voiceStarting)return;
   try{
    wakeStarting=true;const rec=new SR();wakeRecognition=rec;rec.lang='fr-FR';rec.continuous=true;rec.interimResults=false;rec.maxAlternatives=3;
    rec.onstart=()=>{wakeStarting=false;$j('jvStatus').textContent='En veille · dis « Salut Jarvis »';$j('jvEngineState').textContent='MOT-CLÉ EN ÉCOUTE';$j('jvWake').textContent='◉ JARVIS EN VEILLE';};
-   rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const phrase=Array.from(e.results[i]).map(x=>x.transcript||'').join(' ').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');if(/\b(salut|bonjour|hey|ok)\s+jarvis\b/.test(phrase)){try{rec.stop();}catch(err){}wakeRecognition=null;$j('jvStatus').textContent='Mot-clé détecté · ouverture du canal vocal…';startRealtime().catch(err=>{$j('jvStatus').textContent=String(err.message||err);if(wakeArmed)startWakeWord();});return;}}};
+   rec.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const phrase=Array.from(e.results[i]).map(x=>x.transcript||'').join(' ').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');if(/\b(salut|bonjour|hey|ok)\s+jarvis\b/.test(phrase)){try{rec.stop();}catch(err){}wakeRecognition=null;$j('jvStatus').textContent='Mot-clé détecté · ouverture du canal vocal…';startRealtime().catch(err=>{voiceStarting=false;$j('jvStatus').textContent=String(err.message||err);if(wakeArmed)startWakeWord();});return;}}};
    rec.onerror=e=>{wakeStarting=false;if(e.error==='not-allowed'||e.error==='service-not-allowed'){wakeArmed=false;$j('jvStatus').textContent='Accès micro refusé. Autorise le microphone dans les réglages du navigateur.';$j('jvWake').textContent='◉ ACTIVER « SALUT JARVIS »';}else if(e.error!=='aborted')$j('jvStatus').textContent='Écoute interrompue · '+e.error;};
    rec.onend=()=>{wakeRecognition=null;wakeStarting=false;if(wakeArmed&&!rtc)setTimeout(startWakeWord,700);};
    rec.start();
   }catch(err){wakeStarting=false;$j('jvStatus').textContent='Impossible de démarrer le mot-clé vocal : '+String(err.message||err);}
  };
- const stopRealtime=()=>{try{rtcChannel?.close();}catch(e){}try{rtc?.close();}catch(e){}rtcStream?.getTracks().forEach(t=>t.stop());rtc=null;rtcStream=null;rtcChannel=null;if(rtcAudio){rtcAudio.srcObject=null;rtcAudio.remove();rtcAudio=null;}core.classList.remove('listening','speaking');if(wakeArmed)setTimeout(startWakeWord,700);};
- const startRealtime=async()=>{if(!endpoint)throw new Error('Configure d’abord la passerelle IA sécurisée.');if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection)throw new Error('WebRTC/micro non disponible dans ce navigateur.');if(wakeRecognition){try{wakeRecognition.stop();}catch(e){}wakeRecognition=null;}stopRealtime();$j('jvStatus').textContent='Ouverture du canal vocal sécurisé…';
+ const stopRealtime=(resumeWake=true)=>{try{rtcChannel?.close();}catch(e){}try{rtc?.close();}catch(e){}rtcStream?.getTracks().forEach(t=>t.stop());rtc=null;rtcStream=null;rtcChannel=null;if(rtcAudio){rtcAudio.srcObject=null;rtcAudio.remove();rtcAudio=null;}core.classList.remove('listening','speaking');if(wakeArmed&&resumeWake)setTimeout(startWakeWord,700);};
+ const startRealtime=async()=>{voiceStarting=true;if(!endpoint)throw new Error('Configure d’abord la passerelle IA sécurisée.');if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection)throw new Error('WebRTC/micro non disponible dans ce navigateur.');if(wakeRecognition){try{wakeRecognition.stop();}catch(e){}wakeRecognition=null;}stopRealtime(false);$j('jvStatus').textContent='Ouverture du canal vocal sécurisé…';
   rtcStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
   rtc=new RTCPeerConnection();rtcAudio=document.createElement('audio');rtcAudio.autoplay=true;rtcAudio.playsInline=true;rtcAudio.style.display='none';document.body.appendChild(rtcAudio);
   rtc.ontrack=e=>{rtcAudio.srcObject=e.streams[0];rtcAudio.play().catch(()=>{});};
@@ -3306,10 +3306,10 @@ setInterval(updateQuantTerminal,2000);
   const offer=await rtc.createOffer();await rtc.setLocalDescription(offer);await new Promise((resolve,reject)=>{if(rtc.iceGatheringState==='complete')return resolve();const timer=setTimeout(()=>reject(new Error('Délai ICE dépassé')),12000);rtc.addEventListener('icegatheringstatechange',()=>{if(rtc.iceGatheringState==='complete'){clearTimeout(timer);resolve();}},{once:false});});
   const answer=await fetch(endpoint.replace(/\/api\/jarvis\/?$/,'/api/session'),{method:'POST',headers:{'Content-Type':'application/sdp'},body:offer.sdp});
   if(!answer.ok)throw new Error('Session vocale refusée · HTTP '+answer.status);
-  await rtc.setRemoteDescription({type:'answer',sdp:await answer.text()});
+  await rtc.setRemoteDescription({type:'answer',sdp:await answer.text()});voiceStarting=false;
  };
  $j('jvWake').addEventListener('click',()=>{if(wakeArmed){stopWakeWord();$j('jvWake').textContent='◉ ACTIVER « SALUT JARVIS »';$j('jvEngineState').textContent='VEILLE DÉSACTIVÉE';$j('jvStatus').textContent='Mot-clé désactivé.';return;}if(!endpoint){$j('jvStatus').textContent='Connecte d’abord la passerelle IA sécurisée.';return;}wakeArmed=true;startWakeWord();});
- $j('jvMic').addEventListener('click',async()=>{stopWakeWord();if(rtc){stopRealtime();$j('jvStatus').textContent='Session vocale terminée.';return;}try{await startRealtime();}catch(e){stopRealtime();$j('jvStatus').textContent=String(e.message||e);}});
+ $j('jvMic').addEventListener('click',async()=>{stopWakeWord();if(rtc){stopRealtime();$j('jvStatus').textContent='Session vocale terminée.';return;}try{await startRealtime();}catch(e){voiceStarting=false;stopRealtime();$j('jvStatus').textContent=String(e.message||e);}});
  $j('jvStop').addEventListener('click',()=>{stopWakeWord();if(activeRecognition){try{activeRecognition.stop();}catch(e){}activeRecognition=null;}stopRealtime();if('speechSynthesis'in window)window.speechSynthesis.cancel();core.classList.remove('speaking','listening');$j('jvStatus').textContent='Voix et mot-clé désactivés.';});
  const update=()=>{const m=market();$j('jvPrice').textContent=m.p;};
  update();setInterval(update,2000);
