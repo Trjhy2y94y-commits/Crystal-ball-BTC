@@ -2430,6 +2430,12 @@ function priceForecastAudit(D){
   return{demo:false,rows:out,macro:I.real&&!!I.liq,source:I.real?'Composite M2/liquidité décalée':'M2 indisponible · modèle sans filtre macro',
     features:'FVG multi-unités + Volume Profile 90D + SMC/Wyckoff/Elliott + divergences RSI daily/weekly/monthly'};
 }
+function directionalBenchmarkStats(samples,key){
+ const a=samples.filter(x=>x[key]===0||x[key]===1),n=a.length,w=a.filter(x=>x[key]===x.up).length;
+ if(!n)return{n:0,dir:null,ci:null};
+ const p=w/n,z=1.96,z2=z*z,den=1+z2/n,center=(p+z2/(2*n))/den,half=z*Math.sqrt(p*(1-p)/n+z2/(4*n*n))/den;
+ return{n,dir:p,ci:[Math.max(0,center-half),Math.min(1,center+half)]};
+}
 /* Audit strict : blocs de test non chevauchants, chaque prévision ne voit que les rendements déjà maturés. */
 function strictHoldoutAudit(D){
  const I=D.ind,C=I.Cl||D.rows.map(x=>x.c),R=I.rgA||[],M=I.wt2||[],end=Math.min(C.length-1,I.lastClosed??C.length-1);
@@ -2518,7 +2524,7 @@ function strictHoldoutAudit(D){
   const validationModel=model.slice(adaptCut),brierCI=pairedBlockCI(adaptive,validationModel,'brier',h*7919+adaptive.length),maeCI=pairedBlockCI(adaptive,validationModel,'err',h*104729+adaptive.length);
   const evidenceStatus=adaptive.length<20||!brierCI?'ÉCHANTILLON INSUFFISANT':brierCI.high<0?'AMÉLIORATION ROBUSTE':brierCI.low>0?'DÉGRADATION ROBUSTE':'NON CONCLUANT';
   const adaptation={status:evidenceStatus,trainingN:adaptCut,validationN:adaptive.length,selectedByPhase,selectionCounts,adaptive:adaptiveStats,baseline:baselineRecent,deltaBrier:adaptiveStats.brier!=null&&baselineRecent.brier!=null?adaptiveStats.brier-baselineRecent.brier:null,deltaMae:adaptiveStats.mae!=null&&baselineRecent.mae!=null?adaptiveStats.mae-baselineRecent.mae:null,brierCI,maeCI,appliedToLive:false,method:'Sélection par régime sur les 2/3 initiaux, minimum 20 observations actives et gain Brier >0,005 ; dernier tiers intact. IC 95 % par bootstrap apparié en blocs circulaires (1 000 réplications, blocs de longueur adaptative).'};
-  const benchmarkStats=Object.fromEntries(['buyHold','mom30','mom90','ma200'].map(key=>{const a=benchmarkSamples.filter(x=>x[key]!==null),wins=a.filter(x=>x[key]===x.up).length;return[key,{n:a.length,dir:a.length?wins/a.length:null,ci:a.length?wilson(wins,a.length):null}];}));\n  out.push({h,model:stats(model),base:stats(base),benchmarks:benchmarkStats,drift,calibration,ablation,adaptation,byPhase:Object.fromEntries(['ACCUMULATION','EXPANSION','DISTRIBUTION','CAPITULATION','NEUTRE'].map(tag=>[tag,stats(model.filter(x=>x.phase===tag))])),origins,strict,fallbackRegime,fallbackAll});
+  const benchmarkStats=Object.fromEntries(['buyHold','mom30','mom90','ma200'].map(key=>[key,directionalBenchmarkStats(benchmarkSamples,key)]));\n  out.push({h,model:stats(model),base:stats(base),benchmarks:benchmarkStats,drift,calibration,ablation,adaptation,byPhase:Object.fromEntries(['ACCUMULATION','EXPANSION','DISTRIBUTION','CAPITULATION','NEUTRE'].map(tag=>[tag,stats(model.filter(x=>x.phase===tag))])),origins,strict,fallbackRegime,fallbackAll});
  });
  return{rows:out,asOf:D.rows[end]?.t};
 }
