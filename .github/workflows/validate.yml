@@ -25,6 +25,8 @@ jobs:
         run: node --experimental-default-type=module --test worker/worker.test.mjs
       - name: Run market-data integrity tests
         run: node --test tests/market-data.test.mjs
+      - name: Run strict backtest benchmark tests
+        run: node --test tests/backtest-benchmarks.test.mjs
       - name: Validate PWA and local assets
         run: |
           python - <<'PY'
