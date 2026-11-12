@@ -2619,7 +2619,8 @@ function buildDynamicBuyZones(d,I,price){
   const score=Math.min(100,Math.round(z.w*18+Math.min(touches,4)*7+(oversold?10:0)));
   const width=Math.max(atr*.32,z.p*.002);
   const c=d[i],body=Math.abs(c.c-c.o),lower=Math.min(c.o,c.c)-c.l,vol=+(c.qv??c.v??0);
-  const touchBar=c.l<=z.p+width&&c.h>=z.p-width;\n  const rejection=touchBar&&c.c>c.o&&lower>=Math.max(body,atr*.08)*1.15;
+  const touchBar=c.l<=z.p+width&&c.h>=z.p-width;
+  const rejection=touchBar&&c.c>c.o&&lower>=Math.max(body,atr*.08)*1.15;
   const volumeOK=vol>0&&avgVol>0&&vol>=avgVol*1.15;
   const momentum=(rsi!=null&&I.rsiD?.[i-1]!=null&&rsi>I.rsiD[i-1])||(wt!=null&&I.wt2?.[i-1]!=null&&wt>I.wt2[i-1]);
   return {lo:z.p-width,hi:z.p+width,mid:z.p,score,types:[...new Set(z.types)],touches,rejection,volumeOK,momentum,confirmed:rejection&&(volumeOK||momentum)};
