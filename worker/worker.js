@@ -116,7 +116,7 @@ export default {
         return json({ error: "Realtime token creation failed" }, 502, allowedOrigin);
       }
       const token = data.value || data.client_secret.value;
-      return json({ token, expires_at: data.expires_at || data.client_secret?.expires_at || null }, 200, allowedOrigin);
+      return json({ token, model: session.model, expires_at: data.expires_at || data.client_secret?.expires_at || null }, 200, allowedOrigin);
     }
     if (pathname === "/api/session") {
       if (request.method !== "POST") return new Response("Method not allowed", { status: 405, headers });
