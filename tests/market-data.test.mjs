@@ -20,12 +20,12 @@ function candle(i) {
 
 test('sorts rows chronologically and counts duplicate timestamps', () => {
   const rows = Array.from({ length: 105 }, (_, i) => candle(i)).reverse();
-  rows.push({ ...candle(20), c: 60_999 });
+  rows.push({ ...candle(20), v: 99 });
   const result = validateMarketRows(rows, '1d');
   assert.equal(result.quality.valid, 105);
   assert.equal(result.quality.duplicates, 1);
   assert.equal(result.rows[0].t < result.rows.at(-1).t, true);
-  assert.equal(result.rows.find(row => row.t === candle(20).t).c, 60_999);
+  assert.equal(result.rows.find(row => row.t === candle(20).t).v, 99);
 });
 
 test('rejects impossible OHLC candles and counts missing daily candles', () => {
