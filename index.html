@@ -3312,6 +3312,14 @@ setInterval(updateQuantTerminal,2000);
   await rtc.setRemoteDescription({type:'answer',sdp:await answer.text()});voiceStarting=false;
  };
  $j('jvWake').addEventListener('click',()=>{if(wakeArmed){stopWakeWord();$j('jvWake').textContent='◉ ACTIVER « SALUT JARVIS »';$j('jvEngineState').textContent='VEILLE DÉSACTIVÉE';$j('jvStatus').textContent='Mot-clé désactivé.';return;}if(!endpoint){$j('jvStatus').textContent='Connecte d’abord la passerelle IA sécurisée.';return;}wakeArmed=true;startWakeWord();});
+ // Délégation de clic en capture : fiabilise le bouton micro sur Safari iOS.
+ document.addEventListener('click',e=>{
+  const b=e.target&&e.target.closest?e.target.closest('#jvMic'):null;if(!b)return;
+  e.preventDefault();e.stopImmediatePropagation();stopWakeWord();
+  if(rtc){stopRealtime();$j('jvStatus').textContent='Session vocale terminée.';return;}
+  $j('jvStatus').textContent='Clic micro détecté · demande d’accès au microphone…';
+  startRealtime().catch(err=>{voiceStarting=false;stopRealtime();$j('jvStatus').textContent='Voix indisponible : '+String(err.message||err);});
+ },true);
  $j('jvMic').addEventListener('click',async()=>{stopWakeWord();if(rtc){stopRealtime();$j('jvStatus').textContent='Session vocale terminée.';return;}try{await startRealtime();}catch(e){voiceStarting=false;stopRealtime();$j('jvStatus').textContent=String(e.message||e);}});
  $j('jvStop').addEventListener('click',()=>{stopWakeWord();if(activeRecognition){try{activeRecognition.stop();}catch(e){}activeRecognition=null;}stopRealtime();if('speechSynthesis'in window)window.speechSynthesis.cancel();core.classList.remove('speaking','listening');$j('jvStatus').textContent='Voix et mot-clé désactivés.';});
  const update=()=>{const m=market();$j('jvPrice').textContent=m.p;};
