@@ -48,13 +48,14 @@ final class JarvisVoiceService: ObservableObject {
             let tokenResponse = try JSONDecoder().decode(TokenResponse.self, from: data)
             try await openRealtimeSocket(token: tokenResponse.token)
         } catch {
+            disconnect()
             setStatus(error.localizedDescription)
         }
     }
 
     private func openRealtimeSocket(token: String) async throws {
         guard let url = URL(string: "wss://api.openai.com/v1/realtime?model=gpt-realtime-2.1") else { throw URLError(.badURL) }
-        let task = session.webSocketTask(with: url, protocols: ["realtime", "openai-insecure-api-key.\\(token)"])
+        let task = session.webSocketTask(with: url, protocols: ["realtime", "openai-insecure-api-key.\(token)"])
         socket = task
         task.resume()
         try configureAudio()
@@ -121,7 +122,7 @@ final class JarvisVoiceService: ObservableObject {
                       let event = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { continue }
                 handle(event)
             } catch {
-                if !Task.isCancelled { setStatus("Connexion interrompue : \\(error.localizedDescription)"); disconnect() }
+                if !Task.isCancelled { setStatus("Connexion interrompue : \(error.localizedDescription)"); disconnect() }
                 break
             }
         }
@@ -140,7 +141,7 @@ final class JarvisVoiceService: ObservableObject {
             if let chunk = event["delta"] as? String, let data = Data(base64Encoded: chunk) { playPCM(data) }
         case "error":
             let errorObject = event["error"] as? [String: Any]
-            setStatus("Erreur JARVIS : \\(errorObject?["message"] as? String ?? "inconnue")")
+            setStatus("Erreur JARVIS : \(errorObject?["message"] as? String ?? "inconnue")")
         default:
             break
         }
@@ -178,7 +179,7 @@ final class JarvisVoiceService: ObservableObject {
         guard let socket, let data = try? JSONSerialization.data(withJSONObject: event),
               let text = String(data: data, encoding: .utf8) else { return }
         do { try await socket.send(.string(text)) }
-        catch { setStatus("Envoi impossible : \\(error.localizedDescription)") }
+        catch { setStatus("Envoi impossible : \(error.localizedDescription)") }
     }
 
     func startWakeWord(workerURL: String) async {
@@ -218,7 +219,7 @@ final class JarvisVoiceService: ObservableObject {
                 }
             }
         } catch {
-            setStatus("Micro indisponible : \\(error.localizedDescription)")
+            setStatus("Micro indisponible : \(error.localizedDescription)")
         }
     }
 
