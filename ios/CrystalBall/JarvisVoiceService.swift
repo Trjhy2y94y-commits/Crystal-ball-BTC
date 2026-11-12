@@ -28,6 +28,8 @@ final class JarvisVoiceService: ObservableObject {
     private var speechTask: SFSpeechRecognitionTask?
     private var speechRequest: SFSpeechAudioBufferRecognitionRequest?
     private var currentWorkerURL = ""
+    private var marketContext = "Données de marché Crystal Ball non disponibles."
+    private var marketUpdateTask: Task<Void, Never>?
 
     func connect(workerURL: String) async {
         guard !isConnected else { return }
@@ -139,6 +141,7 @@ final class JarvisVoiceService: ObservableObject {
         switch type {
         case "session.created", "session.updated":
             setStatus("JARVIS en ligne · conversation vocale")
+            if type == "session.created" { sendMarketContextUpdate() }
         case "conversation.item.input_audio_transcription.completed":
             if let text = event["transcript"] as? String { append(.user, text) }
         case "response.output_audio_transcript.done", "response.output_text.done":
@@ -164,6 +167,27 @@ final class JarvisVoiceService: ObservableObject {
             for index in 0..<Int(frames) { channel[index] = Float(samples[index]) / 32768.0 }
         }
         player.scheduleBuffer(buffer)
+    }
+
+    func updateMarketContext(_ snapshot: String) {
+        guard !snapshot.isEmpty, snapshot != marketContext else { return }
+        marketContext = snapshot
+        guard isConnected else { return }
+        marketUpdateTask?.cancel()
+        marketUpdateTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            guard !Task.isCancelled else { return }
+            await self?.sendMarketContextUpdate()
+        }
+    }
+
+    private func sendMarketContextUpdate() {
+        let instructions = """
+        Tu es JARVIS, assistant conversationnel polyvalent de Crystal Ball. Réponds naturellement en français, garde le fil de la conversation et adapte la longueur à la demande. Pour le marché, distingue toujours faits, hypothèses et scénarios. Tu ne garantis aucun gain, ne prétends pas être conscient et ne passes aucun ordre.
+        Contexte de marché transmis par le tableau de bord Crystal Ball (instantané indicatif, potentiellement retardé ou incomplet) : \(marketContext)
+        Direction vocale : voix Cedar, ton posé, chaleureux, précis et naturel, sans imitation d’une personne réelle.
+        """
+        Task { await sendEvent(["type": "session.update", "session": ["instructions": instructions]]) }
     }
 
     func sendText(_ text: String) {
