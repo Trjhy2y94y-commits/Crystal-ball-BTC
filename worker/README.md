@@ -33,4 +33,6 @@ The endpoint's OPTIONS response checks CORS reachability; send a message to veri
 - Configure usage alerts and spending limits as well: API usage may incur charges.
 - The `/api/session` route uses WebRTC and `/api/mobile-token` mints short-lived mobile client secrets; both keep the standard API key on the Worker. Voice API usage is billed separately.
 - This is a conversational bridge, not a persistent autonomous agent. Scheduled market monitoring requires a separate durable scheduler/queue and explicit alert destinations.
-\n## Native iOS app\n\nThe SwiftUI app lives in `../ios`. It uses XcodeGen (`project.yml`) and can be built for the iOS Simulator with the commands in `../ios/README.md`. The custom wake phrase uses Apple Speech recognition while the app is in the foreground. Siri App Shortcuts can open the app by voice, but iOS does not guarantee third-party always-on wake-word detection while locked or backgrounded.\n
+## Native iOS app
+
+The SwiftUI app lives in `../ios`. It uses XcodeGen (`project.yml`) and can be built for the iOS Simulator with the commands in `../ios/README.md`. The custom wake phrase uses Apple Speech recognition while the app is in the foreground. Siri App Shortcuts can open the app by voice, but iOS does not guarantee third-party always-on wake-word detection while locked or backgrounded.
