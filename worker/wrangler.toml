@@ -1,0 +1,7 @@
+name = "crystal-ball-jarvis"
+main = "worker.js"
+compatibility_date = "2026-11-12"
+
+[vars]
+OPENAI_MODEL = "gpt-6-astra"
+JARVIS_ALLOWED_ORIGIN = "https://trjhy2y94y-commits.github.io"
