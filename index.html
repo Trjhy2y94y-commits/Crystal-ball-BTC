@@ -794,6 +794,41 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
 .ck-chart-card .ck-chart-hint{font-size:11px;padding:9px 4px 2px;line-height:1.45}
 @media(max-width:390px){.ck-chart-card #orb{width:760px!important;min-width:760px;height:430px!important}}
 
+
+/* JARVIS command deck */
+.jarvis-view{padding:14px 14px max(22px,env(safe-area-inset-bottom));overflow:auto;background:radial-gradient(ellipse at 50% 0%,rgba(0,190,255,.13),transparent 48%),#050a11;color:#e8f5ff}
+.jarvis-shell{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.jv-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.jv-brand{font:800 12px var(--mono);letter-spacing:.2em;color:#b9dfff}.jv-brand b{color:#48dfff}
+.jv-state{font:700 9px var(--mono);letter-spacing:.12em;color:#ffc66d;border:1px solid #75562c;border-radius:99px;padding:6px 9px}
+.jv-core{position:relative;min-height:190px;border:1px solid rgba(76,210,255,.3);border-radius:22px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle,rgba(0,174,255,.13),rgba(5,12,22,.96) 62%);box-shadow:inset 0 0 55px rgba(0,156,255,.08),0 15px 45px #000}
+.jv-orb{width:116px;height:116px;border-radius:50%;border:1px solid #3ad9ff;display:grid;place-items:center;position:relative;box-shadow:0 0 22px #00aaff55,inset 0 0 30px #00aaff33}
+.jv-orb:before,.jv-orb:after{content:"";position:absolute;inset:-13px;border:1px solid #28bfff66;border-radius:50%;animation:jvspin 12s linear infinite}
+.jv-orb:after{inset:-25px;border-style:dashed;opacity:.5;animation-duration:24s;animation-direction:reverse}
+.jv-orb span{font:900 32px var(--mono);color:#70e5ff;text-shadow:0 0 18px #00bfff}
+.jv-core.listening .jv-orb,.jv-core.speaking .jv-orb{animation:jvpulse 1.1s ease-in-out infinite}
+.jv-core.listening .jv-orb{box-shadow:0 0 38px #ffb84a88,inset 0 0 30px #ffb84a33;border-color:#ffc66d}
+.jv-core.speaking .jv-orb{box-shadow:0 0 40px #00d9ff99,inset 0 0 30px #00d9ff55}
+.jv-core-label{position:absolute;bottom:15px;text-align:center;font:700 9px var(--mono);letter-spacing:.2em;color:#91b9ce}
+@keyframes jvspin{to{transform:rotate(360deg)}}@keyframes jvpulse{50%{transform:scale(1.06);filter:brightness(1.5)}}
+.jv-status{font:11px var(--mono);color:#9bb6c8;text-align:center;min-height:16px}
+.jv-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.jv-tile{border:1px solid #1c3b50;background:linear-gradient(145deg,#0d1c2a,#08111b);border-radius:13px;padding:12px;min-width:0}
+.jv-tile small{display:block;font:700 9px var(--mono);color:#78a2b9;letter-spacing:.12em;margin-bottom:7px}.jv-tile strong{font:700 12px var(--mono);color:#d8f4ff}
+.jv-chat{border:1px solid #21445a;background:#07121d;border-radius:16px;overflow:hidden}
+.jv-chat-head{padding:11px 13px;border-bottom:1px solid #1b3547;font:700 10px var(--mono);letter-spacing:.15em;color:#8bdcff}
+.jv-log{height:220px;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:9px;overscroll-behavior:contain}
+.jv-msg{max-width:90%;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.jv-msg.bot{align-self:flex-start;background:#102638;border:1px solid #1c4963;color:#d9f1ff}
+.jv-msg.user{align-self:flex-end;background:#12374a;border:1px solid #1c6680;color:#e7faff}
+.jv-compose{display:flex;gap:7px;padding:10px;border-top:1px solid #1b3547}
+.jv-compose input{flex:1;min-width:0;background:#0c1b28;border:1px solid #29485c;border-radius:10px;color:#e8f7ff;padding:12px;font-size:13px;outline:none}
+.jv-btn{border:1px solid #27647e;border-radius:10px;background:#0c2b3d;color:#9beaff;padding:0 13px;font-weight:800;min-height:42px}
+.jv-btn.primary{background:linear-gradient(135deg,#087fa9,#07516d);color:white}
+.jv-actions{display:flex;gap:8px}.jv-actions .jv-btn{flex:1}
+.jv-note{font-size:10px;line-height:1.55;color:#829eaf;padding:0 2px}
+@media(min-width:600px){.jv-core{min-height:230px}.jv-log{height:300px}}
+
 </style>
 
 <div class="app">
@@ -866,6 +901,28 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
     <div class="prob-layers" id="probLayers"></div><div class="prob-note" id="probNote">Les fourchettes proviennent des rendements historiques conditionnés au régime. Les méthodes chartistes affinent la lecture, elles ne garantissent pas le prix.</div>
   </div>
   </section>
+  <section class="view" id="vJarvis" hidden>
+    <div class="jarvis-view">
+      <div class="jarvis-shell">
+        <div class="jv-head"><div class="jv-brand">CRYSTAL <b>· JARVIS</b> / COMMAND INTELLIGENCE</div><div class="jv-state" id="jvEngineState">MOTEUR IA À CONNECTER</div></div>
+        <div class="jv-core" id="jvCore"><div class="jv-orb"><span>J</span></div><div class="jv-core-label">PERSONAL MARKET INTELLIGENCE</div></div>
+        <div class="jv-status" id="jvStatus">Interface prête · moteur conversationnel non configuré</div>
+        <div class="jv-grid">
+          <div class="jv-tile"><small>BITCOIN · SPOT APP</small><strong id="jvPrice">En attente des données</strong></div>
+          <div class="jv-tile"><small>ÉTAT DU CERVEAU IA</small><strong id="jvBrain">Non connecté</strong></div>
+          <div class="jv-tile"><small>VOIX NAVIGATEUR</small><strong id="jvVoice">Vérification…</strong></div>
+          <div class="jv-tile"><small>MODE D'EXÉCUTION</small><strong>Analyse seule · aucun ordre</strong></div>
+        </div>
+        <div class="jv-chat">
+          <div class="jv-chat-head">CANAL DE COMMUNICATION / SESSION LOCALE</div>
+          <div class="jv-log" id="jvLog" aria-live="polite"><div class="jv-msg bot">Bonjour. Je suis l’interface JARVIS de Crystal Ball. Je peux déjà lire l’état local de l’application et répondre à quelques commandes de navigation. Mon moteur IA distant n’est pas encore connecté : je ne simulerai pas une intelligence que je n’ai pas.</div></div>
+          <form class="jv-compose" id="jvForm"><input id="jvInput" autocomplete="off" placeholder="Parle-moi du marché ou demande une analyse…" aria-label="Message à JARVIS"><button class="jv-btn primary" type="submit">ENVOYER</button></form>
+        </div>
+        <div class="jv-actions"><button class="jv-btn" type="button" id="jvMic">🎙 PARLER</button><button class="jv-btn" type="button" id="jvStop">■ ARRÊTER LA VOIX</button></div>
+        <div class="jv-note">Prototype vocal local. La reconnaissance vocale dépend du navigateur et de ses autorisations. La conversation IA complète nécessite un backend sécurisé et un fournisseur de modèle configuré. Aucune clé API ne doit être placée dans cette application publique. Aucune transaction n'est autorisée depuis ce canal.</div>
+      </div>
+    </div>
+  </section>
   <section class="view" id="vCal" hidden><div class="proj page" id="cal"></div></section>
   <section class="view" id="vStats" hidden><div class="proj page" id="proj"></div></section>
   <div class="toast" id="toast" hidden></div>
@@ -873,6 +930,7 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
     <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11" r="7"></circle><path d="M7 21h10M9 11a3 3 0 0 1 3-3"></path></svg>Crystal Ball</button>
     <button type="button" data-tab="chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v16M16 4v16M5 8h6M13 14h6M5 16h6M13 6h6"></path></svg>Analyse</button>
     <button type="button" data-tab="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Cycle</button>
+    <button type="button" data-tab="jarvis"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 4v16M4 12h16M8 8l8 8M16 8l-8 8"></path></svg>JARVIS</button>
     <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Fiabilité</button>
   </nav>
 </div>
@@ -3015,7 +3073,7 @@ $('proj').addEventListener('click',e=>{const b=e.target.closest('[data-copy-rsi-
 /* ---------- onglets ---------- */
 let curTab='home';
 function showTab(t){curTab=t;
-  [['home','vHome'],['chart','vChart'],['cal','vCal'],['stats','vStats']].forEach(([k,id])=>{$(id).hidden=k!==t;});
+  [['home','vHome'],['chart','vChart'],['jarvis','vJarvis'],['cal','vCal'],['stats','vStats']].forEach(([k,id])=>{$(id).hidden=k!==t;});
   document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t==='chart'){requestAnimationFrame(resize);renderConfluence();}
   if(t==='home')renderHome();if(t==='cal')renderCal();if(t==='stats'){$('proj').innerHTML='<p>Calcul…</p>';$('proj').dataset.compact='0';renderProj().then(()=>{compactStats();});}}
@@ -3031,6 +3089,35 @@ $('zSave').addEventListener('click',()=>{const n=s=>parseFloat(String(s).replace
 document.querySelectorAll('[data-tf]').forEach(x=>x.classList.toggle('on',x.dataset.tf===tf));
 
 setInterval(updateQuantTerminal,2000);
+
+/* JARVIS v0 — commandes locales vérifiables, sans faux moteur IA */
+(()=>{
+ const $j=id=>document.getElementById(id),log=$j('jvLog'),input=$j('jvInput'),core=$j('jvCore');
+ if(!log||!input)return;
+ const add=(who,msg)=>{const el=document.createElement('div');el.className='jv-msg '+who;el.textContent=msg;log.appendChild(el);log.scrollTop=log.scrollHeight;};
+ const say=msg=>{if(!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(msg);u.lang='fr-FR';u.rate=1.02;u.onstart=()=>core.classList.add('speaking');u.onend=()=>core.classList.remove('speaking');window.speechSynthesis.speak(u);};
+ const market=()=>{const p=$('homeQtPrice')?.textContent||$('px')?.textContent||'non disponible';const bias=$('homeQtBias')?.textContent||$('badge')?.textContent||'non déterminé';const wt=$('homeQtWT')?.textContent||$('wtNow')?.textContent||'—';const rsi=$('homeQtRSI')?.textContent||'—';return {p,bias,wt,rsi};};
+ const respond=q=>{const x=q.toLowerCase(),m=market();let a='';
+  if(/prix|cours|bitcoin|btc/.test(x)&&/prix|cours|combien|état|btc|bitcoin/.test(x))a='Prix affiché dans Crystal Ball : '+m.p+'. Régime : '+m.bias+'. WaveTrend : '+m.wt+'. RSI : '+m.rsi+'. Ces valeurs reflètent les données actuellement affichées par l’application, pas une prévision garantie.';
+  else if(/actualis|rafraî|refresh|recharg/.test(x)){if(typeof load==='function')load(true);a='Je demande une actualisation des données du terminal. Vérifie l’horodatage et la source dans Analyse.';}
+  else if(/analyse|graphique|chart/.test(x)){document.querySelector('[data-tab="chart"]')?.click();a='J’ouvre le terminal Analyse. Les indicateurs affichés restent à interpréter avec leur validation historique.';}
+  else if(/cycle|halving/.test(x)){document.querySelector('[data-tab="cal"]')?.click();a='J’ouvre la vue Cycle.';}
+  else if(/fiabilit|backtest|précision|performance/.test(x)){document.querySelector('[data-tab="stats"]')?.click();a='J’ouvre les statistiques de fiabilité. Regarde notamment les résultats hors échantillon et les tailles d’échantillon.';}
+  else if(/bonjour|salut|hello/.test(x))a='Bonjour. Les données du terminal sont '+(m.p==='—'?'en attente':'disponibles à '+m.p)+'. Que souhaites-tu examiner ?';
+  else a='Je n’ai pas encore de moteur IA connecté pour raisonner librement sur cette demande. Je peux lire les métriques affichées et ouvrir les modules Analyse, Cycle et Fiabilité. Le backend conversationnel sécurisé reste à construire.';
+  add('bot',a);$j('jvStatus').textContent='Réponse locale · '+new Date().toLocaleTimeString('fr-FR');say(a);return a;
+ };
+ $j('jvForm').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q)return;add('user',q);input.value='';respond(q);});
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ $j('jvVoice').textContent=SR?'Disponible si autorisé':'Non pris en charge ici';
+ $j('jvMic').addEventListener('click',()=>{if(!SR){$j('jvStatus').textContent='Dictée iOS du clavier disponible en alternative.';input.focus();return;}
+  try{const rec=new SR();rec.lang='fr-FR';rec.interimResults=false;rec.maxAlternatives=1;rec.onstart=()=>{core.classList.add('listening');$j('jvStatus').textContent='Je t’écoute…';};rec.onresult=e=>{input.value=e.results[0][0].transcript; $j('jvForm').requestSubmit();};rec.onerror=e=>$j('jvStatus').textContent='Micro : '+e.error;rec.onend=()=>core.classList.remove('listening');rec.start();}catch(e){$j('jvStatus').textContent='Autorise le microphone dans les réglages du navigateur.';}
+ });
+ $j('jvStop').addEventListener('click',()=>{if('speechSynthesis'in window)window.speechSynthesis.cancel();core.classList.remove('speaking','listening');$j('jvStatus').textContent='Lecture vocale arrêtée.';});
+ const update=()=>{const m=market();$j('jvPrice').textContent=m.p;};
+ update();setInterval(update,2000);
+})();
+
 
 /* V4 — trajectoires quotidiennes bootstrap : chemins réels rééchantillonnés,
    conditionnés au régime/liquidité/momentum courant. Déterministes entre deux bougies. */
