@@ -12,7 +12,6 @@ settings:
     INFOPLIST_KEY_CFBundleDisplayName: "Crystal Ball"
     INFOPLIST_KEY_NSMicrophoneUsageDescription: "JARVIS utilise le microphone pour dialoguer avec toi en temps réel."
     INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: "La reconnaissance vocale détecte « Salut Jarvis » lorsque l’application est ouverte."
-    INFOPLIST_KEY_UIBackgroundModes: ""
 targets:
   CrystalBall:
     type: application
