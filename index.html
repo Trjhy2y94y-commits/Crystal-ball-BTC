@@ -775,7 +775,26 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
 @media(prefers-reduced-motion:reduce){.ck-chart-card{animation:none}}
 @media(max-width:390px){.ck-chart-card #orb{height:320px!important}.ck-path-key{font-size:8px}.ck-path-key strong{font-size:9px}}
 
-.ck-scenarios{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important}.ck-scenarios button{font-size:10px!important;line-height:1.2;min-height:38px;padding:6px 3px!important;white-space:normal}.ck-dynamic-radar{border-color:rgba(60,225,170,.38)!important;background:linear-gradient(145deg,rgba(7,39,42,.97),rgba(5,13,24,.99))!important}.ck-dynamic-radar .ck-buy-info small{white-space:normal;line-height:1.35}.ck-dynamic-radar .ck-buy-meta b{color:#55e6ad}.radar-hit{border-color:#43efad!important;box-shadow:0 0 0 1px rgba(67,239,173,.45),0 0 28px rgba(67,239,173,.28)!important;animation:radarPulse 1s ease-in-out infinite}.ck-buy-row.is-active{border-color:#43efad!important;animation:radarPulse 1s ease-in-out infinite}.radar-flash{border-color:#43efad!important;box-shadow:0 0 25px rgba(67,239,173,.35)!important}@keyframes radarPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4);box-shadow:0 0 22px rgba(67,239,173,.32)}}@media(prefers-reduced-motion:reduce){.radar-hit,.ck-buy-row.is-active{animation:none!important}}</style>
+.ck-scenarios{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important}.ck-scenarios button{font-size:10px!important;line-height:1.2;min-height:38px;padding:6px 3px!important;white-space:normal}.ck-dynamic-radar{border-color:rgba(60,225,170,.38)!important;background:linear-gradient(145deg,rgba(7,39,42,.97),rgba(5,13,24,.99))!important}.ck-dynamic-radar .ck-buy-info small{white-space:normal;line-height:1.35}.ck-dynamic-radar .ck-buy-meta b{color:#55e6ad}.radar-hit{border-color:#43efad!important;box-shadow:0 0 0 1px rgba(67,239,173,.45),0 0 28px rgba(67,239,173,.28)!important;animation:radarPulse 1s ease-in-out infinite}.ck-buy-row.is-active{border-color:#43efad!important;animation:radarPulse 1s ease-in-out infinite}.radar-flash{border-color:#43efad!important;box-shadow:0 0 25px rgba(67,239,173,.35)!important}@keyframes radarPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4);box-shadow:0 0 22px rgba(67,239,173,.32)}}@media(prefers-reduced-motion:reduce){.radar-hit,.ck-buy-row.is-active{animation:none!important}}
+/* CRYSTAL BALL — trajectoire conditionnelle lisible et navigable sur mobile */
+.ck-chart-card .ck-chart-viewport{
+  width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+  border:1px solid rgba(103,160,193,.22);border-radius:13px;
+  background:linear-gradient(180deg,rgba(4,12,20,.72),rgba(7,17,27,.94));
+  scrollbar-width:thin;scrollbar-color:#49647a #101a25;
+  touch-action:pan-x pan-y pinch-zoom;
+}
+.ck-chart-card .ck-chart-viewport::-webkit-scrollbar{height:5px}
+.ck-chart-card .ck-chart-viewport::-webkit-scrollbar-thumb{background:#49647a;border-radius:8px}
+.ck-chart-card #orb{
+  display:block;width:max(100%,760px)!important;min-width:760px;
+  height:430px!important;touch-action:pan-x pan-y;position:static;
+}
+.ck-chart-card .ck-chart-hint{font-size:11px;padding:9px 4px 2px;line-height:1.45}
+@media(max-width:390px){.ck-chart-card #orb{width:760px!important;min-width:760px;height:430px!important}}
+
+</style>
 
 <div class="app">
   <section class="view" id="vHome">
@@ -2759,8 +2778,8 @@ async function renderHome(){
     <div class="ck-section-head"><span>TRAJECTOIRE CONDITIONNELLE</span><span class="ck-muted">Fourchette historique</span></div>
     <div class="seg ck-scenarios"><button type="button" data-scenario="p10" class="${orbScenario==='p10'?'on':''}">P10 · STRESS</button><button type="button" data-scenario="p50" class="${orbScenario==='p50'?'on':''}">P50 · CENTRAL</button><button type="button" data-scenario="p90" class="${orbScenario==='p90'?'on':''}">P90 · EXPANSION</button></div>
     <div class="seg">${[[30,'30 J'],[91,'90 J'],[182,'6 M'],[365,'1 AN']].map(([h,t])=>`<button type="button" data-h="${h}" class="${h===HZ?'on':''}">${t}</button>`).join('')}</div>
-    <canvas id="orb"></canvas>
-    <div class="ck-path-legend"><span class="ck-path-key bear"><i></i><span>Stress / baisse <strong>P10</strong></span></span><span class="ck-path-key base"><i></i><span>Trajectoire centrale <strong>P50</strong></span></span><span class="ck-path-key bull"><i></i><span>Expansion <strong>P90</strong></span></span></div><div class="ck-path-foot"><span>40 chemins bootstrap · blocs historiques de 7 jours</span><b>ANCRAGE BTC : ${fmt(last.c)} $</b></div><div class="ck-chart-hint">Touchez / faites glisser pour lire le prix conditionnel à chaque échéance</div>
+    <div class="ck-chart-viewport" aria-label="Graphique défilant horizontalement"><canvas id="orb" aria-label="Trajectoire conditionnelle Bitcoin avec dates"></canvas></div>
+    <div class="ck-path-legend"><span class="ck-path-key bear"><i></i><span>Stress / baisse <strong>P10</strong></span></span><span class="ck-path-key base"><i></i><span>Trajectoire centrale <strong>P50</strong></span></span><span class="ck-path-key bull"><i></i><span>Expansion <strong>P90</strong></span></span></div><div class="ck-path-foot"><span>40 chemins bootstrap · blocs historiques de 7 jours</span><b>ANCRAGE BTC : ${fmt(last.c)} $</b></div><div class="ck-chart-hint">Faites défiler horizontalement avec le doigt · touchez une date pour lire son prix conditionnel</div>
   </section>
   <div class="sc ck-readout" id="orbRead"></div>
   <div class="ck-section-head"><span>FACTEURS SUIVIS</span><span class="ck-muted">Dernières bougies clôturées</span></div>
@@ -2783,7 +2802,11 @@ async function renderHome(){
   const go=()=>{drawOrb(c,d,K,PL,HZ,sel(),I,orbScenario);read(sel());};go();
   const pick=e=>{const g=c._g;if(!g)return;const r=c.getBoundingClientRect(),x=e.clientX-r.left,t=g.tA+(x-g.padL)/(g.w-g.padL-g.padR)*(g.tB-g.tA);
     const k=Math.round((t-g.t1)/DAY);if(k<1)return;orbSel=Math.min(HZ,k);go();};
-  c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);pick(e);});c.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')pick(e);});
+  let touchStart=null;
+  c.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){touchStart={x:e.clientX,y:e.clientY};return;}pick(e);});
+  c.addEventListener('pointerup',e=>{if(e.pointerType!=='touch'||!touchStart)return;const moved=Math.hypot(e.clientX-touchStart.x,e.clientY-touchStart.y);if(moved<9)pick(e);touchStart=null;});
+  c.addEventListener('pointercancel',()=>{touchStart=null;});
+  c.addEventListener('pointermove',e=>{if(e.pointerType!=='touch'&&e.buttons)pick(e);});
   el.querySelectorAll('[data-scenario]').forEach(b=>b.addEventListener('click',()=>{orbScenario=b.dataset.scenario;store.set('btcz_orb_scenario',orbScenario);go();el.querySelectorAll('[data-scenario]').forEach(x=>x.classList.toggle('on',x===b));}));
   el.querySelectorAll('.seg button[data-h]').forEach(b=>b.addEventListener('click',()=>{homeH=+b.dataset.h;orbSel=null;store.set('btcz_homeH',homeH);renderHome();}));
 }
@@ -3069,9 +3092,14 @@ drawOrb=function(c,d,K,PL,HZ,sel,Iarg,scenario='p50'){
  g.strokeStyle='rgba(255,255,255,.22)';g.setLineDash([3,5]);g.beginPath();g.moveTo(x0,padT);g.lineTo(x0,h-padB);g.stroke();g.setLineDash([]);
  g.strokeStyle='#e4b85e';g.lineWidth=2.4;g.shadowColor='rgba(228,184,94,.35)';g.shadowBlur=7;g.beginPath();past.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.c)):g.moveTo(X(p.t),Y(p.c)));g.stroke();g.shadowBlur=0;
  g.fillStyle='#f1c76e';g.beginPath();g.arc(x0,Y(K.base),4.5,0,Math.PI*2);g.fill();
- const marks=HZ<=31?[7,14,21,30]:HZ<=91?[30,60,91]:HZ<=182?[30,91,182]:[91,182,273,365];
- g.font='10px '+MONO;g.textAlign='center';g.textBaseline='top';g.fillStyle='#8ba5b9';
- marks.filter(k=>k<=HZ&&X(t1+k*DAY)-x0>32).forEach(k=>{const x=X(t1+k*DAY);g.fillText(new Date(t1+k*DAY).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}).replace('.',''),Math.min(x,w-padR-18),h-padB+12);});
+ /* Axe calendaire complet : dates réparties sous toute la trajectoire, y compris aujourd'hui et l'échéance. */
+ const tickDates=[tA,t1,t1+Math.round(HZ*.25)*DAY,t1+Math.round(HZ*.5)*DAY,t1+Math.round(HZ*.75)*DAY,tB]
+   .filter((t,i,a)=>a.indexOf(t)===i).sort((a,b)=>a-b);
+ g.font='600 11px '+MONO;g.textBaseline='top';g.fillStyle='#b5c8d8';
+ tickDates.forEach((t,i)=>{const x=X(t);g.strokeStyle='rgba(181,200,216,.28)';g.beginPath();g.moveTo(x,h-padB+2);g.lineTo(x,h-padB+8);g.stroke();
+   g.textAlign=i===0?'left':i===tickDates.length-1?'right':'center';
+   g.fillText(new Date(t).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'2-digit'}).replace('.',''),x,h-padB+11);
+ });
  /* étiquettes terminales P10 / P50 / P90 */
  const endLabels=[['P10',lowPath,'#ff7890'],['P50',midPath,'#72e5ff'],['P90',highPath,'#72efb5']];
  endLabels.forEach(([lab,p,col])=>{if(!p)return;const v=p.terminal,x=X(t1+HZ*DAY),y=Y(v);g.fillStyle=col;g.shadowColor=col;g.shadowBlur=9;g.beginPath();g.arc(x,y,3.5,0,7);g.fill();g.shadowBlur=0;g.font='700 10px '+MONO;g.textAlign='right';g.textBaseline='middle';g.fillText(lab+' '+Math.round(v/1000)+'k',w-padR-5,Math.max(padT+8,Math.min(h-padB-5,y)));});
