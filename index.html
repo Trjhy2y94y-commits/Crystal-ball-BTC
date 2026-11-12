@@ -775,7 +775,69 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
 @media(prefers-reduced-motion:reduce){.ck-chart-card{animation:none}}
 @media(max-width:390px){.ck-chart-card #orb{height:320px!important}.ck-path-key{font-size:8px}.ck-path-key strong{font-size:9px}}
 
-.ck-scenarios{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important}.ck-scenarios button{font-size:10px!important;line-height:1.2;min-height:38px;padding:6px 3px!important;white-space:normal}.ck-dynamic-radar{border-color:rgba(60,225,170,.38)!important;background:linear-gradient(145deg,rgba(7,39,42,.97),rgba(5,13,24,.99))!important}.ck-dynamic-radar .ck-buy-info small{white-space:normal;line-height:1.35}.ck-dynamic-radar .ck-buy-meta b{color:#55e6ad}.radar-hit{border-color:#43efad!important;box-shadow:0 0 0 1px rgba(67,239,173,.45),0 0 28px rgba(67,239,173,.28)!important;animation:radarPulse 1s ease-in-out infinite}.ck-buy-row.is-active{border-color:#43efad!important;animation:radarPulse 1s ease-in-out infinite}.radar-flash{border-color:#43efad!important;box-shadow:0 0 25px rgba(67,239,173,.35)!important}@keyframes radarPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4);box-shadow:0 0 22px rgba(67,239,173,.32)}}@media(prefers-reduced-motion:reduce){.radar-hit,.ck-buy-row.is-active{animation:none!important}}</style>
+.ck-scenarios{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important}.ck-scenarios button{font-size:10px!important;line-height:1.2;min-height:38px;padding:6px 3px!important;white-space:normal}.ck-dynamic-radar{border-color:rgba(60,225,170,.38)!important;background:linear-gradient(145deg,rgba(7,39,42,.97),rgba(5,13,24,.99))!important}.ck-dynamic-radar .ck-buy-info small{white-space:normal;line-height:1.35}.ck-dynamic-radar .ck-buy-meta b{color:#55e6ad}.radar-hit{border-color:#43efad!important;box-shadow:0 0 0 1px rgba(67,239,173,.45),0 0 28px rgba(67,239,173,.28)!important;animation:radarPulse 1s ease-in-out infinite}.ck-buy-row.is-active{border-color:#43efad!important;animation:radarPulse 1s ease-in-out infinite}.radar-flash{border-color:#43efad!important;box-shadow:0 0 25px rgba(67,239,173,.35)!important}@keyframes radarPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4);box-shadow:0 0 22px rgba(67,239,173,.32)}}@media(prefers-reduced-motion:reduce){.radar-hit,.ck-buy-row.is-active{animation:none!important}}
+/* Indicateur de robustesse : ne modifie jamais les probabilités du modèle */
+.ck-trust-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.ck-trust-row{min-width:0;padding:11px;border:1px solid var(--line);border-radius:13px;background:rgba(4,12,20,.52);display:grid;gap:6px}
+.ck-trust-row>div{display:flex;flex-direction:column;gap:5px}.ck-trust-row>div b{font-size:14px;color:var(--fg)}
+.ck-trust-row>strong{font-size:24px;color:var(--fg);font-variant-numeric:tabular-nums}
+.ck-trust-row small{font-size:10px;line-height:1.4;color:var(--muted)}.ck-trust-row p{font-size:11px!important;line-height:1.4!important;margin:0;color:var(--sub)!important}
+.ck-trust-row .trust-good{color:var(--up);font-size:9px;font-weight:800;letter-spacing:.04em}.ck-trust-row .trust-warn{color:var(--accent);font-size:9px;font-weight:800;letter-spacing:.04em}.ck-trust-row .trust-low{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.04em}
+@media(max-width:390px){.ck-trust-grid{grid-template-columns:1fr}.ck-trust-row{grid-template-columns:1fr auto}.ck-trust-row small,.ck-trust-row p{grid-column:1/-1}}
+/* CRYSTAL BALL — trajectoire conditionnelle lisible et navigable sur mobile */
+.ck-chart-card .ck-chart-viewport{
+  width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+  border:1px solid rgba(103,160,193,.22);border-radius:13px;
+  background:linear-gradient(180deg,rgba(4,12,20,.72),rgba(7,17,27,.94));
+  scrollbar-width:thin;scrollbar-color:#49647a #101a25;
+  touch-action:pan-x pan-y pinch-zoom;
+}
+.ck-chart-card .ck-chart-viewport::-webkit-scrollbar{height:5px}
+.ck-chart-card .ck-chart-viewport::-webkit-scrollbar-thumb{background:#49647a;border-radius:8px}
+.ck-chart-card #orb{
+  display:block;width:max(100%,760px)!important;min-width:760px;
+  height:430px!important;touch-action:pan-x pan-y;position:static;
+}
+.ck-chart-card .ck-chart-hint{font-size:11px;padding:9px 4px 2px;line-height:1.45}
+@media(max-width:390px){.ck-chart-card #orb{width:760px!important;min-width:760px;height:430px!important}}
+
+
+/* JARVIS command deck */
+.jarvis-view{padding:14px 14px max(22px,env(safe-area-inset-bottom));overflow:auto;background:radial-gradient(ellipse at 50% 0%,rgba(0,190,255,.13),transparent 48%),#050a11;color:#e8f5ff}
+.jarvis-shell{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.jv-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.jv-brand{font:800 12px var(--mono);letter-spacing:.2em;color:#b9dfff}.jv-brand b{color:#48dfff}
+.jv-state{font:700 9px var(--mono);letter-spacing:.12em;color:#ffc66d;border:1px solid #75562c;border-radius:99px;padding:6px 9px}
+.jv-core{position:relative;min-height:190px;border:1px solid rgba(76,210,255,.3);border-radius:22px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle,rgba(0,174,255,.13),rgba(5,12,22,.96) 62%);box-shadow:inset 0 0 55px rgba(0,156,255,.08),0 15px 45px #000}
+.jv-orb{width:116px;height:116px;border-radius:50%;border:1px solid #3ad9ff;display:grid;place-items:center;position:relative;box-shadow:0 0 22px #00aaff55,inset 0 0 30px #00aaff33}
+.jv-orb:before,.jv-orb:after{content:"";position:absolute;inset:-13px;border:1px solid #28bfff66;border-radius:50%;animation:jvspin 12s linear infinite}
+.jv-orb:after{inset:-25px;border-style:dashed;opacity:.5;animation-duration:24s;animation-direction:reverse}
+.jv-orb span{font:900 32px var(--mono);color:#70e5ff;text-shadow:0 0 18px #00bfff}
+.jv-core.listening .jv-orb,.jv-core.speaking .jv-orb{animation:jvpulse 1.1s ease-in-out infinite}
+.jv-core.listening .jv-orb{box-shadow:0 0 38px #ffb84a88,inset 0 0 30px #ffb84a33;border-color:#ffc66d}
+.jv-core.speaking .jv-orb{box-shadow:0 0 40px #00d9ff99,inset 0 0 30px #00d9ff55}
+.jv-core-label{position:absolute;bottom:15px;text-align:center;font:700 9px var(--mono);letter-spacing:.2em;color:#91b9ce}
+@keyframes jvspin{to{transform:rotate(360deg)}}@keyframes jvpulse{50%{transform:scale(1.06);filter:brightness(1.5)}}
+.jv-status{font:11px var(--mono);color:#9bb6c8;text-align:center;min-height:16px}
+.jv-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.jv-tile{border:1px solid #1c3b50;background:linear-gradient(145deg,#0d1c2a,#08111b);border-radius:13px;padding:12px;min-width:0}
+.jv-tile small{display:block;font:700 9px var(--mono);color:#78a2b9;letter-spacing:.12em;margin-bottom:7px}.jv-tile strong{font:700 12px var(--mono);color:#d8f4ff}
+.jv-chat{border:1px solid #21445a;background:#07121d;border-radius:16px;overflow:hidden}
+.jv-chat-head{padding:11px 13px;border-bottom:1px solid #1b3547;font:700 10px var(--mono);letter-spacing:.15em;color:#8bdcff}
+.jv-log{height:220px;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:9px;overscroll-behavior:contain}
+.jv-msg{max-width:90%;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.jv-msg.bot{align-self:flex-start;background:#102638;border:1px solid #1c4963;color:#d9f1ff}
+.jv-msg.user{align-self:flex-end;background:#12374a;border:1px solid #1c6680;color:#e7faff}
+.jv-compose{display:flex;gap:7px;padding:10px;border-top:1px solid #1b3547}
+.jv-compose input{flex:1;min-width:0;background:#0c1b28;border:1px solid #29485c;border-radius:10px;color:#e8f7ff;padding:12px;font-size:13px;outline:none}
+.jv-btn{border:1px solid #27647e;border-radius:10px;background:#0c2b3d;color:#9beaff;padding:0 13px;font-weight:800;min-height:42px}
+.jv-btn.primary{background:linear-gradient(135deg,#087fa9,#07516d);color:white}
+.jv-actions{display:flex;gap:8px}.jv-actions .jv-btn{flex:1}
+.jv-note{font-size:10px;line-height:1.55;color:#829eaf;padding:0 2px}
+@media(min-width:600px){.jv-core{min-height:230px}.jv-log{height:300px}}
+
+</style>
 
 <div class="app">
   <section class="view" id="vHome">
@@ -847,6 +909,29 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
     <div class="prob-layers" id="probLayers"></div><div class="prob-note" id="probNote">Les fourchettes proviennent des rendements historiques conditionnés au régime. Les méthodes chartistes affinent la lecture, elles ne garantissent pas le prix.</div>
   </div>
   </section>
+  <section class="view" id="vJarvis" hidden>
+    <div class="jarvis-view">
+      <div class="jarvis-shell">
+        <div class="jv-head"><div class="jv-brand">CRYSTAL <b>· JARVIS</b> / COMMAND INTELLIGENCE</div><div class="jv-state" id="jvEngineState">MOTEUR IA À CONNECTER</div></div>
+        <div class="jv-core" id="jvCore"><div class="jv-orb"><span>J</span></div><div class="jv-core-label">PERSONAL MARKET INTELLIGENCE</div></div>
+        <div class="jv-status" id="jvStatus">Interface prête · moteur conversationnel non configuré</div>
+        <div class="jv-grid">
+          <div class="jv-tile"><small>BITCOIN · SPOT APP</small><strong id="jvPrice">En attente des données</strong></div>
+          <div class="jv-tile"><small>ÉTAT DU CERVEAU IA</small><strong id="jvBrain">Non connecté</strong></div>
+          <div class="jv-tile"><small>VOIX NAVIGATEUR</small><strong id="jvVoice">Vérification…</strong></div>
+          <div class="jv-tile"><small>MODE D'EXÉCUTION</small><strong>Analyse seule · aucun ordre</strong></div>
+        </div>
+        <div class="jv-chat">
+          <div class="jv-chat-head">CANAL JARVIS · TEXTE & VOIX TEMPS RÉEL</div>
+          <div class="jv-log" id="jvLog" aria-live="polite"><div class="jv-msg bot">Bonjour. Je suis JARVIS, l’interface de Crystal Ball. Je peux piloter les modules locaux et, une fois la passerelle sécurisée configurée, tenir une conversation IA en texte ou à la voix. Je distingue toujours les données observées des scénarios et je ne simule pas de connexion absente.</div></div>
+          <form class="jv-compose" id="jvForm"><input id="jvInput" autocomplete="off" placeholder="Parle-moi du marché ou demande une analyse…" aria-label="Message à JARVIS"><button class="jv-btn primary" type="submit">ENVOYER</button></form>
+        </div>
+        <div class="jv-actions"><button class="jv-btn" type="button" id="jvMic">🎙 PARLER</button><button class="jv-btn" type="button" id="jvStop">■ ARRÊTER LA VOIX</button></div>
+        <div class="jv-chat" style="padding:12px;display:grid;gap:8px"><label for="jvEndpoint" style="font:700 10px var(--mono);color:#8bdcff;letter-spacing:.12em">PASSERELLE IA SÉCURISÉE</label><input id="jvEndpoint" type="url" inputmode="url" autocomplete="url" placeholder="https://ton-worker.workers.dev/api/jarvis" style="width:100%;box-sizing:border-box;background:#0c1b28;border:1px solid #29485c;border-radius:10px;color:#e8f7ff;padding:12px;font-size:12px"><div class="jv-actions"><button class="jv-btn" type="button" id="jvConnect">CONNECTER / TESTER</button><button class="jv-btn" type="button" id="jvForget">DÉCONNECTER</button></div><div class="jv-note" id="jvConnection">Aucune passerelle distante configurée. Le mode local reste disponible.</div></div>
+        <div class="jv-note">Conversation vocale temps réel via WebRTC et Worker sécurisé après configuration. Le microphone est activé uniquement à ta demande. La qualité des réponses dépend des données disponibles et du modèle configuré. Ne place jamais de clé API dans l’application publique. Aucune transaction n’est autorisée depuis ce canal.</div>
+      </div>
+    </div>
+  </section>
   <section class="view" id="vCal" hidden><div class="proj page" id="cal"></div></section>
   <section class="view" id="vStats" hidden><div class="proj page" id="proj"></div></section>
   <div class="toast" id="toast" hidden></div>
@@ -854,6 +939,7 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
     <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11" r="7"></circle><path d="M7 21h10M9 11a3 3 0 0 1 3-3"></path></svg>Crystal Ball</button>
     <button type="button" data-tab="chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4v16M16 4v16M5 8h6M13 14h6M5 16h6M13 6h6"></path></svg>Analyse</button>
     <button type="button" data-tab="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>Cycle</button>
+    <button type="button" data-tab="jarvis"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 4v16M4 12h16M8 8l8 8M16 8l-8 8"></path></svg>JARVIS</button>
     <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Fiabilité</button>
   </nav>
 </div>
@@ -2127,6 +2213,23 @@ function trajectoryWalkForwardAudit(D){
  const metrics=a=>({n:a.length,mae:a.length?a.reduce((s,x)=>s+x.err,0)/a.length:null,hit5:a.length?a.filter(x=>x.hit5).length/a.length:null,dir:a.length?a.filter(x=>x.dir).length/a.length:null,cover:a.length?a.filter(x=>x.cover).length/a.length:null,width:a.length?a.reduce((s,x)=>s+x.width,0)/a.length:null});
  return{demo:false,rows:hs.map(h=>({h,model:metrics(out[h].cond),base:metrics(out[h].base)})),origins:used,strict,fallbackTrend,fallbackAll,poolAvg:used?poolTotal/used:0,pathsPerOrigin:200,step,blockDays:7,asOf:D.rows[end]?.t};
 }
+function applyStrictCalibration(m,p){if(!m?.length||!Number.isFinite(p))return null;if(p<=m[0].x)return m[0].y;if(p>=m[m.length-1].x)return m[m.length-1].y;for(let k=1;k<m.length;k++)if(p<=m[k].x){const a=m[k-1],b=m[k],u=(p-a.x)/Math.max(1e-9,b.x-a.x);return Math.max(0,Math.min(1,a.y+(b.y-a.y)*u));}return null;}
+function forecastTrustHTML(A){
+ if(!A?.rows?.length)return '<p class="ck-forecast-note">Fiabilité empirique indisponible : historique strict insuffisant ou mode démo.</p>';
+ const rows=A.rows.map(x=>{
+  const d=x.drift||{},n=x.model?.n||0,rn=d.recent?.n||0,score=d.reliabilityScore,base=x.base?.mae,mae=x.model?.mae,brier=x.model?.brier,baseBrier=x.base?.brier;
+  const bss=brier!=null&&baseBrier>0?1-brier/baseBrier:null;
+  const robust=n>=60&&rn>=20&&d.status==='NORMAL'&&score!=null&&score>=60&&mae!=null&&base!=null&&mae<=base&&bss!=null&&bss>=0;
+  const cautious=!robust&&n>=20&&rn>=8&&d.status!=='INSUFFISANT';
+  const label=robust?'ROBUSTESSE ÉTAYÉE':cautious?'PRUDENCE':'DONNÉES INSUFFISANTES';
+  const cls=robust?'trust-good':cautious?'trust-warn':'trust-low';
+  const why=robust?'Échantillon suffisant, dérive normale et résultat au moins aussi bon que la référence.':cautious?(d.status==='DÉGRADATION'?'Dérive détectée : réduire le poids accordé au scénario.':'Échantillon, calibration ou comparaison à la référence encore insuffisants pour conclure.'):'Pas assez de prévisions strictes et récentes pour qualifier ce scénario.';
+  const cal=x.calibration||{},v=cal.validation;const calText=v?'Calibration holdout · Brier '+(v.rawBrier*100).toFixed(1)+' → '+(v.calibratedBrier*100).toFixed(1)+' % · ECE '+(v.rawECE*100).toFixed(1)+' → '+(v.calibratedECE*100).toFixed(1)+' %':'Calibration '+(cal.status||'non calculable');return '<div class="ck-trust-row"><div><b>J+'+x.h+'</b><span class="'+cls+'">'+label+'</span></div><strong>'+(score==null?'—':score+'/100')+'</strong><small>N strict '+n+' · récent '+rn+' · dérive '+(d.status||'—')+' · BSS '+(bss==null?'—':(bss*100).toFixed(1)+' %')+'</small><p>'+why+'</p><small>'+calText+' · '+(cal.status||'non validée')+'</small></div>';
+ }).join('');
+ const ab=A.rows.map(x=>{const z=x.ablation||{};const labels={regime:'Régime seul',regimeMomentum:'Régime + momentum',regimeVolatility:'Régime + volatilité',unfiltered:'Historique global',fvg:'FVG seul',vp:'Volume Profile seul',smc:'SMC seul',wyckoff:'Wyckoff seul',elliott:'Elliott seul',flow:'SMC + Wyckoff + Elliott',rsi:'Divergences RSI',fvgvp:'FVG + Volume Profile',advanced:'FVG + VP + flux + RSI'};return '<div class="ck-trust-row"><b>J+'+x.h+' · Cohortes de signaux</b>'+Object.entries(labels).map(([k,label])=>{const v=z[k];return '<small>'+label+' · N '+(v?.n||0)+' · Brier '+(v?.brier==null?'—':(v.brier*100).toFixed(1)+' %')+' · Δ vs complet '+(v?.vsFullBrier==null?'—':(v.vsFullBrier*100).toFixed(2)+' pt')+' · filtre actif '+(v?.active||0)+' / repli '+(v?.fallback||0)+'</small><small>Stabilité régime : '+['ACCUMULATION','EXPANSION','DISTRIBUTION','CAPITULATION','NEUTRE'].map(tag=>{const p=v?.byPhase?.[tag];return tag.slice(0,4)+' N'+(p?.n||0)+' B'+(p?.brier==null?'—':(p.brier*100).toFixed(1));}).join(' · ')+'</small>';}).join('')+'</div>';}).join('');
+ const adapt=A.rows.map(x=>{const v=x.adaptation||{};return '<div class="ck-trust-row"><b>J+'+x.h+' · Sélection adaptative expérimentale</b><small>'+v.status+' · apprentissage '+(v.trainingN||0)+' · validation intacte '+(v.validationN||0)+'</small><small>Brier adaptatif '+(v.adaptive?.brier==null?'—':(v.adaptive.brier*100).toFixed(2)+' %')+' · modèle complet '+(v.baseline?.brier==null?'—':(v.baseline.brier*100).toFixed(2)+' %')+' · Δ '+(v.deltaBrier==null?'—':(v.deltaBrier*100).toFixed(2)+' pt')+'</small><small>Familles choisies par régime : '+Object.entries(v.selectedByPhase||{}).map(([p,z])=>p.slice(0,4)+' → '+z.family+' (N'+z.trainingN+')').join(' · ')+'</small><small>Non appliqué aux probabilités live. Choix conditionné au régime, sélectionné avant le dernier tiers de validation.</small></div>';}).join('');
+ return '<div class="ck-trust-grid">'+rows+'</div><div class="ck-trust-grid">'+adapt+'</div><div class="ck-trust-grid">'+ab+'</div><p class="ck-forecast-note">Comparaison chronologique de cohortes conditionnées par les signaux : mêmes origines et même période récente. Δ Brier négatif = meilleur que le modèle complet. Si un sous-échantillon contient moins de 60 observations, repli sur l’historique global. Ce n’est pas un test de suppression causale : les filtres isolés ne sont pas additionnés au modèle complet. Aucun poids ni aucune probabilité du moteur ne sont modifiés.</p><p class="ck-forecast-note">Indice de robustesse indépendant des probabilités P(hausse) et des quantiles P10/P50/P90. « Étayée » exige des critères cumulatifs stricts ; ce statut ne garantit pas la prochaine prévision et ne constitue pas un conseil d’investissement.</p>';
+}
 function trajectoryWalkForwardHTML(A){
  if(A.demo||!A.rows.length)return '<p class="ck-forecast-note">'+(A.reason||'Pas assez de tests hors échantillon.')+'</p>';
  const pc=x=>x==null?'—':(x*100).toFixed(1)+' %',err=x=>x==null?'—':(x*100).toFixed(2)+' %';
@@ -2306,6 +2409,94 @@ function priceForecastAudit(D){
   return{demo:false,rows:out,macro:I.real&&!!I.liq,source:I.real?'Composite M2/liquidité décalée':'M2 indisponible · modèle sans filtre macro',
     features:'FVG multi-unités + Volume Profile 90D + SMC/Wyckoff/Elliott + divergences RSI daily/weekly/monthly'};
 }
+/* Audit strict : blocs de test non chevauchants, chaque prévision ne voit que les rendements déjà maturés. */
+function strictHoldoutAudit(D){
+ const I=D.ind,C=I.Cl||D.rows.map(x=>x.c),R=I.rgA||[],M=I.wt2||[],end=Math.min(C.length-1,I.lastClosed??C.length-1);
+ if(D.demo||end<1200)return{rows:[],reason:D.demo?'Mode démo : test strict suspendu.':'Historique insuffisant pour un audit hors échantillon strict.'};
+ const hs=[30,90,365],out=[],featureCache=new Map();
+ const featuresAt=i=>{if(!featureCache.has(i))featureCache.set(i,historicalStructureFeatures(D.rows,i));return featureCache.get(i);};
+ const q=(a,p)=>{if(!a.length)return null;const z=a.slice().sort((x,y)=>x-y),v=(z.length-1)*p,k=Math.floor(v);return z[k]+(z[Math.min(k+1,z.length-1)]-z[k])*(v-k);};
+ const mom=i=>M[i]==null?0:M[i]<=-40?-1:M[i]>=40?1:0;
+ const vol=i=>{if(i<30)return 1;let a=0,b=0,n=0;for(let k=i-29;k<=i;k++){if(C[k]>0&&C[k-1]>0){const x=Math.log(C[k]/C[k-1]);a+=x;b+=x*x;n++;}}if(n<25)return 1;const v=Math.sqrt(Math.max(0,b/n-(a/n)**2));return v;};
+ const vols=Array.from({length:end+1},(_,i)=>vol(i));
+ const vbucket=i=>{const hist=vols.slice(Math.max(30,i-365),i).filter(Number.isFinite).sort((a,b)=>a-b);if(!hist.length)return 1;const rank=hist.filter(x=>x<vols[i]).length/hist.length;return rank<.33?0:rank>.67?2:1;};
+ const phase=i=>{const r30=i>=30?C[i]/C[i-30]-1:null,r90=i>=90?C[i]/C[i-90]-1:null,ma=I.sma200?.[i]??null,gap=ma>0?C[i]/ma-1:null,vb=vbucket(i);if(r30!=null&&r30<-.15&&vb===2)return'CAPITULATION';if(gap!=null&&gap>0&&r30!=null&&r30>.08&&r90>0)return'EXPANSION';if(gap!=null&&gap>0&&r90!=null&&r90>.12&&r30<.02)return'DISTRIBUTION';if(gap!=null&&Math.abs(gap)<.08&&r90!=null&&Math.abs(r90)<.12&&vb===0)return'ACCUMULATION';return'NEUTRE';};
+ const fitCalibration=a=>{if(a.length<40)return null;const z=a.slice().sort((x,y)=>x.prob-y.prob),bins=[];for(let k=0;k<5;k++){const v=z.slice(Math.floor(k*z.length/5),Math.floor((k+1)*z.length/5));if(v.length>=8)bins.push({x:v.reduce((s,x)=>s+x.prob,0)/v.length,y:(v.reduce((s,x)=>s+x.up,0)+1)/(v.length+2),n:v.length});}if(bins.length<3)return null;const blocks=[];bins.forEach(b=>{blocks.push({...b,w:b.n});while(blocks.length>1&&blocks[blocks.length-2].y>blocks[blocks.length-1].y){const z=blocks.splice(-2,2),w=z[0].w+z[1].w;blocks.push({x:(z[0].x*z[0].w+z[1].x*z[1].w)/w,y:(z[0].y*z[0].w+z[1].y*z[1].w)/w,n:w,w});}});return blocks.map(({x,y,n})=>({x,y,n}));};
+ const applyCalibration=(m,p)=>{if(!m?.length||!Number.isFinite(p))return null;if(p<=m[0].x)return m[0].y;if(p>=m[m.length-1].x)return m[m.length-1].y;for(let k=1;k<m.length;k++)if(p<=m[k].x){const x=m[k-1],y=m[k],u=(p-x.x)/Math.max(1e-9,y.x-x.x);return Math.max(0,Math.min(1,x.y+(y.y-x.y)*u));}return null;};
+ const stats=a=>{const n=a.length;if(!n)return{n:0,mae:null,hit5:null,dir:null,cover:null,brier:null,ece:null,calibration:[],hitCI:null,dirCI:null,coverCI:null};const w=a.filter(x=>x.hit5).length,d=a.filter(x=>x.dir).length,c=a.filter(x=>x.cover).length,bins=Array.from({length:5},(_,i)=>{const z=a.filter(x=>Math.min(4,Math.floor(x.prob*5))===i);return{lo:i*.2,hi:(i+1)*.2,n:z.length,p:z.length?z.reduce((v,x)=>v+x.prob,0)/z.length:null,observed:z.length?z.reduce((v,x)=>v+x.up,0)/z.length:null};}).filter(x=>x.n),ece=bins.reduce((v,x)=>v+x.n/n*Math.abs(x.p-x.observed),0);return{n,mae:a.reduce((z,x)=>z+x.err,0)/n,hit5:w/n,dir:d/n,cover:c/n,brier:a.reduce((z,x)=>z+x.brier,0)/n,ece,calibration:bins,hitCI:wilson(w,n),dirCI:wilson(d,n),coverCI:wilson(c,n)};};
+ hs.forEach(h=>{
+  const first=Math.max(700,Math.floor(end*.30)),last=end-h,stride=h;
+  const model=[],base=[],ablationSets={full:[],regime:[],regimeMomentum:[],regimeVolatility:[],unfiltered:[],fvg:[],vp:[],smc:[],wyckoff:[],elliott:[],flow:[],rsi:[],fvgvp:[],advanced:[]};let origins=0,strict=0,fallbackRegime=0,fallbackAll=0;
+  for(let i=first;i<=last;i+=stride){
+   const train=[];for(let j=220;j+h<=i;j+=7){const r=Math.log(C[j+h]/C[j]);if(Number.isFinite(r)){const ft=featuresAt(j);train.push({r,reg:R[j]??0,mom:mom(j),vol:vbucket(j),fvg:ft.fvg,vp:ft.vp,smc:ft.smc,wyckoff:ft.wyckoff,elliott:ft.elliott,flow:ft.flow,rsiDiv:ft.rsiDiv});}}
+   if(train.length<60)continue;
+   const same=train.filter(x=>x.reg===(R[i]??0)&&x.mom===mom(i)&&x.vol===vbucket(i));
+   let chosen=same,mode='strict';
+   if(chosen.length<60){chosen=train.filter(x=>x.reg===(R[i]??0));mode='regime';}
+   if(chosen.length<60){chosen=train;mode='all';}
+   if(mode==='strict')strict++;else if(mode==='regime')fallbackRegime++;else fallbackAll++;
+   const actual=Math.log(C[i+h]/C[i]),bp=q(train.map(x=>x.r),.5),blo=q(train.map(x=>x.r),.1),bhi=q(train.map(x=>x.r),.9),baseProb=train.filter(x=>x.r>0).length/train.length,up=actual>0?1:0;
+   const make=(sample,tag)=>{const med=q(sample.map(x=>x.r),.5),lo=q(sample.map(x=>x.r),.1),hi=q(sample.map(x=>x.r),.9),pr=sample.filter(x=>x.r>0).length/sample.length,e=Math.abs(Math.exp(med-actual)-1);return{err:e,hit5:e<=.05,dir:Math.sign(med)===Math.sign(actual),cover:actual>=lo&&actual<=hi,brier:(pr-up)**2,prob:pr,up,phase:tag,trainN:sample.length,forecast:med,actual};};
+   const tag=phase(i);model.push(make(chosen,tag));base.push({err:Math.abs(Math.exp(bp-actual)-1),hit5:Math.abs(Math.exp(bp-actual)-1)<=.05,dir:Math.sign(bp)===Math.sign(actual),cover:actual>=blo&&actual<=bhi,brier:(baseProb-up)**2,prob:baseProb,up,phase:tag});
+   const currentFeatures=featuresAt(i),matches=key=>chosen.filter(x=>x[key]===currentFeatures[key]),fvgMatch=matches('fvg'),vpMatch=matches('vp'),smcMatch=matches('smc'),wyckoffMatch=matches('wyckoff'),elliottMatch=matches('elliott'),flowMatch=matches('flow'),rsiMatch=matches('rsiDiv'),fvgvpMatch=chosen.filter(x=>x.fvg===currentFeatures.fvg&&x.vp===currentFeatures.vp),advancedMatch=fvgvpMatch.filter(x=>x.flow===currentFeatures.flow&&x.rsiDiv===currentFeatures.rsiDiv);
+   const enough=x=>x.length>=60?x:chosen;
+   const variants={full:chosen,regime:train.filter(x=>x.reg===(R[i]??0)),regimeMomentum:train.filter(x=>x.reg===(R[i]??0)&&x.mom===mom(i)),regimeVolatility:train.filter(x=>x.reg===(R[i]??0)&&x.vol===vbucket(i)),unfiltered:train,fvg:enough(fvgMatch),vp:enough(vpMatch),smc:enough(smcMatch),wyckoff:enough(wyckoffMatch),elliott:enough(elliottMatch),flow:enough(flowMatch),rsi:enough(rsiMatch),fvgvp:enough(fvgvpMatch),advanced:enough(advancedMatch)};
+   Object.entries(variants).forEach(([key,sample])=>{const fallback=sample.length<60,use=fallback?train:sample;ablationSets[key].push({...make(use,tag),exactN:sample.length,fallback});});
+   origins++;
+  }
+  const cut=Math.floor(model.length*2/3),historical=model.slice(0,cut),recent=model.slice(cut),hm=stats(historical),rm=stats(recent);
+  const validationMap=fitCalibration(historical),liveMap=fitCalibration(model);
+  const calibratedRecent=validationMap?recent.map(x=>({...x,prob:applyCalibration(validationMap,x.prob)})).filter(x=>Number.isFinite(x.prob)):[];
+  const calibratedStats=stats(calibratedRecent);
+  const calibration={trainingN:historical.length,validationN:calibratedRecent.length,liveN:model.length,map:liveMap,improved:liveMap&&calibratedRecent.length>=15&&calibratedStats.brier<rm.brier&&calibratedStats.ece<=rm.ece,status:liveMap&&calibratedRecent.length>=15?(calibratedStats.brier<rm.brier&&calibratedStats.ece<=rm.ece?'AMÉLIORATION HOLDOUT':'NON AMÉLIORÉE'):'INSUFFISANT',validation:validationMap&&calibratedRecent.length>=15?{rawBrier:rm.brier,calibratedBrier:calibratedStats.brier,rawECE:rm.ece,calibratedECE:calibratedStats.ece}:null};
+
+  const driftChecks=[
+   {key:'mae',bad:hm.mae!=null&&rm.mae!=null&&rm.mae>hm.mae*1.35,label:'Erreur récente en hausse de plus de 35 %'},
+   {key:'hit5',bad:hm.hit5!=null&&rm.hit5!=null&&rm.hit5<hm.hit5-.10,label:'Précision ±5 % en baisse de plus de 10 points'},
+   {key:'brier',bad:hm.brier!=null&&rm.brier!=null&&rm.brier>hm.brier+.04,label:'Score Brier dégradé de plus de 0,04'},
+   {key:'ece',bad:hm.ece!=null&&rm.ece!=null&&rm.ece>hm.ece+.05,label:'Calibration ECE dégradée de plus de 0,05'}
+  ];
+  const breaches=driftChecks.filter(x=>x.bad);
+  const reliabilityScore=recent.length>=8&&rm.hitCI&&rm.ece!=null?Math.round(100*rm.hitCI[0]*Math.min(1,recent.length/30)*Math.max(0,1-2*rm.ece)):null;
+  const drift={status:historical.length<12||recent.length<8?'INSUFFISANT':breaches.length>=2?'DÉGRADATION':breaches.length===1?'VIGILANCE':'NORMAL',historical:hm,recent:rm,reliabilityScore,scoreBasis:'borne basse Wilson du taux ±5 %, pondérée par N et pénalité ECE',checks:driftChecks,breaches:breaches.map(x=>x.label),cut,windowN:recent.length};
+  const ablation=Object.fromEntries(Object.entries(ablationSets).map(([key,arr])=>{const recentA=arr.slice(Math.floor(arr.length*2/3)),m=stats(recentA);return[key,{n:m.n,mae:m.mae,hit5:m.hit5,dir:m.dir,brier:m.brier,ece:m.ece,active:recentA.filter(x=>!x.fallback).length,fallback:recentA.filter(x=>x.fallback).length,avgExactN:recentA.length?recentA.reduce((v,x)=>v+x.exactN,0)/recentA.length:0,byPhase:Object.fromEntries(['ACCUMULATION','EXPANSION','DISTRIBUTION','CAPITULATION','NEUTRE'].map(tag=>{const p=stats(recentA.filter(x=>x.phase===tag));return[tag,{n:p.n,brier:p.brier,mae:p.mae,hit5:p.hit5}];})),vsFullBrier:m.brier!=null&&rm.brier!=null?m.brier-rm.brier:null,vsFullMae:m.mae!=null&&rm.mae!=null?m.mae-rm.mae:null}];}));
+  // Sélection adaptative expérimentale : choix appris sur les 2/3 initiaux,
+  // évalué une seule fois sur le dernier tiers chronologique jamais utilisé pour choisir.
+  const familyKeys=Object.keys(ablationSets),phaseNames=['ACCUMULATION','EXPANSION','DISTRIBUTION','CAPITULATION','NEUTRE'];
+  const adaptCut=Math.floor(model.length*2/3),selectedByPhase={},selectionCounts={};
+  phaseNames.forEach(tag=>{
+    const fullHist=ablationSets.full.slice(0,adaptCut).filter(x=>x.phase===tag&&!x.fallback);
+    let best='full',bestScore=fullHist.length>=20?fullHist.reduce((v,x)=>v+x.brier,0)/fullHist.length:Infinity;
+    familyKeys.filter(k=>k!=='full').forEach(k=>{
+      const hist=ablationSets[k].slice(0,adaptCut).filter(x=>x.phase===tag&&!x.fallback);
+      if(hist.length<20)return;
+      const score=hist.reduce((v,x)=>v+x.brier,0)/hist.length;
+      if(score<bestScore-.005){best=k;bestScore=score;}
+    });
+    selectedByPhase[tag]={family:best,trainingN:ablationSets[best].slice(0,adaptCut).filter(x=>x.phase===tag&&!x.fallback).length,trainingBrier:Number.isFinite(bestScore)?bestScore:null};
+  });
+  const adaptive=[];
+  for(let k=adaptCut;k<model.length;k++){
+    const tag=model[k].phase,choice=selectedByPhase[tag]?.family||'full',candidate=ablationSets[choice][k]||ablationSets.full[k];
+    const picked=candidate.fallback?ablationSets.full[k]:candidate;
+    selectionCounts[choice]=(selectionCounts[choice]||0)+1;
+    adaptive.push(picked);
+  }
+  const adaptiveStats=stats(adaptive),baselineRecent=stats(model.slice(adaptCut));
+  const adaptation={status:adaptive.length>=15?'AUDITÉ HORS ÉCHANTILLON':'ÉCHANTILLON INSUFFISANT',trainingN:adaptCut,validationN:adaptive.length,selectedByPhase,selectionCounts,adaptive:adaptiveStats,baseline:baselineRecent,deltaBrier:adaptiveStats.brier!=null&&baselineRecent.brier!=null?adaptiveStats.brier-baselineRecent.brier:null,deltaMae:adaptiveStats.mae!=null&&baselineRecent.mae!=null?adaptiveStats.mae-baselineRecent.mae:null,appliedToLive:false,method:'Choix du meilleur Brier par régime sur le premier tiers chronologique, minimum 20 observations actives et gain >0,005 ; évaluation sur le dernier tiers intact.'};
+  out.push({h,model:stats(model),base:stats(base),drift,calibration,ablation,adaptation,byPhase:Object.fromEntries(['ACCUMULATION','EXPANSION','DISTRIBUTION','CAPITULATION','NEUTRE'].map(tag=>[tag,stats(model.filter(x=>x.phase===tag))])),origins,strict,fallbackRegime,fallbackAll});
+ });
+ return{rows:out,asOf:D.rows[end]?.t};
+}
+function strictHoldoutHTML(A){
+ if(!A.rows.length)return '<p class="note">'+(A.reason||'Pas assez de données pour le test strict.')+'</p>';
+ const pc=x=>x==null?'—':(x*100).toFixed(1)+' %',er=x=>x==null?'—':(x*100).toFixed(2)+' %',ci=x=>!x?'—':Math.round(x[0]*100)+'–'+Math.round(x[1]*100)+' %';
+ const rows=A.rows.map(x=>{const delta=x.model.mae!=null&&x.base.mae!=null?x.model.mae-x.base.mae:null,skill=x.model.brier!=null&&x.base.brier>0?1-x.model.brier/x.base.brier:null;return '<tr><td>J+'+x.h+'</td><td><b>'+er(x.model.mae)+'</b></td><td>'+pc(x.model.hit5)+'</td><td>'+ci(x.model.hitCI)+'</td><td>'+pc(x.model.dir)+'</td><td>'+ci(x.model.dirCI)+'</td><td>'+pc(x.model.cover)+'</td><td>'+er(x.base.mae)+'</td><td>'+(delta==null?'—':(delta<=0?'−':'＋')+er(Math.abs(delta)))+'</td><td>'+pc(x.model.brier)+'</td><td>'+pc(x.base.brier)+'</td><td>'+(skill==null?'—':(skill*100).toFixed(1)+' %')+'</td><td>'+pc(x.model.ece)+'</td><td>'+pc(x.base.ece)+'</td><td>'+x.model.n+'</td></tr>';}).join('');
+ const n=A.rows.reduce((z,x)=>z+x.origins,0),st=A.rows.reduce((z,x)=>z+x.strict,0),rg=A.rows.reduce((z,x)=>z+x.fallbackRegime,0),all=A.rows.reduce((z,x)=>z+x.fallbackAll,0);
+ const driftHTML=A.rows.map(x=>{const d=x.drift||{},pc=v=>v==null?'—':(v*100).toFixed(1)+' %',er=v=>v==null?'—':(v*100).toFixed(2)+' %',label=d.status||'INSUFFISANT',detail=(d.breaches||[]).join(' · ')||'Aucun seuil de dérive franchi';return '<h4>Surveillance de dérive · J+'+x.h+'</h4><p><b>'+label+'</b> · historique '+(d.historical?.n??0)+' cas · période récente '+(d.recent?.n??0)+' cas · indice de fiabilité empirique '+(d.reliabilityScore==null?'non calculable':d.reliabilityScore+'/100')+'</p><table><tr><th>Mesure</th><th>Historique</th><th>Récent</th></tr><tr><td>Erreur moyenne absolue</td><td>'+er(d.historical?.mae)+'</td><td>'+er(d.recent?.mae)+'</td></tr><tr><td>Prix ±5 %</td><td>'+pc(d.historical?.hit5)+'</td><td>'+pc(d.recent?.hit5)+'</td></tr><tr><td>Brier</td><td>'+pc(d.historical?.brier)+'</td><td>'+pc(d.recent?.brier)+'</td></tr><tr><td>ECE</td><td>'+pc(d.historical?.ece)+'</td><td>'+pc(d.recent?.ece)+'</td></tr></table><p class="note">'+detail+'. Diagnostic heuristique sur les prévisions hors échantillon arrivées à maturité ; effectifs faibles = prudence. L’indice est un score de surveillance historique (borne basse Wilson du taux ±5 %, pondération par l’effectif et pénalité ECE), pas une probabilité de réussite ni un multiplicateur appliqué aux prévisions. Ce statut ne modifie pas les probabilités affichées.</p>';}).join('');
+ const phases=A.rows.map(x=>'<h4>Performance par régime · J+'+x.h+'</h4><table><tr><th>Régime</th><th>N</th><th>Erreur médiane</th><th>Prix ±5 %</th><th>Direction</th><th>Brier</th></tr>'+Object.entries(x.byPhase||{}).map(([k,v])=>'<tr><td>'+k+'</td><td>'+v.n+'</td><td>'+er(v.mae)+'</td><td>'+pc(v.hit5)+'</td><td>'+pc(v.dir)+'</td><td>'+pc(v.brier)+'</td></tr>').join('')+'</table>').join('');
+ return driftHTML+phases+'<table><tr><th>Horizon</th><th>Erreur médiane</th><th>Prix ±5 %</th><th>IC 95 %</th><th>Direction</th><th>IC 95 %</th><th>Couverture P10–90</th><th>Erreur base</th><th>Δ erreur</th><th>Brier modèle</th><th>Brier base</th><th>Skill Brier</th><th>ECE modèle</th><th>ECE base</th><th>N</th></tr>'+rows+'</table><p class="note">Test strict : fenêtres futures non chevauchantes (pas = horizon), apprentissage uniquement sur rendements déjà connus à chaque origine. '+n+' prévisions évaluées ; condition complète '+st+' fois, repli régime '+rg+' fois, historique global '+all+' fois. Brier et skill comparent les probabilités directionnelles à la base historique ; ECE = écart pondéré entre probabilité moyenne annoncée et fréquence observée dans 5 classes. ECE plus faible = meilleure calibration. Ces métriques sont fragiles lorsque les effectifs par classe sont faibles. IC de Wilson à 95 % pour les taux ; aucune métrique ne garantit un résultat futur.</p>';
+}
 function priceAuditTable(A){
   if(A.demo||!A.rows.length)return '<p class="note">'+(A.reason||'Pas assez de prévisions historiques indépendantes pour calculer un taux fiable.')+'</p>';
   const pc=x=>x==null?'—':(x*100).toFixed(1)+' %',err=x=>x==null?'—':(x*100).toFixed(2)+' %';
@@ -2480,6 +2671,7 @@ async function renderProj(){
       grp('Référence (tous les jours)',ev(()=>true),true),grp('Indice ≥ 70 (acheter)',ev(v=>v>=70),true),grp('Indice 31–69 (neutre)',ev(v=>v>30&&v<70),true),grp('Indice ≤ 30 (alléger) ↓',ev(v=>v<=30),false)])}
     <p>L'indice de l'accueil est un résumé des critères (signal récent, WaveTrend, M2 sur le mois à venir — jusqu'à 20 points —, funding). Il est utile si « ≥ 70 » fait nettement mieux que la référence, et si « ≤ 30 » baisse plus souvent (lignes ↓ : « Juste » = part des baisses). La semaine du calendrier n'est pas incluse dans ce test.</p></section>`;})()}
   ${(()=>{const A=priceForecastAudit(D);return `<section><h2>Précision réelle des prévisions de prix<small>audit walk-forward · M2 + tendance + momentum + volatilité</small></h2>${priceAuditTable(A)}</section>`;})()}
+  ${(()=>{const A=strictHoldoutAudit(D);return `<section><h2>Épreuve hors échantillon stricte<small>fenêtres non chevauchantes · référence historique</small></h2>${strictHoldoutHTML(A)}</section>`;})()}
   ${(()=>{const T=liqTest(d);if(!T)return '<section><h2>M2 seule ou composite ?<small>v19</small></h2><p>Le Worker M2 ne répond pas : test impossible.</p></section>';
     const e=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+' pts';
     return `<section><h2>M2 seule ou composite ?<small>v19 · décalage ${liqCfg.lag} j</small></h2>${btTable(T.rows)}
@@ -2653,14 +2845,43 @@ function updateRadarLive(){
 }
 
 /* ===== v20 : BOULE DE CRISTAL — un seul écran : prix, cône du futur, lecture au doigt, action du jour ===== */
+/* Régime de marché causal : chaque observation n'utilise que les bougies déjà clôturées. */
+function regimeTransitionState(D){
+ const d=D.rows,I=D.ind,C=I.Cl||d.map(x=>x.c),end=Math.min(I.lastClosed??C.length-1,C.length-1);
+ if(end<260)return{label:'INDÉTERMINÉ',detail:'Historique insuffisant',age:null,changed:false,confidence:'faible'};
+ const ret=(i,n)=>i>=n&&C[i-n]>0?C[i]/C[i-n]-1:null;
+ const vol=(i,n=30)=>{if(i<n)return null;let a=0,b=0,k=0;for(let j=i-n+1;j<=i;j++){if(C[j]>0&&C[j-1]>0){const x=Math.log(C[j]/C[j-1]);a+=x;b+=x*x;k++;}}return k<n*.9?null:Math.sqrt(Math.max(0,b/k-(a/k)**2))*Math.sqrt(365);};
+ const states=[],vols=[];
+ for(let i=260;i<=end;i++){const v=vol(i);vols.push(v);const hist=vols.slice(Math.max(0,vols.length-365),-1).filter(Number.isFinite).sort((a,b)=>a-b),rank=v==null||!hist.length?0.5:hist.filter(x=>x<=v).length/hist.length;
+  const r30=ret(i,30),r90=ret(i,90),ma=I.sma200?.[i]??null,gap=ma&&ma>0?C[i]/ma-1:null;
+  let label='NEUTRE';
+  if(r30!=null&&r30<-.15&&rank>=.7)label='CAPITULATION';
+  else if(gap!=null&&gap>0&&r30!=null&&r30>.08&&r90>0)label='EXPANSION';
+  else if(gap!=null&&gap>0&&r90!=null&&r90>.12&&r30<.02)label='DISTRIBUTION';
+  else if(gap!=null&&Math.abs(gap)<.08&&r90!=null&&Math.abs(r90)<.12&&rank<.6)label='ACCUMULATION';
+  states.push({label,rank,r30,r90,gap});
+ }
+ const cur=states[states.length-1];let age=1;for(let j=states.length-2;j>=0&&states[j].label===cur.label;j--)age++;
+ const previous=states[Math.max(0,states.length-31)]?.label||'INCONNU',changed=previous!==cur.label;
+ const confidence=cur.rank==null?'faible':Math.abs(cur.r30||0)>.15||Math.abs(cur.r90||0)>.2?'modérée':'indicative';
+ return{...cur,age,changed,previous,confidence,detail:changed?'Changement détecté sur les 30 dernières séances':'Régime stable sur environ 30 séances'};
+}
 let orbSel=null;
 function pUp(qq){if(!qq)return null;if(Number.isFinite(qq.pUp))return qq.pUp;const P=[[qq.p10,.1],[qq.p25,.25],[qq.p50,.5],[qq.p75,.75],[qq.p90,.9]];
   if(0<=P[0][0])return 1-Math.max(.02,.1*Math.exp(-P[0][0]/Math.max(1e-6,P[1][0]-P[0][0])));
   if(0>=P[4][0])return Math.max(.02,.1*Math.exp(P[4][0]/Math.max(1e-6,P[4][0]-P[3][0])));
   for(let k=1;k<5;k++)if(0<=P[k][0]){const [x0,c0]=P[k-1],[x1,c1]=P[k];return 1-(c0+(c1-c0)*(0-x0)/(x1-x0));}return .5;}
+function forecastGate(q){
+  if(!q||!Number.isFinite(q.pUp)||!Number.isFinite(q.pUpLo)||!Number.isFinite(q.pUpHi))return{state:'ABSTENTION',label:'Données insuffisantes',detail:'Aucun échantillon exploitable pour cet horizon.'};
+  const n=Number(q.n)||0,width=q.pUpHi-q.pUpLo;
+  if(n<120)return{state:'ABSTENTION',label:'Échantillon trop faible',detail:n+' observations ; seuil minimal : 120.'};
+  if(width>.25)return{state:'INCERTAIN',label:'Incertitude élevée',detail:'Intervalle de confiance trop large ('+(width*100).toFixed(0)+' points).'};
+  if(q.pUpLo<=.5&&q.pUpHi>=.5)return{state:'NEUTRE',label:'Avantage non démontré',detail:'L’intervalle de confiance recouvre 50 %.'};
+  return{state:'SIGNAL',label:q.pUpLo>.5?'Biais haussier étayé':'Biais baissier étayé',detail:'Intervalle de confiance entièrement d’un côté de 50 %.'};
+}
 async function renderHome(){
   const el=$('home');let D;try{D=await getDaily();}catch(e){return;}const d=D.rows,I=D.ind,n=d.length,last=d[n-1];
-  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH,spot=(liveSpotPrice>0&&Date.now()-liveSpotAt<20000)?liveSpotPrice:last.c,buyZones=buildDynamicBuyZones(d,I,spot),hitZone=buyZones.find(z=>spot>=z.lo&&spot<=z.hi);
+  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),SHA=memo('strict-holdout',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>strictHoldoutAudit(D)),PL=buildPlan(D,53),HZ=homeH,spot=(liveSpotPrice>0&&Date.now()-liveSpotAt<20000)?liveSpotPrice:last.c,buyZones=buildDynamicBuyZones(d,I,spot),hitZone=buyZones.find(z=>spot>=z.lo&&spot<=z.hi);
   const prev=d[n-2],ch=(last.c-prev.c)/prev.c*100,T0=new Date().setHours(0,0,0,0);
   const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),trig=!!hitZone;activeBuyZones=buyZones;
   if(trig&&!isDemo){const key='radar:'+Math.round(hitZone.mid)+':'+Math.floor(Date.now()/86400000);if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='⚡ ZONE BTC TOUCHÉE · '+fmt(hitZone.lo)+' – '+fmt(hitZone.hi)+' $ · '+(hitZone.confirmed?'RÉACTION HAUSSIÈRE':'ATTENDRE CONFIRMATION');t.className='toast buy radar-flash';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}}
@@ -2681,8 +2902,12 @@ async function renderHome(){
   const why=[['Tendance',K.rg>0?'Haussière':K.rg<0?'Baissière':'Neutre',K.rg>0?'var(--up)':K.rg<0?'var(--down)':'var(--sub)','↗','#0a84ff'],
     ['Liquidité',!m?'—':m.slope>0.01?'En hausse':m.slope<-0.01?'En baisse':'Stable',!m?'var(--sub)':m.slope>0.01?'var(--up)':m.slope<-0.01?'var(--down)':'var(--sub)','$','#5e5ce6'],
     ['Cipher B',wt==null?'—':wt<=-40?'Survente':wt>=40?'Surachat':'Neutre',wt==null?'var(--sub)':wt<=-40?'var(--up)':wt>=40?'var(--down)':'var(--sub)','≈','#bf5af2']];
+  const calibratedUp=h=>{const row=SHA.rows.find(x=>x.h===h),q=K.q[h];return q&&row?.calibration?.status==='AMÉLIORATION HOLDOUT'?applyStrictCalibration(row.calibration.map,pUp(q)):null;};
   const p30=pUp(K.q[30]),p90=pUp(K.q[90]);
+  const gate30=forecastGate(K.q[30]),gate90=forecastGate(K.q[90]),gate365=forecastGate(K.q[365]);
+  const gateSummary=[['30 J',gate30],['90 J',gate90],['12 M',gate365]].map(([h,g])=>h+' : '+g.label).join(' · ');
   const regime=K.rg>0?['HAUSSIER','var(--up)']:K.rg<0?['BAISSIER','var(--down)']:['NEUTRE','var(--accent)'];
+  const regimeShift=regimeTransitionState(D);
   const probLabel=p=>p==null?'—':Math.round(p*100)+' %';
   const fmtProb=(p)=>p==null?'Données insuffisantes':p>=.6?'Biais haussier':p<=.4?'Biais baissier':'Pas d’avantage net';
   const actionTitle=trig?(hitZone.confirmed?'Zone touchée · réaction haussière détectée':'Zone d’achat pertinente touchée'):'Radar de supports dynamiques';
@@ -2693,6 +2918,11 @@ async function renderHome(){
     <div class="ck-eyebrow">BITCOIN / USD <span>·</span> VUE D’ENSEMBLE</div>
     <div class="ck-price-row"><div class="ck-price">${fmt(last.c)} <small>$</small></div><span class="ck-change ${ch>=0?'positive':'negative'}">${ch>=0?'+':''}${ch.toFixed(2)} % <small>24 H</small></span></div>
     <div class="ck-regime"><span class="ck-regime-dot" style="background:${regime[1]}"></span> RÉGIME <b style="color:${regime[1]}">${regime[0]}</b><span class="ck-sep">/</span><span class="ck-muted">Source : ${$('src')?.textContent||'—'}</span></div>
+  </section>
+  <section class="ck-decision" style="margin-top:12px">
+    <div class="ck-section-head"><span>CHANGEMENT DE RÉGIME</span><span class="ck-tag">${regimeShift.changed?'TRANSITION':'SUIVI'}</span></div>
+    <div class="ck-decision-main"><div class="ck-decision-icon" style="color:${regimeShift.label==='EXPANSION'?'var(--up)':regimeShift.label==='CAPITULATION'?'var(--down)':'var(--accent)'}">◈</div><div><h2>${regimeShift.label}</h2><p>${regimeShift.detail} · ${regimeShift.age==null?'—':regimeShift.age+' séances'} · confiance ${regimeShift.confidence}</p></div></div>
+    <div class="ck-decision-foot">Classification heuristique causale · rendements 30/90 j, volatilité réalisée et SMA200. Ce n'est pas une prédiction.</div>
   </section>
   <section class="ck-decision">
     <div class="ck-section-head"><span>LECTURE DU MARCHÉ</span><span class="ck-tag">SYNTHÈSE</span></div>
@@ -2708,7 +2938,9 @@ async function renderHome(){
     <div class="ck-prob"><span>30 JOURS</span><strong>${probLabel(p30)}</strong><small>${fmtProb(p30)}</small></div>
     <div class="ck-prob"><span>90 JOURS</span><strong>${probLabel(p90)}</strong><small>${fmtProb(p90)}</small></div>
   </div>
-  <section class="ck-forecast-table"><div class="ck-section-head"><span>PRÉVISION DE PRIX</span><span class="ck-muted">Distribution conditionnelle · USD</span></div><div class="ck-forecast-grid"><div class="ck-fh">Échéance</div><div class="ck-fh">Bas · P10</div><div class="ck-fh">Central · P50</div><div class="ck-fh">Haut · P90</div><div class="ck-fh">P(hausse)</div>${[[30,'30 J'],[90,'90 J'],[180,'6 M'],[365,'12 M']].map(([h,label])=>{const q=K.q[h],base=K.base,pr=pUp(q),ci=q&&q.pUpLo!=null?Math.round(q.pUpLo*100)+'–'+Math.round(q.pUpHi*100)+' %':'—';return `<div class="ck-fv">${label}</div><div class="ck-fv">${q?fmt(r5(base*Math.exp(q.p10))):'—'}</div><div class="ck-fv ck-central">${q?fmt(r5(base*Math.exp(q.p50))):'—'}</div><div class="ck-fv">${q?fmt(r5(base*Math.exp(q.p90))):'—'}</div><div class="ck-fv ck-up">${pr==null?'—':Math.round(pr*100)+' %'}<small>${ci}</small></div>`;}).join('')}</div><p class="ck-forecast-note">P10/P50/P90 : quantiles des rendements historiques comparables. P(hausse) : fréquence empirique des rendements positifs, avec intervalle de Wilson à 95 %. Ce n’est pas encore une probabilité calibrée en production. Les effectifs et le régime conditionnent la robustesse.</p></section>
+  <p class="ck-forecast-note"><b>FILTRE DE DÉCISION · ${gateSummary}</b><br>JARVIS s’abstient si l’échantillon est trop faible, si l’intervalle est trop large ou s’il recouvre 50 %. Les scénarios de prix restent visibles, mais aucun avantage directionnel n’est affirmé sans preuve suffisante.</p>
+  <section class="ck-forecast-table"><div class="ck-section-head"><span>PRÉVISION DE PRIX</span><span class="ck-muted">Distribution conditionnelle · USD</span></div><div class="ck-forecast-grid"><div class="ck-fh">Échéance</div><div class="ck-fh">Bas · P10</div><div class="ck-fh">Central · P50</div><div class="ck-fh">Haut · P90</div><div class="ck-fh">P(hausse)</div><div class="ck-fh">P calibrée</div>${[[30,'30 J'],[90,'90 J'],[180,'6 M'],[365,'12 M']].map(([h,label])=>{const q=K.q[h],base=K.base,pr=pUp(q),ci=q&&q.pUpLo!=null?Math.round(q.pUpLo*100)+'–'+Math.round(q.pUpHi*100)+' %':'—';return `<div class="ck-fv">${label}</div><div class="ck-fv">${q?fmt(r5(base*Math.exp(q.p10))):'—'}</div><div class="ck-fv ck-central">${q?fmt(r5(base*Math.exp(q.p50))):'—'}</div><div class="ck-fv">${q?fmt(r5(base*Math.exp(q.p90))):'—'}</div><div class="ck-fv ck-up">${pr==null?'—':Math.round(pr*100)+' %'}<small>${ci}</small><small>${forecastGate(q).label}</small></div><div class="ck-fv ck-up">${calibratedUp(h)==null?'—':Math.round(calibratedUp(h)*100)+' %'}<small>${SHA.rows.find(x=>x.h===h)?.calibration?.status||'Non validée'}</small></div>`;}).join('')}</div><p class="ck-forecast-note">P10/P50/P90 : quantiles des rendements historiques comparables. P(hausse) : fréquence empirique des rendements positifs, avec intervalle de Wilson à 95 %. Ce n’est pas encore une probabilité calibrée en production. Les effectifs et le régime conditionnent la robustesse.</p></section>
+  <section class="ck-forecast-table" id="forecastTrust"><div class="ck-section-head"><span>ROBUSTESSE DES SCÉNARIOS</span><span class="ck-muted">Audit strict · indépendant</span></div>${forecastTrustHTML(SHA)}</section>
   <section class="ck-forecast-table" id="trajectoryRisk">
     <div class="ck-section-head"><span>SIMULATION DE TRAJECTOIRES</span><span class="ck-muted">1 200 chemins · blocs de 7 jours</span></div>
     ${SIM.n?`<div class="ck-forecast-grid"><div class="ck-fh">Horizon</div><div class="ck-fh">P10</div><div class="ck-fh">P50</div><div class="ck-fh">P90</div><div class="ck-fh">Scénarios</div>${SIM.rows.map(x=>`<div class="ck-fv">${x.h} J</div><div class="ck-fv">${fmt(r5(x.p10))}</div><div class="ck-fv ck-central">${fmt(r5(x.p50))}</div><div class="ck-fv">${fmt(r5(x.p90))}</div><div class="ck-fv">${x.n.toLocaleString("fr-FR")}</div>`).join("")}</div><div class="ck-prob-grid"><div class="ck-prob"><span>RISQUE DE -20 % EN COURS DE ROUTE</span><strong>${Math.round(SIM.probDD20*100)} %</strong><small>Drawdown maximal moyen : ${(SIM.avgMaxDD*100).toFixed(1)} % · IC Monte Carlo 95 % : ${(SIM.probDD20CI.lo*100).toFixed(1)}–${(SIM.probDD20CI.hi*100).toFixed(1)} %</small></div><div class="ck-prob"><span>CHANCE DE +20 % À 12 MOIS</span><strong>${Math.round(SIM.probUp20*100)} %</strong><small>IC Monte Carlo 95 % : ${(SIM.probUp20CI.lo*100).toFixed(1)}–${(SIM.probUp20CI.hi*100).toFixed(1)} % · Base : ${fmt(K.base)} $ · ${SIM.pool} départs comparables</small></div></div>`:`<p>${SIM.reason}</p>`}
@@ -2719,8 +2951,8 @@ async function renderHome(){
     <div class="ck-section-head"><span>TRAJECTOIRE CONDITIONNELLE</span><span class="ck-muted">Fourchette historique</span></div>
     <div class="seg ck-scenarios"><button type="button" data-scenario="p10" class="${orbScenario==='p10'?'on':''}">P10 · STRESS</button><button type="button" data-scenario="p50" class="${orbScenario==='p50'?'on':''}">P50 · CENTRAL</button><button type="button" data-scenario="p90" class="${orbScenario==='p90'?'on':''}">P90 · EXPANSION</button></div>
     <div class="seg">${[[30,'30 J'],[91,'90 J'],[182,'6 M'],[365,'1 AN']].map(([h,t])=>`<button type="button" data-h="${h}" class="${h===HZ?'on':''}">${t}</button>`).join('')}</div>
-    <canvas id="orb"></canvas>
-    <div class="ck-path-legend"><span class="ck-path-key bear"><i></i><span>Stress / baisse <strong>P10</strong></span></span><span class="ck-path-key base"><i></i><span>Trajectoire centrale <strong>P50</strong></span></span><span class="ck-path-key bull"><i></i><span>Expansion <strong>P90</strong></span></span></div><div class="ck-path-foot"><span>40 chemins bootstrap · blocs historiques de 7 jours</span><b>ANCRAGE BTC : ${fmt(last.c)} $</b></div><div class="ck-chart-hint">Touchez / faites glisser pour lire le prix conditionnel à chaque échéance</div>
+    <div class="ck-chart-viewport" aria-label="Graphique défilant horizontalement"><canvas id="orb" aria-label="Trajectoire conditionnelle Bitcoin avec dates"></canvas></div>
+    <div class="ck-path-legend"><span class="ck-path-key bear"><i></i><span>Stress / baisse <strong>P10</strong></span></span><span class="ck-path-key base"><i></i><span>Trajectoire centrale <strong>P50</strong></span></span><span class="ck-path-key bull"><i></i><span>Expansion <strong>P90</strong></span></span></div><div class="ck-path-foot"><span>40 chemins bootstrap · blocs historiques de 7 jours</span><b>ANCRAGE BTC : ${fmt(last.c)} $</b></div><div class="ck-chart-hint">Faites défiler horizontalement avec le doigt · touchez une date pour lire son prix conditionnel</div>
   </section>
   <div class="sc ck-readout" id="orbRead"></div>
   <div class="ck-section-head"><span>FACTEURS SUIVIS</span><span class="ck-muted">Dernières bougies clôturées</span></div>
@@ -2743,7 +2975,11 @@ async function renderHome(){
   const go=()=>{drawOrb(c,d,K,PL,HZ,sel(),I,orbScenario);read(sel());};go();
   const pick=e=>{const g=c._g;if(!g)return;const r=c.getBoundingClientRect(),x=e.clientX-r.left,t=g.tA+(x-g.padL)/(g.w-g.padL-g.padR)*(g.tB-g.tA);
     const k=Math.round((t-g.t1)/DAY);if(k<1)return;orbSel=Math.min(HZ,k);go();};
-  c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);pick(e);});c.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')pick(e);});
+  let touchStart=null;
+  c.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){touchStart={x:e.clientX,y:e.clientY};return;}pick(e);});
+  c.addEventListener('pointerup',e=>{if(e.pointerType!=='touch'||!touchStart)return;const moved=Math.hypot(e.clientX-touchStart.x,e.clientY-touchStart.y);if(moved<9)pick(e);touchStart=null;});
+  c.addEventListener('pointercancel',()=>{touchStart=null;});
+  c.addEventListener('pointermove',e=>{if(e.pointerType!=='touch'&&e.buttons)pick(e);});
   el.querySelectorAll('[data-scenario]').forEach(b=>b.addEventListener('click',()=>{orbScenario=b.dataset.scenario;store.set('btcz_orb_scenario',orbScenario);go();el.querySelectorAll('[data-scenario]').forEach(x=>x.classList.toggle('on',x===b));}));
   el.querySelectorAll('.seg button[data-h]').forEach(b=>b.addEventListener('click',()=>{homeH=+b.dataset.h;orbSel=null;store.set('btcz_homeH',homeH);renderHome();}));
 }
@@ -2952,7 +3188,7 @@ $('proj').addEventListener('click',e=>{const b=e.target.closest('[data-copy-rsi-
 /* ---------- onglets ---------- */
 let curTab='home';
 function showTab(t){curTab=t;
-  [['home','vHome'],['chart','vChart'],['cal','vCal'],['stats','vStats']].forEach(([k,id])=>{$(id).hidden=k!==t;});
+  [['home','vHome'],['chart','vChart'],['jarvis','vJarvis'],['cal','vCal'],['stats','vStats']].forEach(([k,id])=>{$(id).hidden=k!==t;});
   document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t==='chart'){requestAnimationFrame(resize);renderConfluence();}
   if(t==='home')renderHome();if(t==='cal')renderCal();if(t==='stats'){$('proj').innerHTML='<p>Calcul…</p>';$('proj').dataset.compact='0';renderProj().then(()=>{compactStats();});}}
@@ -2968,6 +3204,61 @@ $('zSave').addEventListener('click',()=>{const n=s=>parseFloat(String(s).replace
 document.querySelectorAll('[data-tf]').forEach(x=>x.classList.toggle('on',x.dataset.tf===tf));
 
 setInterval(updateQuantTerminal,2000);
+
+/* JARVIS v0 — commandes locales vérifiables, sans faux moteur IA */
+(()=>{
+ const $j=id=>document.getElementById(id),log=$j('jvLog'),input=$j('jvInput'),core=$j('jvCore');
+ if(!log||!input)return;
+ const add=(who,msg)=>{const el=document.createElement('div');el.className='jv-msg '+who;el.textContent=msg;log.appendChild(el);log.scrollTop=log.scrollHeight;};
+ const say=msg=>{if(!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(msg);u.lang='fr-FR';u.rate=1.02;u.onstart=()=>core.classList.add('speaking');u.onend=()=>core.classList.remove('speaking');window.speechSynthesis.speak(u);};
+ const market=()=>{const p=$('homeQtPrice')?.textContent||$('px')?.textContent||'non disponible';const bias=$('homeQtBias')?.textContent||$('badge')?.textContent||'non déterminé';const wt=$('homeQtWT')?.textContent||$('wtNow')?.textContent||'—';const rsi=$('homeQtRSI')?.textContent||'—';return {p,bias,wt,rsi};};
+ const history=[];let endpoint=store.get('jarvis_endpoint',''),activeRecognition=null;const endpointInput=$j('jvEndpoint'),connection=$j('jvConnection');
+ endpointInput.value=endpoint;
+ const remoteAsk=async q=>{const m=market();const snapshot={price:m.p,regime:m.bias,wavetrend:m.wt,rsi:m.rsi,source:$('homeQtSource')?.textContent||$('qtSource')?.textContent||'non précisée',forecast:document.querySelector('#probabilityPanel')?.innerText?.slice(0,1800)||'non disponible',buyRadar:document.querySelector('.ck-dynamic-radar')?.innerText?.slice(0,1400)||'non disponible',activeModule:curTab,capturedAt:new Date().toISOString()};
+  const payload={message:q,history:history.slice(-12),market:snapshot,locale:'fr-FR'};
+  const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(45000)});
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const data=await res.json();if(!data||typeof data.reply!=='string'||!data.reply.trim())throw new Error('Réponse invalide du backend');
+  history.push({role:'user',content:q},{role:'assistant',content:data.reply});if(history.length>16)history.splice(0,history.length-16);
+  return data.reply;
+ };
+ const respond=async q=>{const x=q.toLowerCase(),m=market();let a='';
+  if(endpoint){$j('jvStatus').textContent='JARVIS analyse la demande…';try{a=await remoteAsk(q);}catch(err){a='La passerelle IA ne répond pas ('+String(err.message||err)+'). Vérifie son URL, son déploiement et sa configuration serveur. Je ne bascule pas silencieusement vers une réponse simulée.';$j('jvConnection').textContent='Erreur de connexion : '+String(err.message||err);}$j('jvStatus').textContent='JARVIS · '+new Date().toLocaleTimeString('fr-FR');add('bot',a);say(a);return a;}
+  if(/prix|cours|bitcoin|btc/.test(x)&&/prix|cours|combien|état|btc|bitcoin/.test(x))a='Prix affiché dans Crystal Ball : '+m.p+'. Régime : '+m.bias+'. WaveTrend : '+m.wt+'. RSI : '+m.rsi+'. Ces valeurs reflètent les données actuellement affichées par l’application, pas une prévision garantie.';
+  else if(/actualis|rafraî|refresh|recharg/.test(x)){if(typeof load==='function')load(true);a='Je demande une actualisation des données du terminal. Vérifie l’horodatage et la source dans Analyse.';}
+  else if(/analyse|graphique|chart/.test(x)){document.querySelector('[data-tab="chart"]')?.click();a='J’ouvre le terminal Analyse. Les indicateurs affichés restent à interpréter avec leur validation historique.';}
+  else if(/cycle|halving/.test(x)){document.querySelector('[data-tab="cal"]')?.click();a='J’ouvre la vue Cycle.';}
+  else if(/fiabilit|backtest|précision|performance/.test(x)){document.querySelector('[data-tab="stats"]')?.click();a='J’ouvre les statistiques de fiabilité. Regarde notamment les résultats hors échantillon et les tailles d’échantillon.';}
+  else if(/bonjour|salut|hello/.test(x))a='Bonjour. Les données du terminal sont '+(m.p==='—'?'en attente':'disponibles à '+m.p)+'. Que souhaites-tu examiner ?';
+  else a='Je n’ai pas encore de moteur IA connecté pour raisonner librement sur cette demande. Je peux lire les métriques affichées et ouvrir les modules Analyse, Cycle et Fiabilité. Configure la passerelle IA sécurisée pour activer le raisonnement distant.';
+  add('bot',a);$j('jvStatus').textContent='Réponse locale · '+new Date().toLocaleTimeString('fr-FR');say(a);return a;
+ };
+ $j('jvForm').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q)return;add('user',q);input.value='';respond(q);});
+ $j('jvConnect').addEventListener('click',async()=>{const candidate=endpointInput.value.trim();if(!candidate){connection.textContent='Renseigne l’URL de ton Worker avant de tester.';return;}try{const u=new URL(candidate);if(u.protocol!=='https:')throw new Error('HTTPS obligatoire');endpoint=u.toString();store.set('jarvis_endpoint',endpoint);connection.textContent='Test de connexion…';const res=await fetch(endpoint,{method:'OPTIONS'});if(!res.ok&&res.status!==204)throw new Error('HTTP '+res.status);connection.textContent='Passerelle joignable. Envoie un message pour tester le modèle IA.';$j('jvEngineState').textContent='PASSERELLE CONFIGURÉE';$j('jvBrain').textContent='Backend configuré';}catch(err){connection.textContent='Test impossible : '+String(err.message||err)+' · Vérifie CORS et le déploiement.';}});
+ $j('jvForget').addEventListener('click',()=>{endpoint='';endpointInput.value='';store.set('jarvis_endpoint','');history.length=0;connection.textContent='Passerelle déconnectée. Mode local actif.';$j('jvEngineState').textContent='MOTEUR IA À CONNECTER';$j('jvBrain').textContent='Non connecté';});
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ $j('jvVoice').textContent=SR?'Disponible si autorisé':'Non pris en charge ici';
+ let rtc=null,rtcStream=null,rtcAudio=null,rtcChannel=null;
+ const stopRealtime=()=>{try{rtcChannel?.close();}catch(e){}try{rtc?.close();}catch(e){}rtcStream?.getTracks().forEach(t=>t.stop());rtc=null;rtcStream=null;rtcChannel=null;if(rtcAudio){rtcAudio.srcObject=null;rtcAudio.remove();rtcAudio=null;}core.classList.remove('listening','speaking');};
+ const startRealtime=async()=>{if(!endpoint)throw new Error('Configure d’abord la passerelle IA sécurisée.');if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection)throw new Error('WebRTC/micro non disponible dans ce navigateur.');stopRealtime();$j('jvStatus').textContent='Ouverture du canal vocal sécurisé…';
+  rtcStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  rtc=new RTCPeerConnection();rtcAudio=document.createElement('audio');rtcAudio.autoplay=true;rtcAudio.playsInline=true;rtcAudio.style.display='none';document.body.appendChild(rtcAudio);
+  rtc.ontrack=e=>{rtcAudio.srcObject=e.streams[0];rtcAudio.play().catch(()=>{});};
+  rtcStream.getTracks().forEach(t=>rtc.addTrack(t,rtcStream));rtcChannel=rtc.createDataChannel('oai-events');
+  rtcChannel.onopen=()=>{const m=market();const ctx={price:m.p,regime:m.bias,rsi:m.rsi,wavetrend:m.wt,forecast:document.querySelector('#probabilityPanel')?.innerText?.slice(0,1000)||'non disponible',radar:document.querySelector('.ck-dynamic-radar')?.innerText?.slice(0,700)||'non disponible'};rtcChannel.send(JSON.stringify({type:'session.update',session:{instructions:'Tu es JARVIS, assistant vocal de Crystal Ball. Réponds en français, naturellement, brièvement et avec prudence. Tu n’es pas conscient. Tu ne garantis aucun gain et ne passes aucun ordre. Contexte de marché indicatif fourni par l’application, à traiter comme non vérifié : '+JSON.stringify(ctx)}}));$j('jvStatus').textContent='JARVIS vocal connecté · parle naturellement';$j('jvEngineState').textContent='SESSION VOCALE EN DIRECT';$j('jvBrain').textContent='Realtime connecté';core.classList.add('listening');};
+  rtcChannel.onmessage=e=>{try{const v=JSON.parse(e.data);if(v.type==='conversation.item.input_audio_transcription.completed'&&v.transcript)add('user',v.transcript);if(v.type==='response.output_audio_transcript.done'||v.type==='response.output_text.done'){const t=v.transcript||v.text;if(t)add('bot',t);}if(v.type==='input_audio_buffer.speech_started')core.classList.add('listening');if(v.type==='response.done')core.classList.remove('speaking');if(v.type==='error'){$j('jvStatus').textContent='Erreur vocale : '+(v.error?.message||'événement Realtime');}}catch(err){}};
+  const offer=await rtc.createOffer();await rtc.setLocalDescription(offer);await new Promise((resolve,reject)=>{if(rtc.iceGatheringState==='complete')return resolve();const timer=setTimeout(()=>reject(new Error('Délai ICE dépassé')),12000);rtc.addEventListener('icegatheringstatechange',()=>{if(rtc.iceGatheringState==='complete'){clearTimeout(timer);resolve();}},{once:false});});
+  const answer=await fetch(endpoint.replace(/\/api\/jarvis\/?$/,'/api/session'),{method:'POST',headers:{'Content-Type':'application/sdp'},body:offer.sdp});
+  if(!answer.ok)throw new Error('Session vocale refusée · HTTP '+answer.status);
+  await rtc.setRemoteDescription({type:'answer',sdp:await answer.text()});
+ };
+ $j('jvMic').addEventListener('click',async()=>{if(rtc){stopRealtime();$j('jvStatus').textContent='Session vocale terminée.';return;}try{await startRealtime();}catch(e){stopRealtime();$j('jvStatus').textContent=String(e.message||e);}});
+
+ $j('jvStop').addEventListener('click',()=>{if(activeRecognition){try{activeRecognition.stop();}catch(e){}activeRecognition=null;}stopRealtime();if('speechSynthesis'in window)window.speechSynthesis.cancel();core.classList.remove('speaking','listening');$j('jvStatus').textContent='Voix arrêtée.';});
+ const update=()=>{const m=market();$j('jvPrice').textContent=m.p;};
+ update();setInterval(update,2000);
+})();
+
 
 /* V4 — trajectoires quotidiennes bootstrap : chemins réels rééchantillonnés,
    conditionnés au régime/liquidité/momentum courant. Déterministes entre deux bougies. */
@@ -3029,9 +3320,14 @@ drawOrb=function(c,d,K,PL,HZ,sel,Iarg,scenario='p50'){
  g.strokeStyle='rgba(255,255,255,.22)';g.setLineDash([3,5]);g.beginPath();g.moveTo(x0,padT);g.lineTo(x0,h-padB);g.stroke();g.setLineDash([]);
  g.strokeStyle='#e4b85e';g.lineWidth=2.4;g.shadowColor='rgba(228,184,94,.35)';g.shadowBlur=7;g.beginPath();past.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.c)):g.moveTo(X(p.t),Y(p.c)));g.stroke();g.shadowBlur=0;
  g.fillStyle='#f1c76e';g.beginPath();g.arc(x0,Y(K.base),4.5,0,Math.PI*2);g.fill();
- const marks=HZ<=31?[7,14,21,30]:HZ<=91?[30,60,91]:HZ<=182?[30,91,182]:[91,182,273,365];
- g.font='10px '+MONO;g.textAlign='center';g.textBaseline='top';g.fillStyle='#8ba5b9';
- marks.filter(k=>k<=HZ&&X(t1+k*DAY)-x0>32).forEach(k=>{const x=X(t1+k*DAY);g.fillText(new Date(t1+k*DAY).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}).replace('.',''),Math.min(x,w-padR-18),h-padB+12);});
+ /* Axe calendaire complet : dates réparties sous toute la trajectoire, y compris aujourd'hui et l'échéance. */
+ const tickDates=[tA,t1,t1+Math.round(HZ*.25)*DAY,t1+Math.round(HZ*.5)*DAY,t1+Math.round(HZ*.75)*DAY,tB]
+   .filter((t,i,a)=>a.indexOf(t)===i).sort((a,b)=>a-b);
+ g.font='600 11px '+MONO;g.textBaseline='top';g.fillStyle='#b5c8d8';
+ tickDates.forEach((t,i)=>{const x=X(t);g.strokeStyle='rgba(181,200,216,.28)';g.beginPath();g.moveTo(x,h-padB+2);g.lineTo(x,h-padB+8);g.stroke();
+   g.textAlign=i===0?'left':i===tickDates.length-1?'right':'center';
+   g.fillText(new Date(t).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'2-digit'}).replace('.',''),x,h-padB+11);
+ });
  /* étiquettes terminales P10 / P50 / P90 */
  const endLabels=[['P10',lowPath,'#ff7890'],['P50',midPath,'#72e5ff'],['P90',highPath,'#72efb5']];
  endLabels.forEach(([lab,p,col])=>{if(!p)return;const v=p.terminal,x=X(t1+HZ*DAY),y=Y(v);g.fillStyle=col;g.shadowColor=col;g.shadowBlur=9;g.beginPath();g.arc(x,y,3.5,0,7);g.fill();g.shadowBlur=0;g.font='700 10px '+MONO;g.textAlign='right';g.textBaseline='middle';g.fillText(lab+' '+Math.round(v/1000)+'k',w-padR-5,Math.max(padT+8,Math.min(h-padB-5,y)));});
