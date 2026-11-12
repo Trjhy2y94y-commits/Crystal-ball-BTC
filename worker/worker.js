@@ -242,12 +242,14 @@ export default {
     const data = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
       logProviderFailure("responses_api", upstream, data);
+      const providerStatus = Number.isInteger(upstream.status) && upstream.status >= 400 && upstream.status <= 599 ? upstream.status : 502;
       return json({
         error: "AI provider error",
         status: upstream.status,
         code: typeof data?.error?.code === "string" ? data.error.code : null,
-        type: typeof data?.error?.type === "string" ? data.error.type : null
-      }, 502, allowedOrigin);
+        type: typeof data?.error?.type === "string" ? data.error.type : null,
+        message: typeof data?.error?.message === "string" ? data.error.message.slice(0, 500) : null
+      }, providerStatus, allowedOrigin);
     }
     const reply = typeof data.output_text === "string" ? data.output_text :
       (data.output || []).flatMap(item => item.content || [])
