@@ -2595,7 +2595,38 @@ function gaugeSVG(v){const cx=130,cy=128,r=104,ang=Math.PI*(1-v/100),nx=cx+Math.
     return `<path d="M ${x0.toFixed(1)} ${y0.toFixed(1)} A ${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${c}" stroke-width="18" stroke-linecap="round"></path>`;};
   return `<svg width="260" height="140" viewBox="0 0 260 140" role="img" aria-label="Indice d'achat ${v} sur 100">${arc(2,28,'#EF5350')}${arc(34,66,'#3A4252')}${arc(72,98,'#3DDC84')}
     <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#D6DCE6" stroke-width="4" stroke-linecap="round"></line><circle cx="${cx}" cy="${cy}" r="9" fill="#D6DCE6"></circle></svg>`;}
-let homeH=store.get('btcz_homeH',182);
+/* Dynamic buy-support radar: price levels are derived from confirmed market structure. */
+function buildDynamicBuyZones(d,I,price){
+ const i=Math.min(I.lastClosed??d.length-1,d.length-1);
+ if(i<210||!Number.isFinite(price)||price<=0)return [];
+ const tr=[];
+ for(let k=1;k<=i;k++)tr.push(Math.max(d[k].h-d[k].l,Math.abs(d[k].h-d[k-1].c),Math.abs(d[k].l-d[k-1].c)));
+ const av=tr.slice(-14),atr=av.reduce((a,b)=>a+b,0)/Math.max(1,av.length);
+ if(!atr)return [];
+ const tol=Math.max(atr*.55,price*.003),raw=[];
+ const add=(p,type,w)=>{if(Number.isFinite(p)&&p>0&&p<price*1.04)raw.push({p,type,w});};
+ for(let k=Math.max(2,i-240);k<=i-2;k++)if(d[k].l<=d[k-1].l&&d[k].l<=d[k-2].l&&d[k].l<=d[k+1].l&&d[k].l<=d[k+2].l)add(d[k].l,'Pivot confirmé',2.2);
+ add(I.ema50?.[i],'EMA 50',1.3);add(I.sma200?.[i],'SMA 200',1.8);
+ add(Math.min(...d.slice(Math.max(0,i-29),i+1).map(x=>x.l)),'Plus bas 30 j',1.4);
+ add(Math.min(...d.slice(Math.max(0,i-89),i+1).map(x=>x.l)),'Plus bas 90 j',1.6);
+ for(let k=Math.max(2,i-120);k<=i;k++)if(d[k].l>d[k-2].h&&d[k-1].c>d[k-2].h)add((d[k].l+d[k-2].h)/2,'FVG haussier daily',1.5);
+ const groups=[];
+ raw.sort((a,b)=>a.p-b.p).forEach(x=>{let z=groups.find(y=>Math.abs(y.p-x.p)<=tol);if(!z){z={p:x.p,w:0,types:[]};groups.push(z);}z.p=(z.p*z.w+x.p*x.w)/(z.w+x.w);z.w+=x.w;z.types.push(x.type);});
+ const avgVol=d.slice(Math.max(0,i-20),i).map(x=>+(x.qv??x.v??0)).filter(Number.isFinite).reduce((a,b)=>a+b,0)/20;
+ return groups.map(z=>{
+  const touches=d.slice(Math.max(0,i-45),i+1).filter(r=>Math.abs(r.l-z.p)<=tol).length;
+  const rsi=I.rsiD?.[i],wt=I.wt2?.[i],oversold=(rsi!=null&&rsi<38)||(wt!=null&&wt<-35);
+  const score=Math.min(100,Math.round(z.w*18+Math.min(touches,4)*7+(oversold?10:0)));
+  const width=Math.max(atr*.32,z.p*.002);
+  const c=d[i],body=Math.abs(c.c-c.o),lower=Math.min(c.o,c.c)-c.l,vol=+(c.qv??c.v??0);
+  const rejection=c.c>c.o&&lower>=Math.max(body,atr*.08)*1.15;
+  const volumeOK=!(vol>0&&avgVol>0)||vol>=avgVol*1.15;
+  const momentum=(rsi!=null&&I.rsiD?.[i-1]!=null&&rsi>I.rsiD[i-1])||(wt!=null&&I.wt2?.[i-1]!=null&&wt>I.wt2[i-1]);
+  return {lo:z.p-width,hi:z.p+width,mid:z.p,score,types:[...new Set(z.types)],touches,rejection,volumeOK,momentum,confirmed:rejection&&(volumeOK||momentum)};
+ }).filter(z=>z.hi<price*1.035&&z.score>=48).sort((a,b)=>b.score-a.score).slice(0,8).sort((a,b)=>b.mid-a.mid).slice(0,5);
+}
+
+let homeH=store.get('btcz_homeH',182),orbScenario=store.get('btcz_orb_scenario','p50');
 /* ===== v20 : BOULE DE CRISTAL — un seul écran : prix, cône du futur, lecture au doigt, action du jour ===== */
 let orbSel=null;
 function pUp(qq){if(!qq)return null;if(Number.isFinite(qq.pUp))return qq.pUp;const P=[[qq.p10,.1],[qq.p25,.25],[qq.p50,.5],[qq.p75,.75],[qq.p90,.9]];
@@ -2604,9 +2635,9 @@ function pUp(qq){if(!qq)return null;if(Number.isFinite(qq.pUp))return qq.pUp;con
   for(let k=1;k<5;k++)if(0<=P[k][0]){const [x0,c0]=P[k-1],[x1,c1]=P[k];return 1-(c0+(c1-c0)*(0-x0)/(x1-x0));}return .5;}
 async function renderHome(){
   const el=$('home');let D;try{D=await getDaily();}catch(e){return;}const d=D.rows,I=D.ind,n=d.length,last=d[n-1];
-  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH;
+  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH,spot=(liveSpotPrice>0&&Date.now()-liveSpotAt<20000)?liveSpotPrice:last.c,buyZones=buildDynamicBuyZones(d,I,spot),hitZone=buyZones.find(z=>spot>=z.lo&&spot<=z.hi);
   const prev=d[n-2],ch=(last.c-prev.c)/prev.c*100,T0=new Date().setHours(0,0,0,0);
-  const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),buyZones=PL.days.filter(c=>c.amt&&c.a>=T0).slice(0,4),trig=!!(td&&td.amt&&last.c<=td.zone);
+  const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),trig=!!hitZone;
   if(trig&&!isDemo){const key='buy:'+T0;if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='▲ ACHAT DÉCLENCHÉ · '+td.amt.toLocaleString('fr-FR')+' € · BTC ≤ '+fmt(td.zone)+' $';t.className='toast buy';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}}
   const r5=v=>v>=100000?Math.round(v/1000)*1000:Math.round(v/500)*500,k$=v=>Math.round(v/1000)+'k';
   const fut=k=>{const qq=K.q[Math.max(1,Math.min(365,k))];return qq?{mid:K.base*Math.exp(qq.p50),lo:K.base*Math.exp(qq.p10),hi:K.base*Math.exp(qq.p90),up:pUp(qq)}:null;};
