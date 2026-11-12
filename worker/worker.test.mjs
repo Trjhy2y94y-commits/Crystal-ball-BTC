@@ -37,6 +37,21 @@ test("rejects oversized request bodies", async () => {
   assert.equal(response.status, 413);
 });
 
+test("rejects oversized chat streams before parsing or provider access", async () => {
+  const response = await worker.fetch(request("/api/jarvis", {
+    body: JSON.stringify({ message: "x".repeat(25000) })
+  }), env);
+  assert.equal(response.status, 413);
+  assert.deepEqual(await response.json(), { error: "Request too large" });
+});
+
+test("rejects oversized realtime SDP bodies with 413", async () => {
+  const response = await worker.fetch(request("/api/session", {
+    body: "v=0\\r\\n" + "x".repeat(180001)
+  }), env);
+  assert.equal(response.status, 413);
+});
+
 test("returns configuration errors before contacting the provider", async () => {
   const response = await worker.fetch(request("/api/jarvis", { body: JSON.stringify({ message: "Bonjour" }) }), {
     JARVIS_ALLOWED_ORIGIN: origin
