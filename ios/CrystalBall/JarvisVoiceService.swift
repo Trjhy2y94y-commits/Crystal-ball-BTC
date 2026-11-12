@@ -22,6 +22,8 @@ final class JarvisVoiceService: ObservableObject {
     private let player = AVAudioPlayerNode()
     private var converter: AVAudioConverter?
     private var outputFormat: AVAudioFormat?
+    private var playerAttached = false
+    private var inputTapInstalled = false
     private var wakeEngine: AVAudioEngine?
     private var speechTask: SFSpeechRecognitionTask?
     private var speechRequest: SFSpeechAudioBufferRecognitionRequest?
@@ -79,12 +81,14 @@ final class JarvisVoiceService: ObservableObject {
         converter = AVAudioConverter(from: inputFormat, to: target)
         outputFormat = playback
         audioEngine.attach(player)
+        playerAttached = true
         audioEngine.connect(player, to: audioEngine.mainMixerNode, format: playback)
         player.play()
 
         input.installTap(onBus: 0, bufferSize: 2048, format: inputFormat) { [weak self] buffer, _ in
             self?.convertAndSend(buffer, target: target)
         }
+        inputTapInstalled = true
         audioEngine.prepare()
         try audioEngine.start()
     }
@@ -244,12 +248,17 @@ final class JarvisVoiceService: ObservableObject {
         receiveTask = nil
         socket?.cancel(with: .normalClosure, reason: nil)
         socket = nil
-        if audioEngine.isRunning {
+        if inputTapInstalled {
             audioEngine.inputNode.removeTap(onBus: 0)
-            audioEngine.stop()
+            inputTapInstalled = false
         }
-        player.stop()
-        audioEngine.detach(player)
+        if audioEngine.isRunning { audioEngine.stop() }
+        if playerAttached {
+            player.stop()
+            audioEngine.detach(player)
+            playerAttached = false
+        }
+        audioEngine.reset()
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         isConnected = false
         setStatus("JARVIS en veille")
