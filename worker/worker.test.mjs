@@ -130,3 +130,43 @@ test("returns 404 for unknown paths and 405 for unsupported methods", async () =
   response = await worker.fetch(request("/api/jarvis", { method: "GET" }), env);
   assert.equal(response.status, 405);
 });
+
+
+test("issues a short-lived mobile Realtime token without exposing the server API key", async () => {
+  const originalFetch = globalThis.fetch;
+  let upstream;
+  globalThis.fetch = async (url, options) => {
+    upstream = { url, options, body: JSON.parse(options.body) };
+    return Response.json({ value: "ek_mobile_ephemeral", expires_at: 1900000000 });
+  };
+  try {
+    const response = await worker.fetch(request("/api/mobile-token", { body: "{}" }), env);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { token: "ek_mobile_ephemeral", model: "gpt-realtime-2.1", expires_at: 1900000000 });
+    assert.equal(upstream.url, "https://api.openai.com/v1/realtime/client_secrets");
+    assert.equal(upstream.options.headers.Authorization, "Bearer test-secret");
+    assert.equal(upstream.body.expires_after.seconds, 600);
+    assert.equal(upstream.body.session.type, "realtime");
+    assert.equal(upstream.body.session.model, "gpt-realtime-2.1");
+    assert.equal(upstream.body.session.audio.output.voice, "cedar");
+    assert.equal(upstream.body.session.audio.input.format.rate, 24000);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("blocks native mobile token requests when the voice limiter rejects the client", async () => {
+  const limitedEnv = {
+    ...env,
+    JARVIS_VOICE_LIMITER: { limit: async () => ({ success: false }) }
+  };
+  const response = await worker.fetch(request("/api/mobile-token", { body: "{}" }), limitedEnv);
+  assert.equal(response.status, 429);
+  assert.equal(response.headers.get("Retry-After"), "60");
+});
+
+test("does not issue a mobile token when the voice limiter is missing", async () => {
+  const { JARVIS_VOICE_LIMITER, ...withoutLimiter } = env;
+  const response = await worker.fetch(request("/api/mobile-token", { body: "{}" }), withoutLimiter);
+  assert.equal(response.status, 503);
+});
