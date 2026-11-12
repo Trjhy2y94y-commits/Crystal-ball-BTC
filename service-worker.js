@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v32-jarvis-single-mic";
+const CACHE = "cristal-btc-v33-command-deck-motion";
 const SHELL = [
   "./",
   "./index.html",
