@@ -3269,6 +3269,8 @@ setInterval(updateQuantTerminal,2000);
   return data.reply;
  };
  const respond=async q=>{const x=q.toLowerCase(),m=market();let a='';
+  // Les commandes de navigation restent locales même lorsque le moteur IA distant est connecté.
+  if(/\\b(ouvre|affiche|va sur)\\b.*\\b(analyse|graphique|chart)\\b/.test(x)){document.querySelector('[data-tab="chart"]')?.click();a='J’ouvre le terminal Analyse.';add('bot',a);$j('jvStatus').textContent='Navigation locale · '+new Date().toLocaleTimeString('fr-FR');say(a);return a;}
   if(endpoint){$j('jvStatus').textContent='JARVIS analyse la demande…';try{a=await remoteAsk(q);}catch(err){a='La passerelle IA ne répond pas ('+String(err.message||err)+'). Vérifie son URL, son déploiement et sa configuration serveur. Je ne bascule pas silencieusement vers une réponse simulée.';$j('jvConnection').textContent='Erreur de connexion : '+String(err.message||err);}$j('jvStatus').textContent='JARVIS · '+new Date().toLocaleTimeString('fr-FR');add('bot',a);say(a);return a;}
   if(/prix|cours|bitcoin|btc/.test(x)&&/prix|cours|combien|état|btc|bitcoin/.test(x))a='Prix affiché dans Crystal Ball : '+m.p+'. Régime : '+m.bias+'. WaveTrend : '+m.wt+'. RSI : '+m.rsi+'. Ces valeurs reflètent les données actuellement affichées par l’application, pas une prévision garantie.';
   else if(/actualis|rafraî|refresh|recharg/.test(x)){if(typeof load==='function')load(true);a='Je demande une actualisation des données du terminal. Vérifie l’horodatage et la source dans Analyse.';}
