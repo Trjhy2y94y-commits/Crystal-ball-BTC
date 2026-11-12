@@ -177,7 +177,7 @@ final class JarvisVoiceService: ObservableObject {
         marketUpdateTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 2_000_000_000)
             guard !Task.isCancelled else { return }
-            await self?.sendMarketContextUpdate()
+            self?.sendMarketContextUpdate()
         }
     }
 
@@ -246,7 +246,14 @@ final class JarvisVoiceService: ObservableObject {
             setStatus("En veille · dis « Salut Jarvis »")
             speechTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
                 guard let self else { return }
-                guard let result else { if error != nil { self.setStatus("Écoute vocale interrompue.") }; return }
+                guard let result else {
+                    if error != nil {
+                        self.stopWakeWord()
+                        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+                        self.setStatus("Écoute vocale interrompue. Relance « Salut Jarvis ».")
+                    }
+                    return
+                }
                 let phrase = result.bestTranscription.formattedString.lowercased().folding(options: .diacriticInsensitive, locale: .current)
                 if phrase.contains("salut jarvis") || phrase.contains("bonjour jarvis") {
                     self.stopWakeWord()
