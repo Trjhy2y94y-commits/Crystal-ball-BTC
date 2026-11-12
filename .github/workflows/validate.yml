@@ -29,6 +29,8 @@ jobs:
         run: node --test tests/backtest-benchmarks.test.mjs
       - name: Run causal feature prefix tests
         run: node --test tests/causal-features.test.mjs
+      - name: Run macro liquidity causality tests
+        run: node --test tests/macro-liquidity-causality.test.mjs
       - name: Validate PWA and local assets
         run: |
           python - <<'PY'
