@@ -31,7 +31,7 @@ struct JarvisShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: LaunchJarvisIntent(),
-            phrases: ["Parler à Jarvis dans \\(.applicationName)", "Ouvre Jarvis dans \\(.applicationName)"],
+            phrases: ["Parler à Jarvis dans \(.applicationName)", "Ouvre Jarvis dans \(.applicationName)"],
             shortTitle: "Parler à Jarvis",
             systemImageName: "waveform"
         )
