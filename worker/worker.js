@@ -88,7 +88,7 @@ export default {
         instructions: SYSTEM_INSTRUCTIONS + "\n\nDirection vocale JARVIS : voix masculine adulte, registre grave et chaleureux, timbre riche et posé, présence calme et assurée. Français parfaitement articulé, débit mesuré, intonation élégante et légèrement britannique dans la musicalité sans caricature ni accent anglais forcé. Diction précise, respirations naturelles, discrète pointe d'ironie lorsque le contexte s'y prête. Éviter le ton publicitaire, l'enthousiasme excessif, la voix nasillarde ou robotique. Ne jamais imiter exactement une personne réelle ou un personnage interprété par un comédien.",
         audio: {
           input: { transcription: { model: "gpt-live-transcribe", languages: ["fr"] } },
-          output: { voice: "cedar" }
+          output: { voice: "ash" }
         }
       };
       const form = new FormData();
