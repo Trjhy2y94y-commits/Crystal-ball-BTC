@@ -17,6 +17,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: crystalball-ios-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-ios-simulator:
     runs-on: macos-15
