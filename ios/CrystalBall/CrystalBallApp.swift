@@ -5,8 +5,13 @@ import AppIntents
 struct CrystalBallApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .preferredColorScheme(.dark)
+            TabView {
+                ContentView()
+                    .tabItem { Label("JARVIS", systemImage: "waveform") }
+                CrystalBallDashboard()
+                    .tabItem { Label("Crystal Ball", systemImage: "chart.xyaxis.line") }
+            }
+            .preferredColorScheme(.dark)
         }
     }
 }
