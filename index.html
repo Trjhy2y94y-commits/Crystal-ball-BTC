@@ -837,6 +837,116 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
 .jv-note{font-size:10px;line-height:1.55;color:#829eaf;padding:0 2px}
 @media(min-width:600px){.jv-core{min-height:230px}.jv-log{height:300px}}
 
+
+/* ═══ CRYSTAL BALL · COMMAND DECK MOTION SYSTEM ═══ */
+:root{
+ --neon:#48e8ff;--neon2:#168dff;--ice:#c7f7ff;--amber:#ffb454;
+ --hud:rgba(52,207,255,.24);--hud-bg:rgba(5,17,30,.94);
+}
+body{background:radial-gradient(ellipse at 50% -15%,#0b2a40 0%,#030912 48%,#010307 100%)!important}
+body:after{content:"";position:fixed;inset:0;z-index:20;pointer-events:none;opacity:.12;
+ background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(84,211,255,.08) 4px);
+ mix-blend-mode:screen}
+.app{isolation:isolate}
+.view:not([hidden]){animation:deckEnter .48s cubic-bezier(.2,.75,.2,1) both}
+@keyframes deckEnter{from{opacity:.25;filter:blur(3px);transform:translateY(7px)}to{opacity:1;filter:blur(0);transform:none}}
+.tabbar{position:relative!important;z-index:25!important;backdrop-filter:blur(18px)!important;
+ background:linear-gradient(180deg,rgba(6,18,30,.96),rgba(2,7,14,.99))!important;
+ border-top:1px solid rgba(65,221,255,.34)!important;box-shadow:0 -8px 28px rgba(0,0,0,.35),0 -1px 15px rgba(0,191,255,.08)!important}
+.tabbar button{position:relative;transition:color .25s,transform .25s,text-shadow .25s}
+.tabbar button svg{filter:drop-shadow(0 0 0 transparent);transition:filter .25s,transform .25s}
+.tabbar button.on{color:#62efff!important;text-shadow:0 0 13px rgba(52,223,255,.72)!important}
+.tabbar button.on svg{filter:drop-shadow(0 0 8px rgba(54,224,255,.9));transform:translateY(-2px) scale(1.08)}
+.tabbar button.on:after{content:"";position:absolute;top:-7px;width:24px;height:2px;border-radius:4px;
+ background:#59edff;box-shadow:0 0 8px #36dfff,0 0 18px #159cff}
+button{transition:filter .18s,transform .18s,box-shadow .22s}
+button:active{transform:scale(.97);filter:brightness(1.25)}
+/* Analyse : cockpit marché */
+#vChart{background:radial-gradient(ellipse at 50% 0%,rgba(0,183,255,.10),transparent 48%),#030912}
+#vChart header{background:linear-gradient(110deg,rgba(7,27,43,.98),rgba(4,12,23,.98));
+ border-bottom:1px solid rgba(66,220,255,.35);box-shadow:0 5px 22px rgba(0,0,0,.25)}
+#vChart .px,#vChart .qt-price{color:#effcff;text-shadow:0 0 18px rgba(48,214,255,.22)}
+#vChart .toolbar{background:rgba(4,14,25,.94);border-color:rgba(64,204,255,.2)}
+#vChart .toolbar button{border-color:rgba(77,185,220,.28);background:linear-gradient(145deg,rgba(14,39,57,.8),rgba(5,15,27,.9));color:#a5c8d9}
+#vChart .toolbar button.on{background:linear-gradient(135deg,#1bb9e7,#08618f)!important;color:#fff!important;border-color:#55eaff!important;box-shadow:0 0 16px rgba(0,198,255,.22)}
+#quantTerminal{border-bottom:1px solid rgba(61,216,255,.32)!important;
+ background:radial-gradient(ellipse at 80% 0%,rgba(0,197,255,.14),transparent 48%),linear-gradient(110deg,#071c2d,#030b16 70%)!important}
+#quantTerminal .qt-wave i{box-shadow:0 0 9px rgba(43,220,255,.42);animation:waveDance 1.8s ease-in-out infinite alternate}
+#quantTerminal .qt-wave i:nth-child(3n){animation-delay:-.7s}
+#quantTerminal .qt-wave i:nth-child(2n){animation-delay:-1.2s}
+@keyframes waveDance{from{transform:scaleY(.52);opacity:.55}to{transform:scaleY(1.12);opacity:1}}
+#vChart .stage{background-image:linear-gradient(rgba(48,177,220,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(48,177,220,.025) 1px,transparent 1px);background-size:28px 28px}
+#vChart .badge.live{box-shadow:0 0 12px rgba(48,209,88,.16)}
+/* Cycle : trajectoire projetée / radar temporel */
+#vCal{background:radial-gradient(ellipse at 50% 0%,rgba(0,173,255,.12),transparent 50%),#030912}
+#vCal .proj{background:transparent!important}
+#vCal .proj>section,#vCal .proj>.card,#vCal .proj .card{
+ position:relative;overflow:hidden;border:1px solid rgba(69,201,241,.25)!important;border-radius:14px!important;
+ background:linear-gradient(145deg,rgba(11,34,51,.96),rgba(4,13,24,.98))!important;
+ box-shadow:0 12px 30px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.045)!important}
+#vCal .proj>section:before,#vCal .proj .card:before{content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(115deg,transparent 15%,rgba(63,218,255,.055) 48%,transparent 72%);
+ transform:translateX(-100%);animation:cardSweep 8s ease-in-out infinite}
+#vCal .barwrap .bar{box-shadow:0 0 16px rgba(0,199,255,.18);border:1px solid rgba(71,211,255,.3)}
+#vCal .barwrap .bar>div:last-child{box-shadow:0 0 10px #ffbd62,0 0 22px rgba(255,174,71,.7)!important}
+#vCal .cal7 button.today{box-shadow:0 0 15px rgba(57,220,255,.4);animation:todayPulse 2.5s ease-in-out infinite}
+#vCal .cal7 button.sel{background:rgba(42,204,255,.2)!important;box-shadow:inset 0 0 14px rgba(42,204,255,.16)}
+@keyframes todayPulse{50%{box-shadow:0 0 23px rgba(57,220,255,.68)}}
+@keyframes cardSweep{0%,65%,100%{transform:translateX(-100%)}82%{transform:translateX(100%)}}
+/* JARVIS : noyau IA vivant */
+#vJarvis .jarvis-view{background:
+ radial-gradient(ellipse at 50% 24%,rgba(0,198,255,.18),transparent 34%),
+ radial-gradient(ellipse at 50% 90%,rgba(0,86,170,.12),transparent 50%),
+ linear-gradient(180deg,#061321,#02070e 75%)!important}
+#vJarvis .jv-head{padding:4px 2px 10px;border-bottom:1px solid rgba(63,216,255,.2)}
+#vJarvis .jv-core{min-height:220px!important;border-color:rgba(71,222,255,.48)!important;
+ background:radial-gradient(circle at 50% 48%,rgba(0,205,255,.23),rgba(7,21,36,.94) 48%,#020811 78%)!important;
+ box-shadow:inset 0 0 75px rgba(0,170,255,.16),0 0 28px rgba(0,164,255,.12),0 18px 48px #000!important}
+#vJarvis .jv-core:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+ background:repeating-radial-gradient(circle at 50% 50%,transparent 0 19px,rgba(62,210,255,.13) 20px 21px,transparent 22px 39px);
+ animation:coreRadar 18s linear infinite}
+#vJarvis .jv-orb{width:130px!important;height:130px!important;border-width:2px!important;
+ background:radial-gradient(circle,rgba(62,233,255,.25),rgba(0,100,180,.12) 44%,transparent 70%);
+ box-shadow:0 0 24px rgba(0,200,255,.55),inset 0 0 38px rgba(0,200,255,.28)!important}
+#vJarvis .jv-orb:before{inset:-18px!important;border-width:2px!important;border-color:rgba(75,228,255,.8)!important;
+ box-shadow:0 0 18px rgba(0,198,255,.4)}
+#vJarvis .jv-orb:after{inset:-32px!important;border-color:rgba(79,170,255,.4)!important}
+#vJarvis .jv-orb span{font-size:40px!important;text-shadow:0 0 12px #fff,0 0 28px #00cfff,0 0 48px #007dff!important}
+#vJarvis .jv-core.listening .jv-orb{border-color:#ffc66d!important;box-shadow:0 0 45px #ffb84a,inset 0 0 40px #ffb84a55!important}
+#vJarvis .jv-core.speaking .jv-orb{box-shadow:0 0 52px #00dcff,inset 0 0 42px #00dcff66!important}
+#vJarvis .jv-tile,#vJarvis .jv-chat{border-color:rgba(62,193,236,.34)!important;box-shadow:inset 0 1px rgba(255,255,255,.04),0 8px 22px rgba(0,0,0,.2)}
+#vJarvis .jv-btn.primary{box-shadow:0 0 18px rgba(0,190,255,.22);border-color:#45dfff}
+@keyframes coreRadar{to{transform:rotate(360deg)}}
+/* Fiabilité : laboratoire de validation */
+#vStats{background:radial-gradient(ellipse at 50% 0%,rgba(0,173,255,.11),transparent 48%),#030912}
+#vStats .proj{background:transparent!important}
+#vStats .proj section{position:relative;overflow:hidden;border:1px solid rgba(64,197,235,.27)!important;
+ border-radius:14px!important;padding:14px!important;
+ background:linear-gradient(145deg,rgba(10,31,47,.97),rgba(4,13,24,.99))!important;
+ box-shadow:0 12px 30px rgba(0,0,0,.26),inset 0 1px rgba(255,255,255,.045)!important}
+#vStats .proj section:after{content:"";position:absolute;top:0;left:-70%;width:45%;height:2px;
+ background:linear-gradient(90deg,transparent,#55eaff,transparent);box-shadow:0 0 15px #35dfff;animation:labScan 7s ease-in-out infinite;pointer-events:none}
+#vStats .proj h2{color:#e8faff!important;letter-spacing:.04em}
+#vStats .proj h2 small{color:#78cde2!important}
+#vStats .proj .k{border-color:rgba(64,197,235,.16)}
+#vStats .proj .chip{border-color:rgba(66,206,255,.3);background:rgba(16,69,91,.22);color:#a9eaff}
+#vStats .proj table{border-color:rgba(67,194,231,.18)}
+#vStats .proj th{color:#81c5d9}
+#vStats .proj .apply{border-color:#42dfff;color:#a5f4ff;background:rgba(0,157,210,.14);box-shadow:0 0 12px rgba(0,190,255,.1)}
+@keyframes labScan{0%,100%{left:-70%;opacity:0}15%,75%{opacity:1}55%{left:125%}}
+/* Motion respectueuse et optimisation mobile */
+@media(prefers-reduced-motion:reduce){
+ .view:not([hidden]),#quantTerminal .qt-wave i,#vCal .cal7 button.today,
+ #vJarvis .jv-core:before,#vStats .proj section:after,#vCal .proj>section:before,
+ #vCal .proj .card:before{animation:none!important}
+}
+@media(max-width:390px){
+ #vJarvis .jv-core{min-height:195px!important}
+ #vJarvis .jv-orb{width:112px!important;height:112px!important}
+ #vChart .toolbar{gap:4px;padding-inline:7px}
+ #vChart .toolbar button{font-size:11px;padding-inline:7px}
+}
+
 </style>
 
 <div class="app">
