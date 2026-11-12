@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var jarvis = JarvisVoiceService()
+    @EnvironmentObject private var marketContext: MarketContextStore
     @AppStorage("jarvis.workerURL") private var workerURL = ""
     @State private var draft = ""
     @State private var showSettings = false
@@ -28,6 +29,9 @@ struct ContentView: View {
             settings
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
+        }
+        .onChange(of: marketContext.snapshot) { _, snapshot in
+            jarvis.updateMarketContext(snapshot)
         }
         .onAppear {
             if UserDefaults.standard.bool(forKey: "jarvis.startVoiceOnLaunch") {
@@ -141,7 +145,7 @@ struct ContentView: View {
             HStack(spacing: 12) {
                 Button {
                     if jarvis.isConnected { jarvis.disconnect() }
-                    else { Task { await jarvis.connect(workerURL: workerURL) } }
+                    else { jarvis.updateMarketContext(marketContext.snapshot); Task { await jarvis.connect(workerURL: workerURL) } }
                 } label: {
                     Label(jarvis.isConnected ? "Terminer" : "Parler", systemImage: jarvis.isConnected ? "stop.fill" : "mic.fill")
                         .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -151,6 +155,7 @@ struct ContentView: View {
                         .foregroundStyle(jarvis.isConnected ? .red : .black)
                 }
                 Button {
+                    jarvis.updateMarketContext(marketContext.snapshot)
                     Task { await jarvis.startWakeWord(workerURL: workerURL) }
                 } label: {
                     Label("Salut Jarvis", systemImage: "waveform.badge.mic")
