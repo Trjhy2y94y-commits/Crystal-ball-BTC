@@ -7,6 +7,7 @@ struct ContentView: View {
     @State private var draft = ""
     @State private var showSettings = false
     @FocusState private var inputFocused: Bool
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ZStack {
@@ -33,11 +34,9 @@ struct ContentView: View {
         .onChange(of: marketContext.snapshot) { _, snapshot in
             jarvis.updateMarketContext(snapshot)
         }
-        .onAppear {
-            if UserDefaults.standard.bool(forKey: "jarvis.startVoiceOnLaunch") {
-                UserDefaults.standard.set(false, forKey: "jarvis.startVoiceOnLaunch")
-                Task { await jarvis.startWakeWord(workerURL: workerURL) }
-            }
+        .onAppear { consumeLaunchIntent() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { consumeLaunchIntent() }
         }
     }
 
@@ -194,6 +193,13 @@ struct ContentView: View {
             .navigationTitle("Réglages JARVIS")
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("OK") { showSettings = false } } }
         }
+    }
+
+
+    private func consumeLaunchIntent() {
+        guard UserDefaults.standard.bool(forKey: "jarvis.startVoiceOnLaunch") else { return }
+        UserDefaults.standard.set(false, forKey: "jarvis.startVoiceOnLaunch")
+        Task { await jarvis.startWakeWord(workerURL: workerURL) }
     }
 
     private func sendText() {
