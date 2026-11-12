@@ -3257,6 +3257,7 @@ setInterval(updateQuantTerminal,2000);
  const market=()=>{const p=$('homeQtPrice')?.textContent||$('px')?.textContent||'non disponible';const bias=$('homeQtBias')?.textContent||$('badge')?.textContent||'non déterminé';const wt=$('homeQtWT')?.textContent||$('wtNow')?.textContent||'—';const rsi=$('homeQtRSI')?.textContent||'—';return {p,bias,wt,rsi};};
  const history=[];let endpoint=store.get('jarvis_endpoint',''),activeRecognition=null;const endpointInput=$j('jvEndpoint'),connection=$j('jvConnection');
  endpointInput.value=endpoint;
+ if(endpoint){connection.textContent='Adresse du Worker mémorisée · test de connexion à effectuer.';}
  const remoteAsk=async q=>{const m=market();const snapshot={price:m.p,regime:m.bias,wavetrend:m.wt,rsi:m.rsi,source:$('homeQtSource')?.textContent||$('qtSource')?.textContent||'non précisée',forecast:document.querySelector('#probabilityPanel')?.innerText?.slice(0,1800)||'non disponible',buyRadar:document.querySelector('.ck-dynamic-radar')?.innerText?.slice(0,1400)||'non disponible',activeModule:curTab,capturedAt:new Date().toISOString()};
   const payload={message:q,history:history.slice(-12),market:snapshot,locale:'fr-FR'};
   const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(45000)});
