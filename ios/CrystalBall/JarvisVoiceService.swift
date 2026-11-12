@@ -60,7 +60,7 @@ final class JarvisVoiceService: ObservableObject {
     private func openRealtimeSocket(token: String) async throws {
         guard let url = URL(string: "wss://api.openai.com/v1/realtime?model=gpt-realtime-2.1") else { throw URLError(.badURL) }
         var request = URLRequest(url: url)
-        request.setValue("Bearer \\(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let task = session.webSocketTask(with: request)
         socket = task
         task.resume()
