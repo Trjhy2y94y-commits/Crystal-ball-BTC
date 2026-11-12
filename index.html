@@ -2627,6 +2627,30 @@ function buildDynamicBuyZones(d,I,price){
 }
 
 let homeH=store.get('btcz_homeH',182),orbScenario=store.get('btcz_orb_scenario','p50');
+let activeBuyZones=[],radarLastTouch=null;
+function updateRadarLive(){
+ if(curTab!=='home'||!activeBuyZones.length)return;
+ const px=liveSpotPrice>0&&Date.now()-liveSpotAt<20000?liveSpotPrice:(daily?.rows?.[daily.rows.length-1]?.c||0);
+ if(!Number.isFinite(px)||px<=0)return;
+ let hit=null;
+ document.querySelectorAll('.ck-buy-row[data-zone-mid]').forEach(row=>{
+  const lo=+row.dataset.zoneLo,hi=+row.dataset.zoneHi,mid=+row.dataset.zoneMid,inside=px>=lo&&px<=hi;
+  row.classList.toggle('is-active',inside);
+  const z=activeBuyZones.find(x=>Math.abs(x.mid-mid)<1),small=row.querySelector('.ck-buy-meta small');
+  if(small)small.textContent=inside?(z?.confirmed?'↗ REBOND':'⚡ TOUCHÉE'):'SURVEILLANCE';
+  if(inside&&!hit)hit=z||null;
+ });
+ const status=document.getElementById('buyRadarStatus'),panel=document.querySelector('.ck-dynamic-radar');
+ if(status)status.textContent=hit?(hit.confirmed?'REBOND':'ZONE TOUCHÉE'):activeBuyZones.length+' ZONES';
+ if(panel)panel.classList.toggle('radar-hit',!!hit);
+ if(hit&&!isDemo&&radarLastTouch!==Math.round(hit.mid)){
+  radarLastTouch=Math.round(hit.mid);
+  const key='radar:'+radarLastTouch+':'+Math.floor(Date.now()/86400000);
+  if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='⚡ ZONE BTC TOUCHÉE · '+fmt(hit.lo)+' – '+fmt(hit.hi)+' $ · '+(hit.confirmed?'RÉACTION HAUSSIÈRE':'ATTENDRE CONFIRMATION');t.className='toast buy radar-flash';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}
+ }
+ if(!hit)radarLastTouch=null;
+}
+
 /* ===== v20 : BOULE DE CRISTAL — un seul écran : prix, cône du futur, lecture au doigt, action du jour ===== */
 let orbSel=null;
 function pUp(qq){if(!qq)return null;if(Number.isFinite(qq.pUp))return qq.pUp;const P=[[qq.p10,.1],[qq.p25,.25],[qq.p50,.5],[qq.p75,.75],[qq.p90,.9]];
@@ -2637,7 +2661,7 @@ async function renderHome(){
   const el=$('home');let D;try{D=await getDaily();}catch(e){return;}const d=D.rows,I=D.ind,n=d.length,last=d[n-1];
   const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH,spot=(liveSpotPrice>0&&Date.now()-liveSpotAt<20000)?liveSpotPrice:last.c,buyZones=buildDynamicBuyZones(d,I,spot),hitZone=buyZones.find(z=>spot>=z.lo&&spot<=z.hi);
   const prev=d[n-2],ch=(last.c-prev.c)/prev.c*100,T0=new Date().setHours(0,0,0,0);
-  const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),trig=!!hitZone;
+  const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),trig=!!hitZone;activeBuyZones=buyZones;
   if(trig&&!isDemo){const key='radar:'+Math.round(hitZone.mid)+':'+Math.floor(Date.now()/86400000);if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='⚡ ZONE BTC TOUCHÉE · '+fmt(hitZone.lo)+' – '+fmt(hitZone.hi)+' $ · '+(hitZone.confirmed?'RÉACTION HAUSSIÈRE':'ATTENDRE CONFIRMATION');t.className='toast buy radar-flash';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}}
   const r5=v=>v>=100000?Math.round(v/1000)*1000:Math.round(v/500)*500,k$=v=>Math.round(v/1000)+'k';
   const fut=k=>{const qq=K.q[Math.max(1,Math.min(365,k))];return qq?{mid:K.base*Math.exp(qq.p50),lo:K.base*Math.exp(qq.p10),hi:K.base*Math.exp(qq.p90),up:pUp(qq)}:null;};
@@ -3070,7 +3094,7 @@ function tick(){const now=Date.now();if(now-lastCalc<2000){if(!calcT)calcT=setTi
   if(tf==='1d')daily={rows:data,ind,demo:false};
   updateHeader();draw();if(curTab==='chart')renderConfluence();
   if(now-lastPlan>30e3&&daily){lastPlan=now;try{plan=buildPlan(daily,16);cone=buildCone(daily,365);}catch(e){}draw();}
-  if(curTab==='home'&&now-lastSimple>10e3){lastSimple=now;renderHome();}}
+  if(curTab==='home'){updateRadarLive();if(now-lastSimple>10e3){lastSimple=now;renderHome();}}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||isDemo)return;connectWS();load(true);});
 /* filet de sécurité : rechargement complet toutes les 5 min avec le flux, toutes les minutes sans */
 setInterval(()=>{if(isDemo||document.visibilityState!=='visible')return;if(!wsOk||Date.now()-lastFull>300e3)load(true);},60000);
