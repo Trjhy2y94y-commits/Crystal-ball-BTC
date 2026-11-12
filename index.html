@@ -2732,12 +2732,12 @@ async function renderHome(){
   el.scrollTop=sc0;
   const c=$('orb'),read=k=>{const x=fut(k);if(!x){$('orbRead').innerHTML='';return;}
     const pu=Math.round(x.up*100),dt=new Date(T0+k*DAY).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:k>200?'numeric':undefined});
-    const q=K.q[Math.max(1,Math.min(365,k))],p25=K.base*Math.exp(q.p25),p75=K.base*Math.exp(q.p75);
+    const q=K.q[Math.max(1,Math.min(365,k))],p25=K.base*Math.exp(q.p25),p75=K.base*Math.exp(q.p75),paths=c._pathCache?.paths||[],rank=orbScenario==='p10'?.1:orbScenario==='p90'?.9:.5,selected=paths.length?paths[Math.round((paths.length-1)*rank)]:null,selectedPrice=selected?.vals?.[Math.min(k,selected.vals.length-1)]??x.mid,scenarioName=orbScenario==='p10'?'P10 · STRESS':orbScenario==='p90'?'P90 · EXPANSION':'P50 · CENTRAL';
     const pc=v=>{const r=(v/last.c-1)*100;return (r>=0?'+':'')+r.toFixed(0)+' %';};
     const pv=pu>=60?['Plutôt haussier','var(--up)']:pu<=40?['Plutôt baissier','var(--down)']:['Pas d\'avantage','var(--sub)'];
     $('orbRead').innerHTML=`<div class="sch"><b>Le ${dt}</b><span>dans ${k} j</span></div>
       <div class="row"><span class="ic" style="background:var(--up)">↑</span><span class="rl"><b>Haut</b><small>1 chance sur 10 d'aller au‑delà</small></span><span class="rv">${fmt(r5(x.hi))} $<small>${pc(x.hi)}</small></span></div>
-      <div class="row mid"><span class="ic" style="background:var(--violet)">●</span><span class="rl"><b>Probable</b><small>1 chance sur 2 entre ${k$(p25)} et ${k$(p75)}</small></span><span class="rv">${fmt(r5(x.mid))} $<small>${pc(x.mid)}</small></span></div>
+      <div class="row mid"><span class="ic" style="background:var(--violet)">●</span><span class="rl"><b>${scenarioName}</b><small>Trajectoire simulée sélectionnée · P25–P75 : ${k$(p25)}–${k$(p75)}</small></span><span class="rv">${fmt(r5(selectedPrice))} $<small>${pc(selectedPrice)}</small></span></div>
       <div class="row"><span class="ic" style="background:var(--down)">↓</span><span class="rl"><b>Bas</b><small>1 chance sur 10 d'aller en dessous</small></span><span class="rv">${fmt(r5(x.lo))} $<small>${pc(x.lo)}</small></span></div>
       <div class="pb"><div class="pbt"><span>Plus haut qu'aujourd'hui</span><b style="color:${pv[1]}">${pu} % · ${pv[0]}</b></div><div class="track"><i style="width:${pu}%"></i></div></div>`;};
   const go=()=>{drawOrb(c,d,K,PL,HZ,sel(),I,orbScenario);read(sel());};go();
