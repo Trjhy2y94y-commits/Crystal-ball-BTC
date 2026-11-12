@@ -2224,7 +2224,7 @@ function forecastTrustHTML(A){
   const label=robust?'ROBUSTESSE ÉTAYÉE':cautious?'PRUDENCE':'DONNÉES INSUFFISANTES';
   const cls=robust?'trust-good':cautious?'trust-warn':'trust-low';
   const why=robust?'Échantillon suffisant, dérive normale et résultat au moins aussi bon que la référence.':cautious?(d.status==='DÉGRADATION'?'Dérive détectée : réduire le poids accordé au scénario.':'Échantillon, calibration ou comparaison à la référence encore insuffisants pour conclure.'):'Pas assez de prévisions strictes et récentes pour qualifier ce scénario.';
-  return '<div class="ck-trust-row"><div><b>J+'+x.h+'</b><span class="'+cls+'">'+label+'</span></div><strong>'+(score==null?'—':score+'/100')+'</strong><small>N strict '+n+' · récent '+rn+' · dérive '+(d.status||'—')+' · BSS '+(bss==null?'—':(bss*100).toFixed(1)+' %')+'</small><p>'+why+'</p></div>';
+  const cal=x.calibration||{},v=cal.validation;const calText=v?'Calibration holdout · Brier '+(v.rawBrier*100).toFixed(1)+' → '+(v.calibratedBrier*100).toFixed(1)+' % · ECE '+(v.rawECE*100).toFixed(1)+' → '+(v.calibratedECE*100).toFixed(1)+' %':'Calibration '+(cal.status||'non calculable');return '<div class="ck-trust-row"><div><b>J+'+x.h+'</b><span class="'+cls+'">'+label+'</span></div><strong>'+(score==null?'—':score+'/100')+'</strong><small>N strict '+n+' · récent '+rn+' · dérive '+(d.status||'—')+' · BSS '+(bss==null?'—':(bss*100).toFixed(1)+' %')+'</small><p>'+why+'</p><small>'+calText+' · '+(cal.status||'non validée')+'</small></div>';
  }).join('');
  return '<div class="ck-trust-grid">'+rows+'</div><p class="ck-forecast-note">Indice de robustesse indépendant des probabilités P(hausse) et des quantiles P10/P50/P90. « Étayée » exige des critères cumulatifs stricts ; ce statut ne garantit pas la prochaine prévision et ne constitue pas un conseil d’investissement.</p>';
 }
@@ -2442,7 +2442,7 @@ function strictHoldoutAudit(D){
   const validationMap=fitCalibration(historical),liveMap=fitCalibration(model);
   const calibratedRecent=validationMap?recent.map(x=>({...x,prob:applyCalibration(validationMap,x.prob)})).filter(x=>Number.isFinite(x.prob)):[];
   const calibratedStats=stats(calibratedRecent);
-  const calibration={trainingN:historical.length,validationN:calibratedRecent.length,liveN:model.length,map:liveMap,status:liveMap&&calibratedRecent.length>=15?'VALIDÉE EN HOLDOUT':'INSUFFISANT',validation:validationMap&&calibratedRecent.length>=15?{rawBrier:rm.brier,calibratedBrier:calibratedStats.brier,rawECE:rm.ece,calibratedECE:calibratedStats.ece}:null};
+  const calibration={trainingN:historical.length,validationN:calibratedRecent.length,liveN:model.length,map:liveMap,improved:liveMap&&calibratedRecent.length>=15&&calibratedStats.brier<rm.brier&&calibratedStats.ece<=rm.ece,status:liveMap&&calibratedRecent.length>=15?(calibratedStats.brier<rm.brier&&calibratedStats.ece<=rm.ece?'AMÉLIORATION HOLDOUT':'NON AMÉLIORÉE'):'INSUFFISANT',validation:validationMap&&calibratedRecent.length>=15?{rawBrier:rm.brier,calibratedBrier:calibratedStats.brier,rawECE:rm.ece,calibratedECE:calibratedStats.ece}:null};
 
   const driftChecks=[
    {key:'mae',bad:hm.mae!=null&&rm.mae!=null&&rm.mae>hm.mae*1.35,label:'Erreur récente en hausse de plus de 35 %'},
@@ -2871,7 +2871,7 @@ async function renderHome(){
   const why=[['Tendance',K.rg>0?'Haussière':K.rg<0?'Baissière':'Neutre',K.rg>0?'var(--up)':K.rg<0?'var(--down)':'var(--sub)','↗','#0a84ff'],
     ['Liquidité',!m?'—':m.slope>0.01?'En hausse':m.slope<-0.01?'En baisse':'Stable',!m?'var(--sub)':m.slope>0.01?'var(--up)':m.slope<-0.01?'var(--down)':'var(--sub)','$','#5e5ce6'],
     ['Cipher B',wt==null?'—':wt<=-40?'Survente':wt>=40?'Surachat':'Neutre',wt==null?'var(--sub)':wt<=-40?'var(--up)':wt>=40?'var(--down)':'var(--sub)','≈','#bf5af2']];
-  const calibratedUp=h=>{const row=SHA.rows.find(x=>x.h===h),q=K.q[h];return q&&row?.calibration?.status==='VALIDÉE EN HOLDOUT'?applyStrictCalibration(row.calibration.map,pUp(q)):null;};
+  const calibratedUp=h=>{const row=SHA.rows.find(x=>x.h===h),q=K.q[h];return q&&row?.calibration?.status==='AMÉLIORATION HOLDOUT'?applyStrictCalibration(row.calibration.map,pUp(q)):null;};
   const p30=pUp(K.q[30]),p90=pUp(K.q[90]);
   const gate30=forecastGate(K.q[30]),gate90=forecastGate(K.q[90]),gate365=forecastGate(K.q[365]);
   const gateSummary=[['30 J',gate30],['90 J',gate90],['12 M',gate365]].map(([h,g])=>h+' : '+g.label).join(' · ');
