@@ -2597,7 +2597,7 @@ function gaugeSVG(v){const cx=130,cy=128,r=104,ang=Math.PI*(1-v/100),nx=cx+Math.
     <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#D6DCE6" stroke-width="4" stroke-linecap="round"></line><circle cx="${cx}" cy="${cy}" r="9" fill="#D6DCE6"></circle></svg>`;}
 let homeH=store.get('btcz_homeH',182);
 /* ===== v20 : BOULE DE CRISTAL — un seul écran : prix, cône du futur, lecture au doigt, action du jour ===== */
-let orbSel=null;
+let orbSel=null,orbScenario=store.get('btcz_orb_scenario','p50');
 function pUp(qq){if(!qq)return null;if(Number.isFinite(qq.pUp))return qq.pUp;const P=[[qq.p10,.1],[qq.p25,.25],[qq.p50,.5],[qq.p75,.75],[qq.p90,.9]];
   if(0<=P[0][0])return 1-Math.max(.02,.1*Math.exp(-P[0][0]/Math.max(1e-6,P[1][0]-P[0][0])));
   if(0>=P[4][0])return Math.max(.02,.1*Math.exp(P[4][0]/Math.max(1e-6,P[4][0]-P[3][0])));
@@ -2666,7 +2666,7 @@ async function renderHome(){
   <section class="ck-chart-card">
     <div class="ck-section-head"><span>TRAJECTOIRE CONDITIONNELLE</span><span class="ck-muted">Fourchette historique</span></div>
     <div class="seg">${[[30,'30 J'],[91,'90 J'],[182,'6 M'],[365,'1 AN']].map(([h,t])=>`<button type="button" data-h="${h}" class="${h===HZ?'on':''}">${t}</button>`).join('')}</div>
-    <canvas id="orb"></canvas>
+    <div class="seg"><button type="button" data-scenario="p10">P10 · STRESS</button><button type="button" data-scenario="p50" class="on">P50 · CENTRAL</button><button type="button" data-scenario="p90">P90 · EXPANSION</button></div><canvas id="orb"></canvas>
     <div class="ck-path-legend"><span class="ck-path-key bear"><i></i><span>Stress / baisse <strong>P10</strong></span></span><span class="ck-path-key base"><i></i><span>Trajectoire centrale <strong>P50</strong></span></span><span class="ck-path-key bull"><i></i><span>Expansion <strong>P90</strong></span></span></div><div class="ck-path-foot"><span>40 chemins bootstrap · blocs historiques de 7 jours</span><b>ANCRAGE BTC : ${fmt(last.c)} $</b></div><div class="ck-chart-hint">Touchez / faites glisser pour lire le prix conditionnel à chaque échéance</div>
   </section>
   <div class="sc ck-readout" id="orbRead"></div>
@@ -2687,13 +2687,13 @@ async function renderHome(){
       <div class="row mid"><span class="ic" style="background:var(--violet)">●</span><span class="rl"><b>Probable</b><small>1 chance sur 2 entre ${k$(p25)} et ${k$(p75)}</small></span><span class="rv">${fmt(r5(x.mid))} $<small>${pc(x.mid)}</small></span></div>
       <div class="row"><span class="ic" style="background:var(--down)">↓</span><span class="rl"><b>Bas</b><small>1 chance sur 10 d'aller en dessous</small></span><span class="rv">${fmt(r5(x.lo))} $<small>${pc(x.lo)}</small></span></div>
       <div class="pb"><div class="pbt"><span>Plus haut qu'aujourd'hui</span><b style="color:${pv[1]}">${pu} % · ${pv[0]}</b></div><div class="track"><i style="width:${pu}%"></i></div></div>`;};
-  const go=()=>{drawOrb(c,d,K,PL,HZ,sel(),I);read(sel());};go();
+  const go=()=>{drawOrb(c,d,K,PL,HZ,sel(),I,orbScenario);read(sel());};go();
   const pick=e=>{const g=c._g;if(!g)return;const r=c.getBoundingClientRect(),x=e.clientX-r.left,t=g.tA+(x-g.padL)/(g.w-g.padL-g.padR)*(g.tB-g.tA);
     const k=Math.round((t-g.t1)/DAY);if(k<1)return;orbSel=Math.min(HZ,k);go();};
   c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);pick(e);});c.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')pick(e);});
-  el.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{homeH=+b.dataset.h;orbSel=null;store.set('btcz_homeH',homeH);renderHome();}));
+  el.querySelectorAll('[data-scenario]').forEach(b=>b.addEventListener('click',()=>{orbScenario=b.dataset.scenario;store.set('btcz_orb_scenario',orbScenario);go();el.querySelectorAll('[data-scenario]').forEach(x=>x.classList.toggle('on',x===b));}));el.querySelectorAll('.seg button[data-h]').forEach(b=>b.addEventListener('click',()=>{homeH=+b.dataset.h;orbSel=null;store.set('btcz_homeH',homeH);renderHome();}));
 }
-function drawOrb(c,d,K,PL,HZ,sel){
+function drawOrb(c,d,K,PL,HZ,sel,I,scenario='p50'){
   const r=c.getBoundingClientRect(),dp=Math.min(window.devicePixelRatio||1,3),w=r.width,h=r.height;c.width=w*dp;c.height=h*dp;
   const g=c.getContext('2d');g.setTransform(dp,0,0,dp,0,0);g.clearRect(0,0,w,h);
   const n=d.length,t1=d[n-1].t,back=Math.max(45,Math.round(HZ*.6)),tA=t1-back*DAY,tB=t1+HZ*DAY,padL=6,padR=46,padT=14,padB=34;
@@ -2711,7 +2711,7 @@ function drawOrb(c,d,K,PL,HZ,sel){
   const band=(a,b,col)=>{g.fillStyle=col;g.beginPath();cp.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p[a])):g.moveTo(X(p.t),Y(p[a])));[...cp].reverse().forEach(p=>g.lineTo(X(p.t),Y(p[b])));g.closePath();g.fill();};
   const x0=X(t1),gr=g.createLinearGradient(x0,0,w-padR,0);gr.addColorStop(0,'rgba(191,90,242,.30)');gr.addColorStop(1,'rgba(191,90,242,.10)');band('p10','p90',gr);
   const gr2=g.createLinearGradient(x0,0,w-padR,0);gr2.addColorStop(0,'rgba(191,90,242,.55)');gr2.addColorStop(1,'rgba(191,90,242,.28)');band('p25','p75',gr2);
-  g.strokeStyle='rgba(235,240,255,.9)';g.lineWidth=1.6;g.setLineDash([4,4]);g.beginPath();cp.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.p50)):g.moveTo(X(p.t),Y(p.p50)));g.stroke();g.setLineDash([]);
+  g.strokeStyle='rgba(235,240,255,.25)';g.lineWidth=1;g.setLineDash([4,5]);g.beginPath();cp.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.p50)):g.moveTo(X(p.t),Y(p.p50)));g.stroke();g.setLineDash([]);const sk=scenario==='p10'?'p10':scenario==='p90'?'p90':'p50',scColor=scenario==='p10'?'#ff6474':scenario==='p90'?'#35d39a':'#e8c878';g.strokeStyle=scColor;g.lineWidth=2.8;g.shadowColor=scColor;g.shadowBlur=10;g.beginPath();cp.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p[sk])):g.moveTo(X(p.t),Y(p[sk])));g.stroke();g.shadowBlur=0;
   /* prix passé */
   g.strokeStyle=COL.accent;g.lineWidth=2.2;g.lineJoin='round';g.beginPath();past.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.c)):g.moveTo(X(p.t),Y(p.c)));g.stroke();
   g.fillStyle=COL.accent;g.beginPath();g.arc(x0,Y(K.base),4,0,7);g.fill();
