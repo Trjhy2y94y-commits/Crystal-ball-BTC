@@ -11,7 +11,7 @@ This Worker is the private server-side bridge between the public Crystal Ball PW
 5. Deploy: `wrangler deploy`.
 6. In Crystal Ball > JARVIS, enter `https://crystal-ball-jarvis.<your-account>.workers.dev/api/jarvis`, then tap **CONNECTER / TESTER**.
 
-The endpoint's OPTIONS response checks CORS reachability; send a message to verify the model credentials and model access. The same Worker also exposes `/api/session` for low-latency speech-to-speech WebRTC using `OPENAI_REALTIME_MODEL` (default `gpt-realtime-2.1`). In the PWA, enter the Worker `/api/jarvis` URL and tap **CONNECTER / TESTER**, then tap **PARLER** to start a realtime voice session. The microphone permission is requested only after that tap.
+The endpoint's OPTIONS response checks CORS reachability; send a message to verify the model credentials and model access. The same Worker also exposes `/api/session` for low-latency speech-to-speech WebRTC using `OPENAI_REALTIME_MODEL` (default `gpt-realtime-2.1`). The session enables French live input transcription (`gpt-live-transcribe`) so JARVIS can show the user's recognized utterances in the conversation log. In the PWA, enter the Worker `/api/jarvis` URL and tap **CONNECTER / TESTER**, then tap **PARLER** to start a realtime voice session. The microphone permission is requested only after that tap.
 
 ## Required server settings
 
