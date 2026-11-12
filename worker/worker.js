@@ -11,6 +11,36 @@ const json = (body, status, origin) => new Response(JSON.stringify(body), {
   headers: { ...corsHeaders(origin), "Content-Type": "application/json", "Cache-Control": "no-store" }
 });
 
+async function readLimitedText(request, maxBytes) {
+  const declared = Number(request.headers.get("Content-Length"));
+  if (Number.isFinite(declared) && declared > maxBytes) return { tooLarge: true, text: "" };
+  if (!request.body) return { tooLarge: false, text: "" };
+  const reader = request.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel();
+        return { tooLarge: true, text: "" };
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return { tooLarge: false, text: new TextDecoder().decode(bytes) };
+}
+
 const SYSTEM_INSTRUCTIONS = `Tu es JARVIS, l'assistant de marché intégré à Crystal Ball.
 Tu échanges en français, de façon concise, précise et calme.
 Tu analyses uniquement les données fournies dans le contexte et tu distingues explicitement faits, hypothèses et scénarios.
@@ -34,8 +64,10 @@ export default {
     if (pathname === "/api/session") {
       if (request.method !== "POST") return new Response("Method not allowed", { status: 405, headers });
       if (!env.OPENAI_API_KEY) return new Response("Server AI configuration missing", { status: 503, headers });
-      const sdp = await request.text();
-      if (!sdp || sdp.length > 180000) return new Response("Invalid SDP payload", { status: 400, headers });
+      const sdpBody = await readLimitedText(request, 180000);
+      if (sdpBody.tooLarge) return new Response("SDP payload too large", { status: 413, headers });
+      const sdp = sdpBody.text;
+      if (!sdp.trim()) return new Response("Invalid SDP payload", { status: 400, headers });
       const session = {
         type: "realtime",
         model: env.OPENAI_REALTIME_MODEL || "gpt-realtime-2.1",
@@ -67,8 +99,11 @@ export default {
     if (!env.OPENAI_API_KEY || !env.OPENAI_MODEL) return json({ error: "Server AI configuration missing" }, 503, allowedOrigin);
 
     let raw;
-    try { raw = await request.text(); } catch { return json({ error: "Invalid request body" }, 400, allowedOrigin); }
-    if (new TextEncoder().encode(raw).byteLength > 24000) return json({ error: "Request too large" }, 413, allowedOrigin);
+    try {
+      const bodyResult = await readLimitedText(request, 24000);
+      if (bodyResult.tooLarge) return json({ error: "Request too large" }, 413, allowedOrigin);
+      raw = bodyResult.text;
+    } catch { return json({ error: "Invalid request body" }, 400, allowedOrigin); }
     let body;
     try { body = JSON.parse(raw); } catch { return json({ error: "Invalid JSON" }, 400, allowedOrigin); }
     const message = typeof body.message === "string" ? body.message.trim().slice(0, 4000) : "";
