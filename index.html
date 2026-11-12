@@ -1148,6 +1148,24 @@ function buildFund(d){
 /* ---------- données ---------- */
 let data=[],ind=null,isDemo=false,daily=null,dailyAt=0;
 async function fetchJSON(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json();}
+/* Validation OHLCV avant tout calcul : tri chronologique, déduplication et rejet des chandelles impossibles. */
+function validateMarketRows(input,tf){
+  const seen=new Map();let rejected=0,duplicates=0;
+  for(const r of input||[]){
+    const vals=[r?.t,r?.o,r?.h,r?.l,r?.c,r?.v??0].map(Number);
+    const [t,o,h,l,c,v]=vals;
+    if(!Number.isFinite(t)||!Number.isFinite(o)||!Number.isFinite(h)||!Number.isFinite(l)||!Number.isFinite(c)||!Number.isFinite(v)||
+       t<=0||o<=0||h<=0||l<=0||c<=0||v<0||h<Math.max(o,c,l)||l>Math.min(o,c,h)){rejected++;continue;}
+    if(seen.has(t))duplicates++;
+    seen.set(t,{...r,t,o,h,l,c,v});
+  }
+  const rows=[...seen.values()].sort((a,b)=>a.t-b.t);
+  if(rows.length<100)throw new Error('Historique OHLCV insuffisant après validation');
+  const step=({'4h':4*36e5,'1d':864e5,'1w':7*864e5})[tf]||0;
+  let gaps=0,maxGap=0;
+  if(step)for(let i=1;i<rows.length;i++){const delta=rows[i].t-rows[i-1].t;if(delta>step*1.5){gaps++;maxGap=Math.max(maxGap,Math.round(delta/step)-1);}}
+  return{rows,quality:{input:input?.length||0,valid:rows.length,rejected,duplicates,gaps,maxGap}};
+}
 async function loadLive(t){
   try{
     /* v2 : en 1D on remonte 3 pages (~8 ans) pour que le backtest et les z‑scores aient de la matière */
@@ -1155,7 +1173,7 @@ async function loadLive(t){
     let all=(await fetchJSON(base)).map(k=>({t:k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5],qv:+k[7],trades:+k[8],takerBuy:+k[9]}));
     if(t==='1d'||t==='4h'){for(let p=0;p<2&&all.length;p++){try{const j=await fetchJSON(base+'&endTime='+(all[0].t-1));if(!j.length)break;
       all=j.map(k=>({t:k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5],qv:+k[7],trades:+k[8],takerBuy:+k[9]})).concat(all);}catch(e){break;}}}
-    return{src:'Binance',rows:all};
+    const checked=validateMarketRows(all,t);return{src:'Binance',rows:checked.rows,quality:checked.quality};
   }catch(e){}
   if(t==='4h')throw new Error('4h indisponible hors Binance');
   const g=(t==='1w'||t==='1M')?null:86400; /* agrégation des unités non disponibles chez Coinbase */
@@ -1166,7 +1184,7 @@ async function loadLive(t){
   const m=new Map();rows.forEach(r=>m.set(r.t,r));let out=[...m.values()].sort((a,b)=>a.t-b.t);
   if(!g){const w=[];out.forEach(r=>{const d=new Date(r.t),key=t==='1M'?Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1):r.t-((d.getUTCDay()+6)%7)*864e5;const last=w[w.length-1];
     if(last&&last.t===key){last.h=Math.max(last.h,r.h);last.l=Math.min(last.l,r.l);last.c=r.c;last.v=(last.v||0)+(r.v||0);}else w.push({t:key,o:r.o,h:r.h,l:r.l,c:r.c,v:r.v||0});});out=w;}
-  return{src:'Coinbase',rows:out};
+  const checked=validateMarketRows(out,t);return{src:'Coinbase',rows:checked.rows,quality:checked.quality};
 }
 function demo(t){ /* série simulée, uniquement si l'API est injoignable */
   let s=42;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647;};
@@ -1180,7 +1198,7 @@ async function load(keep){
   let res;try{res=await loadLive(tf);isDemo=false;}catch(e){res=demo(tf);isDemo=true;}
   await Promise.all([loadMacro(),loadFut()]);
   if(tf==='4h'&&!isDemo){try{await getDaily();}catch(e){}}
-  data=res.rows;ind=compute(data,tf==='4h'?daily:null);$('src').textContent=res.src;if(res.src!=='Binance'){liveSpotPrice=0;liveSpotAt=0;}if(tf==='1d'){daily={rows:data,ind,demo:isDemo};dailyAt=Date.now();}
+  data=res.rows;ind=compute(data,tf==='4h'?daily:null);const q=res.quality;$('src').textContent=res.src+(q?` · ${q.valid} validées · ${q.rejected} rejetées · ${q.duplicates} doublons · ${q.gaps} trous`:'');if(res.src!=='Binance'){liveSpotPrice=0;liveSpotAt=0;}if(tf==='1d'){daily={rows:data,ind,demo:isDemo};dailyAt=Date.now();}
   if(curTab==='stats')renderProj().then(()=>{compactStats();});
   if(curTab==='home')renderHome();
   if(curTab==='cal'&&!keep)renderCal();
