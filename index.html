@@ -776,6 +776,14 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
 @media(max-width:390px){.ck-chart-card #orb{height:320px!important}.ck-path-key{font-size:8px}.ck-path-key strong{font-size:9px}}
 
 .ck-scenarios{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important}.ck-scenarios button{font-size:10px!important;line-height:1.2;min-height:38px;padding:6px 3px!important;white-space:normal}.ck-dynamic-radar{border-color:rgba(60,225,170,.38)!important;background:linear-gradient(145deg,rgba(7,39,42,.97),rgba(5,13,24,.99))!important}.ck-dynamic-radar .ck-buy-info small{white-space:normal;line-height:1.35}.ck-dynamic-radar .ck-buy-meta b{color:#55e6ad}.radar-hit{border-color:#43efad!important;box-shadow:0 0 0 1px rgba(67,239,173,.45),0 0 28px rgba(67,239,173,.28)!important;animation:radarPulse 1s ease-in-out infinite}.ck-buy-row.is-active{border-color:#43efad!important;animation:radarPulse 1s ease-in-out infinite}.radar-flash{border-color:#43efad!important;box-shadow:0 0 25px rgba(67,239,173,.35)!important}@keyframes radarPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4);box-shadow:0 0 22px rgba(67,239,173,.32)}}@media(prefers-reduced-motion:reduce){.radar-hit,.ck-buy-row.is-active{animation:none!important}}
+/* Indicateur de robustesse : ne modifie jamais les probabilités du modèle */
+.ck-trust-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.ck-trust-row{min-width:0;padding:11px;border:1px solid var(--line);border-radius:13px;background:rgba(4,12,20,.52);display:grid;gap:6px}
+.ck-trust-row>div{display:flex;flex-direction:column;gap:5px}.ck-trust-row>div b{font-size:14px;color:var(--fg)}
+.ck-trust-row>strong{font-size:24px;color:var(--fg);font-variant-numeric:tabular-nums}
+.ck-trust-row small{font-size:10px;line-height:1.4;color:var(--muted)}.ck-trust-row p{font-size:11px!important;line-height:1.4!important;margin:0;color:var(--sub)!important}
+.ck-trust-row .trust-good{color:var(--up);font-size:9px;font-weight:800;letter-spacing:.04em}.ck-trust-row .trust-warn{color:var(--accent);font-size:9px;font-weight:800;letter-spacing:.04em}.ck-trust-row .trust-low{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.04em}
+@media(max-width:390px){.ck-trust-grid{grid-template-columns:1fr}.ck-trust-row{grid-template-columns:1fr auto}.ck-trust-row small,.ck-trust-row p{grid-column:1/-1}}
 /* CRYSTAL BALL — trajectoire conditionnelle lisible et navigable sur mobile */
 .ck-chart-card .ck-chart-viewport{
   width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;
@@ -2205,6 +2213,20 @@ function trajectoryWalkForwardAudit(D){
  const metrics=a=>({n:a.length,mae:a.length?a.reduce((s,x)=>s+x.err,0)/a.length:null,hit5:a.length?a.filter(x=>x.hit5).length/a.length:null,dir:a.length?a.filter(x=>x.dir).length/a.length:null,cover:a.length?a.filter(x=>x.cover).length/a.length:null,width:a.length?a.reduce((s,x)=>s+x.width,0)/a.length:null});
  return{demo:false,rows:hs.map(h=>({h,model:metrics(out[h].cond),base:metrics(out[h].base)})),origins:used,strict,fallbackTrend,fallbackAll,poolAvg:used?poolTotal/used:0,pathsPerOrigin:200,step,blockDays:7,asOf:D.rows[end]?.t};
 }
+function forecastTrustHTML(A){
+ if(!A?.rows?.length)return '<p class="ck-forecast-note">Fiabilité empirique indisponible : historique strict insuffisant ou mode démo.</p>';
+ const rows=A.rows.map(x=>{
+  const d=x.drift||{},n=x.model?.n||0,rn=d.recent?.n||0,score=d.reliabilityScore,base=x.base?.mae,mae=x.model?.mae,brier=x.model?.brier,baseBrier=x.base?.brier;
+  const bss=brier!=null&&baseBrier>0?1-brier/baseBrier:null;
+  const robust=n>=60&&rn>=20&&d.status==='NORMAL'&&score!=null&&score>=60&&mae!=null&&base!=null&&mae<=base&&bss!=null&&bss>=0;
+  const cautious=!robust&&n>=20&&rn>=8&&d.status!=='INSUFFISANT';
+  const label=robust?'ROBUSTESSE ÉTAYÉE':cautious?'PRUDENCE':'DONNÉES INSUFFISANTES';
+  const cls=robust?'trust-good':cautious?'trust-warn':'trust-low';
+  const why=robust?'Échantillon suffisant, dérive normale et résultat au moins aussi bon que la référence.':cautious?(d.status==='DÉGRADATION'?'Dérive détectée : réduire le poids accordé au scénario.':'Échantillon, calibration ou comparaison à la référence encore insuffisants pour conclure.'):'Pas assez de prévisions strictes et récentes pour qualifier ce scénario.';
+  return '<div class="ck-trust-row"><div><b>J+'+x.h+'</b><span class="'+cls+'">'+label+'</span></div><strong>'+(score==null?'—':score+'/100')+'</strong><small>N strict '+n+' · récent '+rn+' · dérive '+(d.status||'—')+' · BSS '+(bss==null?'—':(bss*100).toFixed(1)+' %')+'</small><p>'+why+'</p></div>';
+ }).join('');
+ return '<div class="ck-trust-grid">'+rows+'</div><p class="ck-forecast-note">Indice de robustesse indépendant des probabilités P(hausse) et des quantiles P10/P50/P90. « Étayée » exige des critères cumulatifs stricts ; ce statut ne garantit pas la prochaine prévision et ne constitue pas un conseil d’investissement.</p>';
+}
 function trajectoryWalkForwardHTML(A){
  if(A.demo||!A.rows.length)return '<p class="ck-forecast-note">'+(A.reason||'Pas assez de tests hors échantillon.')+'</p>';
  const pc=x=>x==null?'—':(x*100).toFixed(1)+' %',err=x=>x==null?'—':(x*100).toFixed(2)+' %';
@@ -2820,7 +2842,7 @@ function forecastGate(q){
 }
 async function renderHome(){
   const el=$('home');let D;try{D=await getDaily();}catch(e){return;}const d=D.rows,I=D.ind,n=d.length,last=d[n-1];
-  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH,spot=(liveSpotPrice>0&&Date.now()-liveSpotAt<20000)?liveSpotPrice:last.c,buyZones=buildDynamicBuyZones(d,I,spot),hitZone=buyZones.find(z=>spot>=z.lo&&spot<=z.hi);
+  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),SHA=memo('strict-holdout',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>strictHoldoutAudit(D)),PL=buildPlan(D,53),HZ=homeH,spot=(liveSpotPrice>0&&Date.now()-liveSpotAt<20000)?liveSpotPrice:last.c,buyZones=buildDynamicBuyZones(d,I,spot),hitZone=buyZones.find(z=>spot>=z.lo&&spot<=z.hi);
   const prev=d[n-2],ch=(last.c-prev.c)/prev.c*100,T0=new Date().setHours(0,0,0,0);
   const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),trig=!!hitZone;activeBuyZones=buyZones;
   if(trig&&!isDemo){const key='radar:'+Math.round(hitZone.mid)+':'+Math.floor(Date.now()/86400000);if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='⚡ ZONE BTC TOUCHÉE · '+fmt(hitZone.lo)+' – '+fmt(hitZone.hi)+' $ · '+(hitZone.confirmed?'RÉACTION HAUSSIÈRE':'ATTENDRE CONFIRMATION');t.className='toast buy radar-flash';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}}
@@ -2878,6 +2900,7 @@ async function renderHome(){
   </div>
   <p class="ck-forecast-note"><b>FILTRE DE DÉCISION · ${gateSummary}</b><br>JARVIS s’abstient si l’échantillon est trop faible, si l’intervalle est trop large ou s’il recouvre 50 %. Les scénarios de prix restent visibles, mais aucun avantage directionnel n’est affirmé sans preuve suffisante.</p>
   <section class="ck-forecast-table"><div class="ck-section-head"><span>PRÉVISION DE PRIX</span><span class="ck-muted">Distribution conditionnelle · USD</span></div><div class="ck-forecast-grid"><div class="ck-fh">Échéance</div><div class="ck-fh">Bas · P10</div><div class="ck-fh">Central · P50</div><div class="ck-fh">Haut · P90</div><div class="ck-fh">P(hausse)</div>${[[30,'30 J'],[90,'90 J'],[180,'6 M'],[365,'12 M']].map(([h,label])=>{const q=K.q[h],base=K.base,pr=pUp(q),ci=q&&q.pUpLo!=null?Math.round(q.pUpLo*100)+'–'+Math.round(q.pUpHi*100)+' %':'—';return `<div class="ck-fv">${label}</div><div class="ck-fv">${q?fmt(r5(base*Math.exp(q.p10))):'—'}</div><div class="ck-fv ck-central">${q?fmt(r5(base*Math.exp(q.p50))):'—'}</div><div class="ck-fv">${q?fmt(r5(base*Math.exp(q.p90))):'—'}</div><div class="ck-fv ck-up">${pr==null?'—':Math.round(pr*100)+' %'}<small>${ci}</small><small>${forecastGate(q).label}</small></div>`;}).join('')}</div><p class="ck-forecast-note">P10/P50/P90 : quantiles des rendements historiques comparables. P(hausse) : fréquence empirique des rendements positifs, avec intervalle de Wilson à 95 %. Ce n’est pas encore une probabilité calibrée en production. Les effectifs et le régime conditionnent la robustesse.</p></section>
+  <section class="ck-forecast-table" id="forecastTrust"><div class="ck-section-head"><span>ROBUSTESSE DES SCÉNARIOS</span><span class="ck-muted">Audit strict · indépendant</span></div>${forecastTrustHTML(SHA)}</section>
   <section class="ck-forecast-table" id="trajectoryRisk">
     <div class="ck-section-head"><span>SIMULATION DE TRAJECTOIRES</span><span class="ck-muted">1 200 chemins · blocs de 7 jours</span></div>
     ${SIM.n?`<div class="ck-forecast-grid"><div class="ck-fh">Horizon</div><div class="ck-fh">P10</div><div class="ck-fh">P50</div><div class="ck-fh">P90</div><div class="ck-fh">Scénarios</div>${SIM.rows.map(x=>`<div class="ck-fv">${x.h} J</div><div class="ck-fv">${fmt(r5(x.p10))}</div><div class="ck-fv ck-central">${fmt(r5(x.p50))}</div><div class="ck-fv">${fmt(r5(x.p90))}</div><div class="ck-fv">${x.n.toLocaleString("fr-FR")}</div>`).join("")}</div><div class="ck-prob-grid"><div class="ck-prob"><span>RISQUE DE -20 % EN COURS DE ROUTE</span><strong>${Math.round(SIM.probDD20*100)} %</strong><small>Drawdown maximal moyen : ${(SIM.avgMaxDD*100).toFixed(1)} % · IC Monte Carlo 95 % : ${(SIM.probDD20CI.lo*100).toFixed(1)}–${(SIM.probDD20CI.hi*100).toFixed(1)} %</small></div><div class="ck-prob"><span>CHANCE DE +20 % À 12 MOIS</span><strong>${Math.round(SIM.probUp20*100)} %</strong><small>IC Monte Carlo 95 % : ${(SIM.probUp20CI.lo*100).toFixed(1)}–${(SIM.probUp20CI.hi*100).toFixed(1)} % · Base : ${fmt(K.base)} $ · ${SIM.pool} départs comparables</small></div></div>`:`<p>${SIM.reason}</p>`}
