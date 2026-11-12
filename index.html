@@ -2425,7 +2425,7 @@ function strictHoldoutAudit(D){
  const stats=a=>{const n=a.length;if(!n)return{n:0,mae:null,hit5:null,dir:null,cover:null,brier:null,ece:null,calibration:[],hitCI:null,dirCI:null,coverCI:null};const w=a.filter(x=>x.hit5).length,d=a.filter(x=>x.dir).length,c=a.filter(x=>x.cover).length,bins=Array.from({length:5},(_,i)=>{const z=a.filter(x=>Math.min(4,Math.floor(x.prob*5))===i);return{lo:i*.2,hi:(i+1)*.2,n:z.length,p:z.length?z.reduce((v,x)=>v+x.prob,0)/z.length:null,observed:z.length?z.reduce((v,x)=>v+x.up,0)/z.length:null};}).filter(x=>x.n),ece=bins.reduce((v,x)=>v+x.n/n*Math.abs(x.p-x.observed),0);return{n,mae:a.reduce((z,x)=>z+x.err,0)/n,hit5:w/n,dir:d/n,cover:c/n,brier:a.reduce((z,x)=>z+x.brier,0)/n,ece,calibration:bins,hitCI:wilson(w,n),dirCI:wilson(d,n),coverCI:wilson(c,n)};};
  hs.forEach(h=>{
   const first=Math.max(700,Math.floor(end*.30)),last=end-h,stride=h;
-  const model=[],base=[],ablationSets={full:[],regime:[],regimeMomentum:[],regimeVolatility:[],unfiltered:[]};let origins=0,strict=0,fallbackRegime=0,fallbackAll=0;
+  const model=[],base=[],ablationSets={full:[],regime:[],regimeMomentum:[],regimeVolatility:[],unfiltered:[],fvg:[],vp:[],flow:[],rsi:[],fvgvp:[],advanced:[]};let origins=0,strict=0,fallbackRegime=0,fallbackAll=0;
   for(let i=first;i<=last;i+=stride){
    const train=[];for(let j=220;j+h<=i;j+=7){const r=Math.log(C[j+h]/C[j]);if(Number.isFinite(r)){const ft=featuresAt(j);train.push({r,reg:R[j]??0,mom:mom(j),vol:vbucket(j),fvg:ft.fvg,vp:ft.vp,flow:ft.flow,rsiDiv:ft.rsiDiv});}}
    if(train.length<60)continue;
