@@ -83,7 +83,7 @@ export default {
       const session = {
         type: "realtime",
         model: env.OPENAI_REALTIME_MODEL || "gpt-realtime-2.1",
-        instructions: SYSTEM_INSTRUCTIONS + "\\n\\nDirection vocale JARVIS : voix masculine adulte, registre grave et chaleureux, timbre riche et posé, présence calme et assurée. Français parfaitement articulé, débit mesuré, intonation élégante et légèrement britannique dans la musicalité sans caricature ni accent anglais forcé. Diction précise, respirations naturelles, discrète pointe d'ironie lorsque le contexte s'y prête. Ne jamais imiter exactement une personne réelle ou un personnage interprété par un comédien.",
+        instructions: SYSTEM_INSTRUCTIONS + "\n\nDirection vocale JARVIS : voix masculine adulte, registre grave et chaleureux, timbre riche et posé, présence calme et assurée. Français parfaitement articulé, débit mesuré, intonation élégante et légèrement britannique dans la musicalité sans caricature ni accent anglais forcé. Diction précise, respirations naturelles, discrète pointe d'ironie lorsque le contexte s'y prête. Ne jamais imiter exactement une personne réelle ou un personnage interprété par un comédien.",
         audio: {
           input: {
             format: { type: "audio/pcm", rate: 24000 },
@@ -92,7 +92,7 @@ export default {
           },
           output: {
             format: { type: "audio/pcm", rate: 24000 },
-            voice: "ash",
+            voice: "cedar",
             speed: 0.96
           }
         }
