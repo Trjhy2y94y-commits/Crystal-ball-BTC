@@ -3098,9 +3098,9 @@ setInterval(updateQuantTerminal,2000);
  const add=(who,msg)=>{const el=document.createElement('div');el.className='jv-msg '+who;el.textContent=msg;log.appendChild(el);log.scrollTop=log.scrollHeight;};
  const say=msg=>{if(!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(msg);u.lang='fr-FR';u.rate=1.02;u.onstart=()=>core.classList.add('speaking');u.onend=()=>core.classList.remove('speaking');window.speechSynthesis.speak(u);};
  const market=()=>{const p=$('homeQtPrice')?.textContent||$('px')?.textContent||'non disponible';const bias=$('homeQtBias')?.textContent||$('badge')?.textContent||'non déterminé';const wt=$('homeQtWT')?.textContent||$('wtNow')?.textContent||'—';const rsi=$('homeQtRSI')?.textContent||'—';return {p,bias,wt,rsi};};
- const history=[];let endpoint=store.get('jarvis_endpoint','');const endpointInput=$j('jvEndpoint'),connection=$j('jvConnection');
+ const history=[];let endpoint=store.get('jarvis_endpoint',''),activeRecognition=null;const endpointInput=$j('jvEndpoint'),connection=$j('jvConnection');
  endpointInput.value=endpoint;
- const remoteAsk=async q=>{const m=market();const snapshot={price:m.p,regime:m.bias,wavetrend:m.wt,rsi:m.rsi,source:$('homeQtSource')?.textContent||$('qtSource')?.textContent||'non précisée',capturedAt:new Date().toISOString()};
+ const remoteAsk=async q=>{const m=market();const snapshot={price:m.p,regime:m.bias,wavetrend:m.wt,rsi:m.rsi,source:$('homeQtSource')?.textContent||$('qtSource')?.textContent||'non précisée',forecast:document.querySelector('#probabilityPanel')?.innerText?.slice(0,1800)||'non disponible',buyRadar:document.querySelector('.ck-dynamic-radar')?.innerText?.slice(0,1400)||'non disponible',activeModule:curTab,capturedAt:new Date().toISOString()};
   const payload={message:q,history:history.slice(-12),market:snapshot,locale:'fr-FR'};
   const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(45000)});
   if(!res.ok)throw new Error('HTTP '+res.status);
@@ -3125,9 +3125,9 @@ setInterval(updateQuantTerminal,2000);
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  $j('jvVoice').textContent=SR?'Disponible si autorisé':'Non pris en charge ici';
  $j('jvMic').addEventListener('click',()=>{if(!SR){$j('jvStatus').textContent='Dictée iOS du clavier disponible en alternative.';input.focus();return;}
-  try{const rec=new SR();rec.lang='fr-FR';rec.interimResults=false;rec.maxAlternatives=1;rec.onstart=()=>{core.classList.add('listening');$j('jvStatus').textContent='Je t’écoute…';};rec.onresult=e=>{input.value=e.results[0][0].transcript; $j('jvForm').requestSubmit();};rec.onerror=e=>$j('jvStatus').textContent='Micro : '+e.error;rec.onend=()=>core.classList.remove('listening');rec.start();}catch(e){$j('jvStatus').textContent='Autorise le microphone dans les réglages du navigateur.';}
+  try{if(activeRecognition){activeRecognition.stop();activeRecognition=null;}const rec=new SR();activeRecognition=rec;rec.lang='fr-FR';rec.interimResults=false;rec.maxAlternatives=1;rec.onstart=()=>{core.classList.add('listening');$j('jvStatus').textContent='Je t’écoute…';};rec.onresult=e=>{input.value=e.results[0][0].transcript; $j('jvForm').requestSubmit();};rec.onerror=e=>$j('jvStatus').textContent='Micro : '+e.error;rec.onend=()=>{core.classList.remove('listening');if(activeRecognition===rec)activeRecognition=null;};rec.start();}catch(e){$j('jvStatus').textContent='Autorise le microphone dans les réglages du navigateur.';}
  });
- $j('jvStop').addEventListener('click',()=>{if('speechSynthesis'in window)window.speechSynthesis.cancel();core.classList.remove('speaking','listening');$j('jvStatus').textContent='Lecture vocale arrêtée.';});
+ $j('jvStop').addEventListener('click',()=>{if(activeRecognition){try{activeRecognition.stop();}catch(e){}activeRecognition=null;}if('speechSynthesis'in window)window.speechSynthesis.cancel();core.classList.remove('speaking','listening');$j('jvStatus').textContent='Voix arrêtée.';});
  const update=()=>{const m=market();$j('jvPrice').textContent=m.p;};
  update();setInterval(update,2000);
 })();
