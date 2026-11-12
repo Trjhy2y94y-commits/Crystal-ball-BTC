@@ -149,13 +149,27 @@ jobs:
           import json
 
           errors = []
+          console_errors = []
           with sync_playwright() as p:
               browser = p.chromium.launch()
               context = browser.new_context(**p.devices["iPhone 13"])
               page = context.new_page()
               page.on("pageerror", lambda error: errors.append(str(error)))
+              page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
               page.goto("http://127.0.0.1:4173/", wait_until="domcontentloaded", timeout=30000)
-              page.wait_for_timeout(8000)
+              try:
+                  page.wait_for_function(
+                      "() => !!document.querySelector('#home')?.innerText.trim()",
+                      timeout=30000
+                  )
+              except Exception as exc:
+                  page.screenshot(path="artifacts/iphone-home-failure.png", full_page=True)
+                  raise AssertionError(
+                      "Home view did not render within 30s. "
+                      f"pageErrors={errors}; consoleErrors={console_errors}; "
+                      f"readyState={page.evaluate('document.readyState')}; "
+                      f"url={page.url}; waitError={exc}"
+                  )
 
               assert page.title() == "Cristal · BTC", "Unexpected page title"
               assert page.locator(".tabbar").is_visible(), "Bottom navigation is missing"
