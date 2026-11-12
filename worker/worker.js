@@ -30,6 +30,35 @@ export default {
     }
     const headers = corsHeaders(allowedOrigin);
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers });
+    const pathname = new URL(request.url).pathname;
+    if (pathname === "/api/session") {
+      if (request.method !== "POST") return new Response("Method not allowed", { status: 405, headers });
+      if (!env.OPENAI_API_KEY) return new Response("Server AI configuration missing", { status: 503, headers });
+      const sdp = await request.text();
+      if (!sdp || sdp.length > 180000) return new Response("Invalid SDP payload", { status: 400, headers });
+      const session = {
+        type: "realtime",
+        model: env.OPENAI_REALTIME_MODEL || "gpt-realtime-2.1",
+        instructions: "Tu es JARVIS, assistant vocal de Crystal Ball spécialisé dans l'analyse prudente du marché Bitcoin. Réponds en français, naturellement et brièvement. Distingue faits, hypothèses et scénarios. Ne prétends jamais être conscient, ne garantis aucun gain ni aucune précision parfaite. Tu ne passes aucun ordre et ne demandes jamais de clé privée, seed phrase ou mot de passe. Si des données de marché sont absentes, dis-le.",
+        audio: { output: { voice: "marin" } }
+      };
+      const form = new FormData();
+      form.set("sdp", sdp);
+      form.set("session", JSON.stringify(session));
+      let upstream;
+      try {
+        upstream = await fetch("https://api.openai.com/v1/realtime/calls", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + env.OPENAI_API_KEY },
+          body: form
+        });
+      } catch { return new Response("Realtime provider unavailable", { status: 502, headers }); }
+      const answer = await upstream.text();
+      return new Response(answer, {
+        status: upstream.status,
+        headers: { ...headers, "Content-Type": upstream.headers.get("Content-Type") || "text/plain", "Cache-Control": "no-store" }
+      });
+    }
     if (new URL(request.url).pathname !== "/api/jarvis") return json({ error: "Not found" }, 404, allowedOrigin);
     if (request.method !== "POST") return json({ error: "Method not allowed" }, 405, allowedOrigin);
     if (!env.OPENAI_API_KEY || !env.OPENAI_MODEL) return json({ error: "Server AI configuration missing" }, 503, allowedOrigin);
