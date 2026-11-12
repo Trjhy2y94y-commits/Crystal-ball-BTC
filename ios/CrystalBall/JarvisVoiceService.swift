@@ -50,15 +50,17 @@ final class JarvisVoiceService: ObservableObject {
                 throw NSError(domain: "JARVIS", code: (response as? HTTPURLResponse)?.statusCode ?? -1, userInfo: [NSLocalizedDescriptionKey: "Le Worker a refusé l’accès. Vérifie son déploiement et ses limites."])
             }
             let tokenResponse = try JSONDecoder().decode(TokenResponse.self, from: data)
-            try await openRealtimeSocket(token: tokenResponse.token)
+            try await openRealtimeSocket(token: tokenResponse.token, model: tokenResponse.model ?? "gpt-realtime-2.1")
         } catch {
             disconnect()
             setStatus(error.localizedDescription)
         }
     }
 
-    private func openRealtimeSocket(token: String) async throws {
-        guard let url = URL(string: "wss://api.openai.com/v1/realtime?model=gpt-realtime-2.1") else { throw URLError(.badURL) }
+    private func openRealtimeSocket(token: String, model: String) async throws {
+        var components = URLComponents(string: "wss://api.openai.com/v1/realtime")
+        components?.queryItems = [URLQueryItem(name: "model", value: model)]
+        guard let url = components?.url else { throw URLError(.badURL) }
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let task = session.webSocketTask(with: request)
@@ -310,6 +312,7 @@ final class JarvisVoiceService: ObservableObject {
 
     private struct TokenResponse: Decodable {
         let token: String
+        let model: String?
         let expires_at: Int?
     }
 }
