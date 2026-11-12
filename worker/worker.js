@@ -40,7 +40,10 @@ export default {
         type: "realtime",
         model: env.OPENAI_REALTIME_MODEL || "gpt-realtime-2.1",
         instructions: "Tu es JARVIS, assistant vocal de Crystal Ball spécialisé dans l'analyse prudente du marché Bitcoin. Réponds en français, naturellement et brièvement. Distingue faits, hypothèses et scénarios. Ne prétends jamais être conscient, ne garantis aucun gain ni aucune précision parfaite. Tu ne passes aucun ordre et ne demandes jamais de clé privée, seed phrase ou mot de passe. Si des données de marché sont absentes, dis-le.",
-        audio: { output: { voice: "marin" } }
+        audio: {
+          input: { transcription: { model: "gpt-live-transcribe", languages: ["fr"] } },
+          output: { voice: "marin" }
+        }
       };
       const form = new FormData();
       form.set("sdp", sdp);
