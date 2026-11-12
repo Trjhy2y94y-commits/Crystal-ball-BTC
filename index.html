@@ -2643,10 +2643,7 @@ async function renderHome(){
   const fut=k=>{const qq=K.q[Math.max(1,Math.min(365,k))];return qq?{mid:K.base*Math.exp(qq.p50),lo:K.base*Math.exp(qq.p10),hi:K.base*Math.exp(qq.p90),up:pUp(qq)}:null;};
   /* action du jour, en une ligne */
   const dl=t=>new Date(t).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
-  const act=trig?{c:'var(--buy)',t:`Achète ${td.amt.toLocaleString('fr-FR')} € maintenant`,s:`BTC est passé sous ta zone de ${fmt(td.zone)} $`}
-    :td&&td.amt?{c:'var(--accent)',t:`Ordre : ${td.amt.toLocaleString('fr-FR')} € à ${fmt(td.zone)} $`,s:`encore ${((td.zone/last.c-1)*100).toFixed(1)} % de baisse pour le déclencher`}
-    :td&&td.sc<0?{c:'var(--down)',t:'Sommet probable : on n\'achète pas',s:nb?`prochaine zone ${dl(nb.a)} · ${fmt(nb.zone)} $`:''}
-    :{c:'var(--fg)',t:'On attend le prochain repli',s:nb?`prochaine zone ${dl(nb.a)} · ${nb.amt.toLocaleString('fr-FR')} € à ${fmt(nb.zone)} $`:'aucun repli prévu'}; 
+  const act={c:trig?(hitZone.confirmed?'var(--buy)':'var(--accent)'):'var(--fg)',t:trig?(hitZone.confirmed?'Rebond confirmé dans une zone':'Zone d’achat touchée · attendre confirmation'):'Radar de supports dynamiques',s:trig?(hitZone.confirmed?'Rejet haussier détecté · confirmation technique':'Support touché, rebond non confirmé'):buyZones.length?'Supports calculés sous surveillance':'Pas de confluence suffisante'};
   /* 3 raisons, en pastilles */
   const wt=I.wt2[I.lastClosed],m=m2Read(I,I.lastClosed);
   const chip=(l,v,c)=>`<span class="chip"><i style="background:${c}"></i>${l} <b>${v}</b></span>`;
@@ -2663,8 +2660,8 @@ async function renderHome(){
   const regime=K.rg>0?['HAUSSIER','var(--up)']:K.rg<0?['BAISSIER','var(--down)']:['NEUTRE','var(--accent)'];
   const probLabel=p=>p==null?'—':Math.round(p*100)+' %';
   const fmtProb=(p)=>p==null?'Données insuffisantes':p>=.6?'Biais haussier':p<=.4?'Biais baissier':'Pas d’avantage net';
-  const actionTitle=trig?'Zone d’achat atteinte':td&&td.amt?'Ordre d’achat en attente':td&&td.sc<0?'Patience : risque de sommet':'Attendre un repli';
-  const actionDetail=trig?act.s:td&&td.amt?act.s:nb?'Prochaine zone surveillée : '+fmt(nb.zone)+' $':'Aucune zone d’achat imminente';
+  const actionTitle=trig?(hitZone.confirmed?'Zone touchée · réaction haussière détectée':'Zone d’achat pertinente touchée'):'Radar de supports dynamiques';
+  const actionDetail=trig?'BTC '+fmt(hitZone.lo)+' – '+fmt(hitZone.hi)+' $ · score '+hitZone.score+'/100 · '+hitZone.types.join(' / '):buyZones.length?'Zone la plus proche : '+fmt(buyZones[0].lo)+' – '+fmt(buyZones[0].hi)+' $ · score '+buyZones[0].score+'/100':'Le modèle attend plusieurs confluences techniques avant de proposer un niveau.';
   el.innerHTML=`
   <div class="ck-top"><div class="ck-brand"><span class="ck-mark">₿</span><span>CRISTAL <b>BTC</b></span></div><span class="ck-live"><i></i>${isDemo?'MODE DÉMO':'MARCHÉ · '+($('src')?.textContent||'LIVE')}</span></div>
   <section class="ck-hero">
@@ -2677,12 +2674,11 @@ async function renderHome(){
     <div class="ck-decision-main"><div class="ck-decision-icon" style="color:${act.c}">${trig?'↗':td&&td.amt?'◎':td&&td.sc<0?'Ⅱ':'…'}</div><div><h2>${actionTitle}</h2><p>${actionDetail}</p></div></div>
     <div class="ck-decision-foot">Décision indicative · pas un ordre automatique</div>
   </section>
-  <section class="ck-buy-zones">
-    <div class="ck-section-head"><span>ZONES D’ACHAT · PLAN DCA</span><span class="ck-tag">${buyZones.length?'SURVEILLANCE':'AUCUNE ZONE'}</span></div>
-    ${buyZones.length?buyZones.map((z,i)=>{const dist=(z.zone/last.c-1)*100,active=last.c<=z.zone;return `<div class="ck-buy-row ${active?'is-active':''}"><div class="ck-buy-rank">${String(i+1).padStart(2,'0')}</div><div class="ck-buy-info"><b>${fmt(z.zone)} $</b><small>${dl(z.a)} · ${z.ph==='creux'?'CREUX / ACCUMULATION':'REPLI PROGRAMMÉ'}</small></div><div class="ck-buy-meta"><b>${z.amt.toLocaleString('fr-FR')} €</b><small>${active?'ZONE ATTEINTE':(dist>=0?'+':'')+dist.toFixed(1)+' %'}</small></div><div class="ck-buy-bar"><i style="width:${Math.max(4,Math.min(100,100/(1+Math.max(0,-dist))))}%"></i></div></div>`;}).join(''):`<p class="ck-forecast-note">Aucune tranche d’achat planifiée dans les 53 prochains jours. Le modèle n’invente pas de niveau.</p>`}
-    <p class="ck-forecast-note">Niveaux et montants issus du calendrier de replis Crystal Ball · plan indicatif, à confirmer avec le marché et les frais.</p>
-  </section>
-  <div class="ck-section-head ck-forecast-head"><span>SCÉNARIOS HISTORIQUES</span><span class="ck-muted">Probabilité de clôturer plus haut</span></div>
+  <section class="ck-buy-zones ck-dynamic-radar ${trig?'radar-hit':''}">
+    <div class="ck-section-head"><span>RADAR D’ACHAT · SUPPORTS DYNAMIQUES</span><span class="ck-tag">${trig?(hitZone.confirmed?'REBOND':'ZONE TOUCHÉE'):buyZones.length+' ZONES'}</span></div>
+    ${buyZones.length?buyZones.map((z,i)=>{const active=spot>=z.lo&&spot<=z.hi,dist=(z.mid/spot-1)*100;return `<div class="ck-buy-row ${active?'is-active':''}"><div class="ck-buy-rank">${String(i+1).padStart(2,'0')}</div><div class="ck-buy-info"><b>${fmt(z.lo)} – ${fmt(z.hi)} $</b><small>${z.types.join(' · ')} · ${z.touches} contacts</small></div><div class="ck-buy-meta"><b>${z.score}/100</b><small>${active?(z.confirmed?'↗ REBOND':'⚡ TOUCHÉE'):(dist>=0?'+':'')+dist.toFixed(1)+' %'}</small></div><div class="ck-buy-bar"><i style="width:${z.score}%"></i></div></div>`;}).join(''):`<p class="ck-forecast-note">Aucune zone ne réunit assez de confluences. Le radar préfère ne pas inventer un support.</p>`}
+    <p class="ck-forecast-note">Pivots confirmés · EMA50/200 · plus bas 30/90 j · FVG daily. Le flash signale le contact ; le rebond exige un rejet haussier et une confirmation de volume ou de momentum. Score technique, pas probabilité.</p>
+  </section>  <div class="ck-section-head ck-forecast-head"><span>SCÉNARIOS HISTORIQUES</span><span class="ck-muted">Probabilité de clôturer plus haut</span></div>
   <div class="ck-prob-grid">
     <div class="ck-prob"><span>30 JOURS</span><strong>${probLabel(p30)}</strong><small>${fmtProb(p30)}</small></div>
     <div class="ck-prob"><span>90 JOURS</span><strong>${probLabel(p90)}</strong><small>${fmtProb(p90)}</small></div>
