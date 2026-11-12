@@ -2620,10 +2620,10 @@ function buildDynamicBuyZones(d,I,price){
   const width=Math.max(atr*.32,z.p*.002);
   const c=d[i],body=Math.abs(c.c-c.o),lower=Math.min(c.o,c.c)-c.l,vol=+(c.qv??c.v??0);
   const rejection=c.c>c.o&&lower>=Math.max(body,atr*.08)*1.15;
-  const volumeOK=!(vol>0&&avgVol>0)||vol>=avgVol*1.15;
+  const volumeOK=vol>0&&avgVol>0&&vol>=avgVol*1.15;
   const momentum=(rsi!=null&&I.rsiD?.[i-1]!=null&&rsi>I.rsiD[i-1])||(wt!=null&&I.wt2?.[i-1]!=null&&wt>I.wt2[i-1]);
   return {lo:z.p-width,hi:z.p+width,mid:z.p,score,types:[...new Set(z.types)],touches,rejection,volumeOK,momentum,confirmed:rejection&&(volumeOK||momentum)};
- }).filter(z=>z.hi<price*1.035&&z.score>=48).sort((a,b)=>b.score-a.score).slice(0,8).sort((a,b)=>b.mid-a.mid).slice(0,5);
+ }).filter(z=>z.mid<=price*1.01&&z.hi<price*1.035&&z.score>=48).sort((a,b)=>b.score-a.score).slice(0,8).sort((a,b)=>b.mid-a.mid).slice(0,5);
 }
 
 let homeH=store.get('btcz_homeH',182),orbScenario=store.get('btcz_orb_scenario','p50');
