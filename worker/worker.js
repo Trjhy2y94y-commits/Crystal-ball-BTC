@@ -22,6 +22,21 @@ async function checkRateLimit(request, limiter) {
   }
 }
 
+function logProviderFailure(kind, upstream, data) {
+  const providerError = data && typeof data.error === "object" ? data.error : {};
+  // Log diagnostic metadata only: never log prompts, user messages, headers, or secrets.
+  console.error(JSON.stringify({
+    event: "jarvis_provider_failure",
+    kind,
+    status: upstream?.status ?? null,
+    requestId: upstream?.headers?.get("x-request-id") || null,
+    errorType: typeof providerError.type === "string" ? providerError.type.slice(0, 100) : null,
+    errorCode: typeof providerError.code === "string" ? providerError.code.slice(0, 100) : null,
+    errorParam: typeof providerError.param === "string" ? providerError.param.slice(0, 100) : null,
+    errorMessage: typeof providerError.message === "string" ? providerError.message.slice(0, 500) : null
+  }));
+}
+
 async function readLimitedText(request, maxBytes) {
   const declared = Number(request.headers.get("Content-Length"));
   if (Number.isFinite(declared) && declared > maxBytes) return { tooLarge: true, text: "" };
@@ -214,19 +229,34 @@ export default {
           store: false
         })
       });
-    } catch {
+    } catch (error) {
+      console.error(JSON.stringify({
+        event: "jarvis_provider_failure",
+        kind: "network",
+        errorName: error instanceof Error ? error.name.slice(0, 100) : "UnknownError",
+        errorMessage: error instanceof Error ? error.message.slice(0, 300) : "Unknown network error"
+      }));
       return json({ error: "AI provider unavailable" }, 502, allowedOrigin);
     }
 
     const data = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
-      return json({ error: "AI provider error", status: upstream.status }, 502, allowedOrigin);
+      logProviderFailure("responses_api", upstream, data);
+      return json({
+        error: "AI provider error",
+        status: upstream.status,
+        code: typeof data?.error?.code === "string" ? data.error.code : null,
+        type: typeof data?.error?.type === "string" ? data.error.type : null
+      }, 502, allowedOrigin);
     }
     const reply = typeof data.output_text === "string" ? data.output_text :
       (data.output || []).flatMap(item => item.content || [])
         .filter(item => item.type === "output_text")
         .map(item => item.text || "").join("\n");
-    if (!reply.trim()) return json({ error: "Empty model response" }, 502, allowedOrigin);
+    if (!reply.trim()) {
+      console.error(JSON.stringify({ event: "jarvis_provider_failure", kind: "empty_response", status: upstream.status, requestId: upstream.headers.get("x-request-id") || null }));
+      return json({ error: "Empty model response" }, 502, allowedOrigin);
+    }
     return json({ reply: reply.trim().slice(0, 12000), model: env.OPENAI_MODEL }, 200, allowedOrigin);
   }
 };
