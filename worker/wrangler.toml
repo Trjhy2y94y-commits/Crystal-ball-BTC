@@ -6,3 +6,20 @@ compatibility_date = "2026-11-12"
 OPENAI_MODEL = "gpt-6-astra"
 OPENAI_REALTIME_MODEL = "gpt-realtime-2.1"
 JARVIS_ALLOWED_ORIGIN = "https://trjhy2y94y-commits.github.io"
+
+# Approximate per-IP safeguards. Namespace IDs must be unique within your Cloudflare account.
+[[ratelimits]]
+name = "JARVIS_CHAT_LIMITER"
+namespace_id = "2026111201"
+
+  [ratelimits.simple]
+  limit = 30
+  period = 60
+
+[[ratelimits]]
+name = "JARVIS_VOICE_LIMITER"
+namespace_id = "2026111202"
+
+  [ratelimits.simple]
+  limit = 8
+  period = 60
