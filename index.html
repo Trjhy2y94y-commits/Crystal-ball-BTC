@@ -3124,10 +3124,23 @@ setInterval(updateQuantTerminal,2000);
  $j('jvForget').addEventListener('click',()=>{endpoint='';endpointInput.value='';store.set('jarvis_endpoint','');history.length=0;connection.textContent='Passerelle déconnectée. Mode local actif.';$j('jvEngineState').textContent='MOTEUR IA À CONNECTER';$j('jvBrain').textContent='Non connecté';});
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  $j('jvVoice').textContent=SR?'Disponible si autorisé':'Non pris en charge ici';
- $j('jvMic').addEventListener('click',()=>{if(!SR){$j('jvStatus').textContent='Dictée iOS du clavier disponible en alternative.';input.focus();return;}
-  try{if(activeRecognition){activeRecognition.stop();activeRecognition=null;}const rec=new SR();activeRecognition=rec;rec.lang='fr-FR';rec.interimResults=false;rec.maxAlternatives=1;rec.onstart=()=>{core.classList.add('listening');$j('jvStatus').textContent='Je t’écoute…';};rec.onresult=e=>{input.value=e.results[0][0].transcript; $j('jvForm').requestSubmit();};rec.onerror=e=>$j('jvStatus').textContent='Micro : '+e.error;rec.onend=()=>{core.classList.remove('listening');if(activeRecognition===rec)activeRecognition=null;};rec.start();}catch(e){$j('jvStatus').textContent='Autorise le microphone dans les réglages du navigateur.';}
- });
- $j('jvStop').addEventListener('click',()=>{if(activeRecognition){try{activeRecognition.stop();}catch(e){}activeRecognition=null;}if('speechSynthesis'in window)window.speechSynthesis.cancel();core.classList.remove('speaking','listening');$j('jvStatus').textContent='Voix arrêtée.';});
+ let rtc=null,rtcStream=null,rtcAudio=null,rtcChannel=null;
+ const stopRealtime=()=>{try{rtcChannel?.close();}catch(e){}try{rtc?.close();}catch(e){}rtcStream?.getTracks().forEach(t=>t.stop());rtc=null;rtcStream=null;rtcChannel=null;if(rtcAudio){rtcAudio.srcObject=null;rtcAudio.remove();rtcAudio=null;}core.classList.remove('listening','speaking');};
+ const startRealtime=async()=>{if(!endpoint)throw new Error('Configure d’abord la passerelle IA sécurisée.');if(!navigator.mediaDevices?.getUserMedia||!window.RTCPeerConnection)throw new Error('WebRTC/micro non disponible dans ce navigateur.');stopRealtime();$j('jvStatus').textContent='Ouverture du canal vocal sécurisé…';
+  rtcStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  rtc=new RTCPeerConnection();rtcAudio=document.createElement('audio');rtcAudio.autoplay=true;rtcAudio.playsInline=true;rtcAudio.style.display='none';document.body.appendChild(rtcAudio);
+  rtc.ontrack=e=>{rtcAudio.srcObject=e.streams[0];rtcAudio.play().catch(()=>{});};
+  rtcStream.getTracks().forEach(t=>rtc.addTrack(t,rtcStream));rtcChannel=rtc.createDataChannel('oai-events');
+  rtcChannel.onopen=()=>{$j('jvStatus').textContent='JARVIS vocal connecté · parle naturellement';$j('jvEngineState').textContent='SESSION VOCALE EN DIRECT';$j('jvBrain').textContent='Realtime connecté';core.classList.add('listening');};
+  rtcChannel.onmessage=e=>{try{const v=JSON.parse(e.data);if(v.type==='response.output_audio_transcript.done'||v.type==='response.output_text.done'){const t=v.transcript||v.text;if(t)add('bot',t);}if(v.type==='input_audio_buffer.speech_started')core.classList.add('listening');if(v.type==='response.done')core.classList.remove('speaking');}catch(err){}};
+  const offer=await rtc.createOffer();await rtc.setLocalDescription(offer);
+  const answer=await fetch(endpoint.replace(/\/api\/jarvis\/?$/,'/api/session'),{method:'POST',headers:{'Content-Type':'application/sdp'},body:offer.sdp});
+  if(!answer.ok)throw new Error('Session vocale refusée · HTTP '+answer.status);
+  await rtc.setRemoteDescription({type:'answer',sdp:await answer.text()});
+ };
+ $j('jvMic').addEventListener('click',async()=>{if(rtc){stopRealtime();$j('jvStatus').textContent='Session vocale terminée.';return;}try{await startRealtime();}catch(e){stopRealtime();$j('jvStatus').textContent=String(e.message||e);}});
+
+ $j('jvStop').addEventListener('click',()=>{if(activeRecognition){try{activeRecognition.stop();}catch(e){}activeRecognition=null;}stopRealtime();if('speechSynthesis'in window)window.speechSynthesis.cancel();core.classList.remove('speaking','listening');$j('jvStatus').textContent='Voix arrêtée.';});
  const update=()=>{const m=market();$j('jvPrice').textContent=m.p;};
  update();setInterval(update,2000);
 })();
