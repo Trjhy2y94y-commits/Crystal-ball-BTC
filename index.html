@@ -3320,7 +3320,7 @@ setInterval(updateQuantTerminal,2000);
   $j('jvStatus').textContent='Clic micro détecté · demande d’accès au microphone…';
   startRealtime().catch(err=>{voiceStarting=false;stopRealtime();$j('jvStatus').textContent='Voix indisponible : '+String(err.message||err);});
  },true);
- $j('jvMic').addEventListener('click',async()=>{stopWakeWord();if(rtc){stopRealtime();$j('jvStatus').textContent='Session vocale terminée.';return;}try{await startRealtime();}catch(e){voiceStarting=false;stopRealtime();$j('jvStatus').textContent=String(e.message||e);}});
+ // Un seul gestionnaire micro : le listener document en capture ci-dessus évite le double démarrage WebRTC sur iOS.
  $j('jvStop').addEventListener('click',()=>{stopWakeWord();if(activeRecognition){try{activeRecognition.stop();}catch(e){}activeRecognition=null;}stopRealtime();if('speechSynthesis'in window)window.speechSynthesis.cancel();core.classList.remove('speaking','listening');$j('jvStatus').textContent='Voix et mot-clé désactivés.';});
  const update=()=>{const m=market();$j('jvPrice').textContent=m.p;};
  update();setInterval(update,2000);
