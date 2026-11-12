@@ -2226,7 +2226,7 @@ function forecastTrustHTML(A){
   const why=robust?'Échantillon suffisant, dérive normale et résultat au moins aussi bon que la référence.':cautious?(d.status==='DÉGRADATION'?'Dérive détectée : réduire le poids accordé au scénario.':'Échantillon, calibration ou comparaison à la référence encore insuffisants pour conclure.'):'Pas assez de prévisions strictes et récentes pour qualifier ce scénario.';
   const cal=x.calibration||{},v=cal.validation;const calText=v?'Calibration holdout · Brier '+(v.rawBrier*100).toFixed(1)+' → '+(v.calibratedBrier*100).toFixed(1)+' % · ECE '+(v.rawECE*100).toFixed(1)+' → '+(v.calibratedECE*100).toFixed(1)+' %':'Calibration '+(cal.status||'non calculable');return '<div class="ck-trust-row"><div><b>J+'+x.h+'</b><span class="'+cls+'">'+label+'</span></div><strong>'+(score==null?'—':score+'/100')+'</strong><small>N strict '+n+' · récent '+rn+' · dérive '+(d.status||'—')+' · BSS '+(bss==null?'—':(bss*100).toFixed(1)+' %')+'</small><p>'+why+'</p><small>'+calText+' · '+(cal.status||'non validée')+'</small></div>';
  }).join('');
- const ab=A.rows.map(x=>{const z=x.ablation||{};const labels={regime:'Régime seul',regimeMomentum:'Régime + momentum',regimeVolatility:'Régime + volatilité',unfiltered:'Historique global'};return '<div class="ck-trust-row"><b>J+'+x.h+' · Ablation</b>'+Object.entries(labels).map(([k,label])=>{const v=z[k];return '<small>'+label+' · N '+(v?.n||0)+' · Brier '+(v?.brier==null?'—':(v.brier*100).toFixed(1)+' %')+' · Δ vs complet '+(v?.vsFullBrier==null?'—':(v.vsFullBrier*100).toFixed(2)+' pt')+'</small>';}).join('')+'</div>';}).join('');
+ const ab=A.rows.map(x=>{const z=x.ablation||{};const labels={regime:'Régime seul',regimeMomentum:'Régime + momentum',regimeVolatility:'Régime + volatilité',unfiltered:'Historique global',fvg:'FVG seul',vp:'Volume Profile seul',flow:'SMC / Wyckoff / Elliott',rsi:'Divergences RSI',fvgvp:'FVG + Volume Profile',advanced:'FVG + VP + flux + RSI'};return '<div class="ck-trust-row"><b>J+'+x.h+' · Ablation</b>'+Object.entries(labels).map(([k,label])=>{const v=z[k];return '<small>'+label+' · N '+(v?.n||0)+' · Brier '+(v?.brier==null?'—':(v.brier*100).toFixed(1)+' %')+' · Δ vs complet '+(v?.vsFullBrier==null?'—':(v.vsFullBrier*100).toFixed(2)+' pt')+'</small>';}).join('')+'</div>';}).join('');
  return '<div class="ck-trust-grid">'+rows+'</div><div class="ck-trust-grid">'+ab+'</div><p class="ck-forecast-note">Ablation chronologique : mêmes origines et même période récente pour chaque variante. Δ Brier négatif = meilleur que le modèle complet. Si un sous-échantillon contient moins de 60 observations, repli sur l’historique global. Comparaison prédictive, pas preuve de causalité ; aucun poids ni aucune probabilité du moteur ne sont modifiés.</p><p class="ck-forecast-note">Indice de robustesse indépendant des probabilités P(hausse) et des quantiles P10/P50/P90. « Étayée » exige des critères cumulatifs stricts ; ce statut ne garantit pas la prochaine prévision et ne constitue pas un conseil d’investissement.</p>';
 }
 function trajectoryWalkForwardHTML(A){
@@ -2412,7 +2412,8 @@ function priceForecastAudit(D){
 function strictHoldoutAudit(D){
  const I=D.ind,C=I.Cl||D.rows.map(x=>x.c),R=I.rgA||[],M=I.wt2||[],end=Math.min(C.length-1,I.lastClosed??C.length-1);
  if(D.demo||end<1200)return{rows:[],reason:D.demo?'Mode démo : test strict suspendu.':'Historique insuffisant pour un audit hors échantillon strict.'};
- const hs=[30,90,365],out=[];
+ const hs=[30,90,365],out=[],featureCache=new Map();
+ const featuresAt=i=>{if(!featureCache.has(i))featureCache.set(i,historicalStructureFeatures(D.rows,i));return featureCache.get(i);};
  const q=(a,p)=>{if(!a.length)return null;const z=a.slice().sort((x,y)=>x-y),v=(z.length-1)*p,k=Math.floor(v);return z[k]+(z[Math.min(k+1,z.length-1)]-z[k])*(v-k);};
  const mom=i=>M[i]==null?0:M[i]<=-40?-1:M[i]>=40?1:0;
  const vol=i=>{if(i<30)return 1;let a=0,b=0,n=0;for(let k=i-29;k<=i;k++){if(C[k]>0&&C[k-1]>0){const x=Math.log(C[k]/C[k-1]);a+=x;b+=x*x;n++;}}if(n<25)return 1;const v=Math.sqrt(Math.max(0,b/n-(a/n)**2));return v;};
@@ -2426,7 +2427,7 @@ function strictHoldoutAudit(D){
   const first=Math.max(700,Math.floor(end*.30)),last=end-h,stride=h;
   const model=[],base=[],ablationSets={full:[],regime:[],regimeMomentum:[],regimeVolatility:[],unfiltered:[]};let origins=0,strict=0,fallbackRegime=0,fallbackAll=0;
   for(let i=first;i<=last;i+=stride){
-   const train=[];for(let j=220;j+h<=i;j+=7){const r=Math.log(C[j+h]/C[j]);if(Number.isFinite(r))train.push({r,reg:R[j]??0,mom:mom(j),vol:vbucket(j)});}
+   const train=[];for(let j=220;j+h<=i;j+=7){const r=Math.log(C[j+h]/C[j]);if(Number.isFinite(r)){const ft=featuresAt(j);train.push({r,reg:R[j]??0,mom:mom(j),vol:vbucket(j),fvg:ft.fvg,vp:ft.vp,flow:ft.flow,rsiDiv:ft.rsiDiv});}}
    if(train.length<60)continue;
    const same=train.filter(x=>x.reg===(R[i]??0)&&x.mom===mom(i)&&x.vol===vbucket(i));
    let chosen=same,mode='strict';
@@ -2436,7 +2437,9 @@ function strictHoldoutAudit(D){
    const actual=Math.log(C[i+h]/C[i]),bp=q(train.map(x=>x.r),.5),blo=q(train.map(x=>x.r),.1),bhi=q(train.map(x=>x.r),.9),baseProb=train.filter(x=>x.r>0).length/train.length,up=actual>0?1:0;
    const make=(sample,tag)=>{const med=q(sample.map(x=>x.r),.5),lo=q(sample.map(x=>x.r),.1),hi=q(sample.map(x=>x.r),.9),pr=sample.filter(x=>x.r>0).length/sample.length,e=Math.abs(Math.exp(med-actual)-1);return{err:e,hit5:e<=.05,dir:Math.sign(med)===Math.sign(actual),cover:actual>=lo&&actual<=hi,brier:(pr-up)**2,prob:pr,up,phase:tag,trainN:sample.length};};
    const tag=phase(i);model.push(make(chosen,tag));base.push({err:Math.abs(Math.exp(bp-actual)-1),hit5:Math.abs(Math.exp(bp-actual)-1)<=.05,dir:Math.sign(bp)===Math.sign(actual),cover:actual>=blo&&actual<=bhi,brier:(baseProb-up)**2,prob:baseProb,up,phase:tag});
-   const variants={full:chosen,regime:train.filter(x=>x.reg===(R[i]??0)),regimeMomentum:train.filter(x=>x.reg===(R[i]??0)&&x.mom===mom(i)),regimeVolatility:train.filter(x=>x.reg===(R[i]??0)&&x.vol===vbucket(i)),unfiltered:train};
+   const currentFeatures=featuresAt(i),matches=key=>chosen.filter(x=>x[key]===currentFeatures[key]),fvgMatch=matches('fvg'),vpMatch=matches('vp'),flowMatch=matches('flow'),rsiMatch=matches('rsiDiv'),fvgvpMatch=chosen.filter(x=>x.fvg===currentFeatures.fvg&&x.vp===currentFeatures.vp),advancedMatch=fvgvpMatch.filter(x=>x.flow===currentFeatures.flow&&x.rsiDiv===currentFeatures.rsiDiv);
+   const enough=x=>x.length>=60?x:chosen;
+   const variants={full:chosen,regime:train.filter(x=>x.reg===(R[i]??0)),regimeMomentum:train.filter(x=>x.reg===(R[i]??0)&&x.mom===mom(i)),regimeVolatility:train.filter(x=>x.reg===(R[i]??0)&&x.vol===vbucket(i)),unfiltered:train,fvg:enough(fvgMatch),vp:enough(vpMatch),flow:enough(flowMatch),rsi:enough(rsiMatch),fvgvp:enough(fvgvpMatch),advanced:enough(advancedMatch)};
    Object.entries(variants).forEach(([key,sample])=>{const use=sample.length>=60?sample:train;ablationSets[key].push(make(use,tag));});
    origins++;
   }
