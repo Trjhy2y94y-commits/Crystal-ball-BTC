@@ -142,11 +142,12 @@ test("issues a short-lived mobile Realtime token without exposing the server API
   try {
     const response = await worker.fetch(request("/api/mobile-token", { body: "{}" }), env);
     assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), { token: "ek_mobile_ephemeral", expires_at: 1900000000 });
+    assert.deepEqual(await response.json(), { token: "ek_mobile_ephemeral", model: "gpt-realtime-2.1", expires_at: 1900000000 });
     assert.equal(upstream.url, "https://api.openai.com/v1/realtime/client_secrets");
     assert.equal(upstream.options.headers.Authorization, "Bearer test-secret");
     assert.equal(upstream.body.expires_after.seconds, 600);
     assert.equal(upstream.body.session.type, "realtime");
+    assert.equal(upstream.body.session.model, "gpt-realtime-2.1");
     assert.equal(upstream.body.session.audio.output.voice, "cedar");
     assert.equal(upstream.body.session.audio.input.format.rate, 24000);
   } finally {
