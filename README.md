@@ -18,6 +18,9 @@ Application web progressive (PWA) d'analyse du marché Bitcoin, optimisée pour 
 - Liquidité macro : source configurable dans les réglages (Worker Cloudflare facultatif).
 - Si les sources de marché sont indisponibles, l'application affiche une série de démonstration clairement signalée. Ne pas interpréter cette démo comme un cours réel.
 
+## JARVIS vocal
+L’interface JARVIS propose un mode local et peut se connecter à un Worker Cloudflare privé. Le déploiement du backend et la configuration d’une clé API côté serveur sont requis pour activer le dialogue avec un modèle IA. Voir [le guide du backend](worker/README.md). Aucun secret ne doit être ajouté au code de la PWA.
+
 ## Méthode et limites
 Les scores, signaux, divergences, projections et backtests sont des outils d'analyse, pas des garanties ni des conseils financiers. Les résultats historiques peuvent être sensibles à la période et à la taille de l'échantillon. Les études de rendement brut ne représentent pas nécessairement un résultat net exécutable ; frais, spread, slippage, financement, fiscalité et contraintes de liquidité peuvent différer des hypothèses affichées.
 
