@@ -51,6 +51,9 @@ export default {
       wavetrend: String(market.wavetrend || "unavailable").slice(0, 80),
       rsi: String(market.rsi || "unavailable").slice(0, 80),
       source: String(market.source || "unavailable").slice(0, 120),
+      forecast: String(market.forecast || "unavailable").slice(0, 1800),
+      buyRadar: String(market.buyRadar || "unavailable").slice(0, 1400),
+      activeModule: String(market.activeModule || "unknown").slice(0, 40),
       capturedAt: String(market.capturedAt || "unknown").slice(0, 80)
     });
 
