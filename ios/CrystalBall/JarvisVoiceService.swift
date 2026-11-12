@@ -183,7 +183,11 @@ final class JarvisVoiceService: ObservableObject {
     }
 
     func startWakeWord(workerURL: String) async {
-        guard !isConnected else { return }
+        guard !isConnected, wakeEngine == nil else { return }
+        guard let url = URL(string: workerURL), url.scheme == "https", url.path.hasSuffix("/api/mobile-token") else {
+            setStatus("Configure d’abord la passerelle HTTPS /api/mobile-token.")
+            return
+        }
         currentWorkerURL = workerURL
         let authorization = await withCheckedContinuation { continuation in
             SFSpeechRecognizer.requestAuthorization { continuation.resume(returning: $0) }
