@@ -19,6 +19,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Validate secure JARVIS Worker syntax
+        run: node --check worker/worker.js
       - name: Validate PWA and local assets
         run: |
           python - <<'PY'
@@ -173,6 +175,14 @@ jobs:
 
               page.locator('.tabbar button[data-tab="cal"]').click()
               assert page.locator("#vCal").is_visible(), "Calendar tab did not open"
+
+              page.locator('.tabbar button[data-tab="jarvis"]').click()
+              assert page.locator("#vJarvis").is_visible(), "JARVIS tab did not open"
+              assert page.locator("#jvEndpoint").is_visible(), "JARVIS secure backend field is missing"
+              assert page.locator("#jvConnect").is_visible(), "JARVIS connection test control is missing"
+              page.locator("#jvInput").fill("ouvre analyse")
+              page.locator("#jvForm button[type=submit]").click()
+              assert page.locator("#vChart").is_visible(), "JARVIS local navigation command failed"
 
               page.locator('.tabbar button[data-tab="stats"]').click()
               assert page.locator("#vStats").is_visible(), "Stats tab did not open"
