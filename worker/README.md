@@ -13,6 +13,15 @@ This Worker is the private server-side bridge between the public Crystal Ball PW
 
 The endpoint's OPTIONS response checks CORS reachability; send a message to verify the model credentials and model access. The same Worker also exposes `/api/session` for low-latency speech-to-speech WebRTC using `OPENAI_REALTIME_MODEL` (default `gpt-realtime-2.1`) and `/api/mobile-token` for native iOS clients. The mobile route mints a short-lived Realtime client secret; the standard API key never leaves the Worker. The iOS app uses the resulting ephemeral token over a Realtime WebSocket and 24 kHz PCM audio. The session enables French live input transcription (`gpt-live-transcribe`) so JARVIS can show the user's recognized utterances in the conversation log. In the PWA, enter the Worker `/api/jarvis` URL and tap **CONNECTER / TESTER**, then tap **PARLER** to start a realtime voice session. The microphone permission is requested only after that tap. In the native iOS app, enter the Worker URL ending in `/api/mobile-token` in JARVIS settings.
 
+## Deploy from GitHub Actions
+
+A manual production deployment workflow is available at **Actions → Deploy JARVIS Cloudflare Worker → Run workflow**. Before running it, add these two repository Actions secrets under **Settings → Secrets and variables → Actions**:
+
+- `CLOUDFLARE_API_TOKEN`: a Cloudflare API token scoped to the account and Workers Scripts deployment permissions for this Worker.
+- `OPENAI_API_KEY`: the OpenAI API key for the project that has access to the configured Responses and Realtime models.
+
+The workflow uses Wrangler 4.36.0, stores `OPENAI_API_KEY` as a Worker secret, then deploys the configuration in this directory. It is manual-only: pushing code does not deploy to production. Never put either secret in source files, issue comments, or chat.
+
 ## Required server settings
 
 - `OPENAI_API_KEY`: secret set with Wrangler, never commit it.
