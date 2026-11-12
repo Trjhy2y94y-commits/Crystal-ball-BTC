@@ -147,7 +147,7 @@ test("issues a short-lived mobile Realtime token without exposing the server API
     assert.equal(upstream.options.headers.Authorization, "Bearer test-secret");
     assert.equal(upstream.body.expires_after.seconds, 600);
     assert.equal(upstream.body.session.type, "realtime");
-    assert.equal(upstream.body.session.audio.output.voice, "ash");
+    assert.equal(upstream.body.session.audio.output.voice, "cedar");
     assert.equal(upstream.body.session.audio.input.format.rate, 24000);
   } finally {
     globalThis.fetch = originalFetch;
