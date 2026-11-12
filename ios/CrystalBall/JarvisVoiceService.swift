@@ -215,7 +215,8 @@ final class JarvisVoiceService: ObservableObject {
             try engine.start()
             setStatus("En veille · dis « Salut Jarvis »")
             speechTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
-                guard let self, let result else { if error != nil { self.setStatus("Écoute vocale interrompue.") }; return }
+                guard let self else { return }
+                guard let result else { if error != nil { self.setStatus("Écoute vocale interrompue.") }; return }
                 let phrase = result.bestTranscription.formattedString.lowercased().folding(options: .diacriticInsensitive, locale: .current)
                 if phrase.contains("salut jarvis") || phrase.contains("bonjour jarvis") {
                     self.stopWakeWord()
