@@ -3,6 +3,8 @@ import AppIntents
 
 @main
 struct CrystalBallApp: App {
+    @StateObject private var marketContext = MarketContextStore()
+
     var body: some Scene {
         WindowGroup {
             TabView {
@@ -11,6 +13,7 @@ struct CrystalBallApp: App {
                 CrystalBallDashboard()
                     .tabItem { Label("Crystal Ball", systemImage: "chart.xyaxis.line") }
             }
+            .environmentObject(marketContext)
             .preferredColorScheme(.dark)
         }
     }
