@@ -3409,6 +3409,8 @@ function tick(){const now=Date.now();if(now-lastCalc<2000){if(!calcT)calcT=setTi
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||isDemo)return;connectWS();load(true);});
 /* filet de sécurité : rechargement complet toutes les 5 min avec le flux, toutes les minutes sans */
 setInterval(()=>{if(isDemo||document.visibilityState!=='visible')return;if(!wsOk||Date.now()-lastFull>300e3)load(true);},60000);
+/* Watchdog indépendant du WebSocket : retire le statut LIVE si le flux se fige sans fermer la socket. */
+setInterval(()=>{if(document.visibilityState!=='visible'||isDemo)return;if(wsOk&&!hasFreshSpot(15000)){setBadge();updateHeader();updateQuantTerminal();}},5000);
 })();
 </script>
 
