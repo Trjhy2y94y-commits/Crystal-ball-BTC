@@ -2306,6 +2306,45 @@ function priceForecastAudit(D){
   return{demo:false,rows:out,macro:I.real&&!!I.liq,source:I.real?'Composite M2/liquidité décalée':'M2 indisponible · modèle sans filtre macro',
     features:'FVG multi-unités + Volume Profile 90D + SMC/Wyckoff/Elliott + divergences RSI daily/weekly/monthly'};
 }
+/* Audit strict : blocs de test non chevauchants, chaque prévision ne voit que les rendements déjà maturés. */
+function strictHoldoutAudit(D){
+ const I=D.ind,C=I.Cl||D.rows.map(x=>x.c),R=I.rgA||[],M=I.wt2||[],end=Math.min(C.length-1,I.lastClosed??C.length-1);
+ if(D.demo||end<1200)return{rows:[],reason:D.demo?'Mode démo : test strict suspendu.':'Historique insuffisant pour un audit hors échantillon strict.'};
+ const hs=[30,90,365],out=[];
+ const q=(a,p)=>{if(!a.length)return null;const z=a.slice().sort((x,y)=>x-y),v=(z.length-1)*p,k=Math.floor(v);return z[k]+(z[Math.min(k+1,z.length-1)]-z[k])*(v-k);};
+ const mom=i=>M[i]==null?0:M[i]<=-40?-1:M[i]>=40?1:0;
+ const vol=i=>{if(i<30)return 1;let a=0,b=0,n=0;for(let k=i-29;k<=i;k++){if(C[k]>0&&C[k-1]>0){const x=Math.log(C[k]/C[k-1]);a+=x;b+=x*x;n++;}}if(n<25)return 1;const v=Math.sqrt(Math.max(0,b/n-(a/n)**2));return v;};
+ const vols=Array.from({length:end+1},(_,i)=>vol(i));
+ const vbucket=i=>{const hist=vols.slice(Math.max(30,i-365),i).filter(Number.isFinite).sort((a,b)=>a-b);if(!hist.length)return 1;const rank=hist.filter(x=>x<vols[i]).length/hist.length;return rank<.33?0:rank>.67?2:1;};
+ const stats=a=>{const n=a.length;if(!n)return{n:0,mae:null,hit5:null,dir:null,cover:null,brier:null,hitCI:null,dirCI:null,coverCI:null};const w=a.filter(x=>x.hit5).length,d=a.filter(x=>x.dir).length,c=a.filter(x=>x.cover).length;return{n,mae:a.reduce((z,x)=>z+x.err,0)/n,hit5:w/n,dir:d/n,cover:c/n,brier:a.reduce((z,x)=>z+x.brier,0)/n,hitCI:wilson(w,n),dirCI:wilson(d,n),coverCI:wilson(c,n)};};
+ hs.forEach(h=>{
+  const first=Math.max(700,Math.floor(end*.30)),last=end-h,stride=h;
+  const model=[],base=[];let origins=0,strict=0,fallbackRegime=0,fallbackAll=0;
+  for(let i=first;i<=last;i+=stride){
+   const train=[];for(let j=220;j+h<=i;j+=7){const r=Math.log(C[j+h]/C[j]);if(Number.isFinite(r))train.push({r,reg:R[j]??0,mom:mom(j),vol:vbucket(j)});}
+   if(train.length<60)continue;
+   const same=train.filter(x=>x.reg===(R[i]??0)&&x.mom===mom(i)&&x.vol===vbucket(i));
+   let chosen=same,mode='strict';
+   if(chosen.length<60){chosen=train.filter(x=>x.reg===(R[i]??0));mode='regime';}
+   if(chosen.length<60){chosen=train;mode='all';}
+   if(mode==='strict')strict++;else if(mode==='regime')fallbackRegime++;else fallbackAll++;
+   const actual=Math.log(C[i+h]/C[i]),p=q(chosen.map(x=>x.r),.5),lo=q(chosen.map(x=>x.r),.1),hi=q(chosen.map(x=>x.r),.9);
+   const bp=q(train.map(x=>x.r),.5),blo=q(train.map(x=>x.r),.1),bhi=q(train.map(x=>x.r),.9);
+   const prob=chosen.filter(x=>x.r>0).length/chosen.length,baseProb=train.filter(x=>x.r>0).length/train.length,up=actual>0?1:0;
+   const make=(med,l,u,pr)=>({err:Math.abs(Math.exp(med-actual)-1),hit5:Math.abs(Math.exp(med-actual)-1)<=.05,dir:Math.sign(med)===Math.sign(actual),cover:actual>=l&&actual<=u,brier:(pr-up)**2});
+   model.push(make(p,lo,hi,prob));base.push(make(bp,blo,bhi,baseProb));origins++;
+  }
+  out.push({h,model:stats(model),base:stats(base),origins,strict,fallbackRegime,fallbackAll});
+ });
+ return{rows:out,asOf:D.rows[end]?.t};
+}
+function strictHoldoutHTML(A){
+ if(!A.rows.length)return '<p class="note">'+(A.reason||'Pas assez de données pour le test strict.')+'</p>';
+ const pc=x=>x==null?'—':(x*100).toFixed(1)+' %',er=x=>x==null?'—':(x*100).toFixed(2)+' %',ci=x=>!x?'—':Math.round(x[0]*100)+'–'+Math.round(x[1]*100)+' %';
+ const rows=A.rows.map(x=>{const delta=x.model.mae!=null&&x.base.mae!=null?x.model.mae-x.base.mae:null;return '<tr><td>J+'+x.h+'</td><td><b>'+er(x.model.mae)+'</b></td><td>'+pc(x.model.hit5)+'</td><td>'+ci(x.model.hitCI)+'</td><td>'+pc(x.model.dir)+'</td><td>'+ci(x.model.dirCI)+'</td><td>'+pc(x.model.cover)+'</td><td>'+er(x.base.mae)+'</td><td>'+(delta==null?'—':(delta<=0?'−':'＋')+er(Math.abs(delta)))+'</td><td>'+x.model.n+'</td></tr>';}).join('');
+ const n=A.rows.reduce((z,x)=>z+x.origins,0),st=A.rows.reduce((z,x)=>z+x.strict,0),rg=A.rows.reduce((z,x)=>z+x.fallbackRegime,0),all=A.rows.reduce((z,x)=>z+x.fallbackAll,0);
+ return '<table><tr><th>Horizon</th><th>Erreur médiane</th><th>Prix ±5 %</th><th>IC 95 %</th><th>Direction</th><th>IC 95 %</th><th>Couverture P10–90</th><th>Erreur base</th><th>Δ erreur</th><th>N</th></tr>'+rows+'</table><p class="note">Test strict : fenêtres futures non chevauchantes (pas = horizon), apprentissage uniquement sur rendements déjà connus à chaque origine. '+n+' prévisions évaluées ; condition complète '+st+' fois, repli régime '+rg+' fois, historique global '+all+' fois. IC de Wilson à 95 % pour les taux. Une borne large ou un N faible signifie que la performance reste incertaine ; le test ne garantit aucun résultat futur.</p>';
+}
 function priceAuditTable(A){
   if(A.demo||!A.rows.length)return '<p class="note">'+(A.reason||'Pas assez de prévisions historiques indépendantes pour calculer un taux fiable.')+'</p>';
   const pc=x=>x==null?'—':(x*100).toFixed(1)+' %',err=x=>x==null?'—':(x*100).toFixed(2)+' %';
@@ -2480,6 +2519,7 @@ async function renderProj(){
       grp('Référence (tous les jours)',ev(()=>true),true),grp('Indice ≥ 70 (acheter)',ev(v=>v>=70),true),grp('Indice 31–69 (neutre)',ev(v=>v>30&&v<70),true),grp('Indice ≤ 30 (alléger) ↓',ev(v=>v<=30),false)])}
     <p>L'indice de l'accueil est un résumé des critères (signal récent, WaveTrend, M2 sur le mois à venir — jusqu'à 20 points —, funding). Il est utile si « ≥ 70 » fait nettement mieux que la référence, et si « ≤ 30 » baisse plus souvent (lignes ↓ : « Juste » = part des baisses). La semaine du calendrier n'est pas incluse dans ce test.</p></section>`;})()}
   ${(()=>{const A=priceForecastAudit(D);return `<section><h2>Précision réelle des prévisions de prix<small>audit walk-forward · M2 + tendance + momentum + volatilité</small></h2>${priceAuditTable(A)}</section>`;})()}
+  ${(()=>{const A=strictHoldoutAudit(D);return `<section><h2>Épreuve hors échantillon stricte<small>fenêtres non chevauchantes · référence historique</small></h2>${strictHoldoutHTML(A)}</section>`;})()}
   ${(()=>{const T=liqTest(d);if(!T)return '<section><h2>M2 seule ou composite ?<small>v19</small></h2><p>Le Worker M2 ne répond pas : test impossible.</p></section>';
     const e=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+' pts';
     return `<section><h2>M2 seule ou composite ?<small>v19 · décalage ${liqCfg.lag} j</small></h2>${btTable(T.rows)}
