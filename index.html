@@ -775,7 +775,7 @@ header{background:linear-gradient(115deg,rgba(10,23,36,.96),rgba(7,14,25,.91));b
 @media(prefers-reduced-motion:reduce){.ck-chart-card{animation:none}}
 @media(max-width:390px){.ck-chart-card #orb{height:320px!important}.ck-path-key{font-size:8px}.ck-path-key strong{font-size:9px}}
 
-</style>
+.ck-scenarios{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important}.ck-scenarios button{font-size:10px!important;line-height:1.2;min-height:38px;padding:6px 3px!important;white-space:normal}.ck-dynamic-radar{border-color:rgba(60,225,170,.38)!important;background:linear-gradient(145deg,rgba(7,39,42,.97),rgba(5,13,24,.99))!important}.ck-dynamic-radar .ck-buy-info small{white-space:normal;line-height:1.35}.ck-dynamic-radar .ck-buy-meta b{color:#55e6ad}.radar-hit{border-color:#43efad!important;box-shadow:0 0 0 1px rgba(67,239,173,.45),0 0 28px rgba(67,239,173,.28)!important;animation:radarPulse 1s ease-in-out infinite}.ck-buy-row.is-active{border-color:#43efad!important;animation:radarPulse 1s ease-in-out infinite}.radar-flash{border-color:#43efad!important;box-shadow:0 0 25px rgba(67,239,173,.35)!important}@keyframes radarPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4);box-shadow:0 0 22px rgba(67,239,173,.32)}}@media(prefers-reduced-motion:reduce){.radar-hit,.ck-buy-row.is-active{animation:none!important}}</style>
 
 <div class="app">
   <section class="view" id="vHome">
@@ -2595,7 +2595,63 @@ function gaugeSVG(v){const cx=130,cy=128,r=104,ang=Math.PI*(1-v/100),nx=cx+Math.
     return `<path d="M ${x0.toFixed(1)} ${y0.toFixed(1)} A ${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" fill="none" stroke="${c}" stroke-width="18" stroke-linecap="round"></path>`;};
   return `<svg width="260" height="140" viewBox="0 0 260 140" role="img" aria-label="Indice d'achat ${v} sur 100">${arc(2,28,'#EF5350')}${arc(34,66,'#3A4252')}${arc(72,98,'#3DDC84')}
     <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#D6DCE6" stroke-width="4" stroke-linecap="round"></line><circle cx="${cx}" cy="${cy}" r="9" fill="#D6DCE6"></circle></svg>`;}
-let homeH=store.get('btcz_homeH',182);
+/* Dynamic buy-support radar: price levels are derived from confirmed market structure. */
+function buildDynamicBuyZones(d,I,price){
+ const i=Math.min(I.lastClosed??d.length-1,d.length-1);
+ if(i<210||!Number.isFinite(price)||price<=0)return [];
+ const tr=[];
+ for(let k=1;k<=i;k++)tr.push(Math.max(d[k].h-d[k].l,Math.abs(d[k].h-d[k-1].c),Math.abs(d[k].l-d[k-1].c)));
+ const av=tr.slice(-14),atr=av.reduce((a,b)=>a+b,0)/Math.max(1,av.length);
+ if(!atr)return [];
+ const tol=Math.max(atr*.55,price*.003),raw=[];
+ const add=(p,type,w)=>{if(Number.isFinite(p)&&p>0&&p<price*1.04)raw.push({p,type,w});};
+ for(let k=Math.max(2,i-240);k<=i-2;k++)if(d[k].l<=d[k-1].l&&d[k].l<=d[k-2].l&&d[k].l<=d[k+1].l&&d[k].l<=d[k+2].l)add(d[k].l,'Pivot confirmé',2.2);
+ add(I.ema50?.[i],'EMA 50',1.3);add(I.sma200?.[i],'SMA 200',1.8);
+ add(Math.min(...d.slice(Math.max(0,i-29),i+1).map(x=>x.l)),'Plus bas 30 j',1.4);
+ add(Math.min(...d.slice(Math.max(0,i-89),i+1).map(x=>x.l)),'Plus bas 90 j',1.6);
+ for(let k=Math.max(2,i-120);k<=i;k++)if(d[k].l>d[k-2].h&&d[k-1].c>d[k-2].h)add((d[k].l+d[k-2].h)/2,'FVG haussier daily',1.5);
+ const groups=[];
+ raw.sort((a,b)=>a.p-b.p).forEach(x=>{let z=groups.find(y=>Math.abs(y.p-x.p)<=tol);if(!z){z={p:x.p,w:0,types:[]};groups.push(z);}z.p=(z.p*z.w+x.p*x.w)/(z.w+x.w);z.w+=x.w;z.types.push(x.type);});
+ const avgVol=d.slice(Math.max(0,i-20),i).map(x=>+(x.qv??x.v??0)).filter(Number.isFinite).reduce((a,b)=>a+b,0)/20;
+ return groups.map(z=>{
+  const touches=d.slice(Math.max(0,i-45),i+1).filter(r=>Math.abs(r.l-z.p)<=tol).length;
+  const rsi=I.rsiD?.[i],wt=I.wt2?.[i],oversold=(rsi!=null&&rsi<38)||(wt!=null&&wt<-35);
+  const score=Math.round(Math.min(1,z.w/7)*55+Math.min(touches,4)*6+(oversold?8:0));
+  const width=Math.max(atr*.32,z.p*.002);
+  const c=d[i],body=Math.abs(c.c-c.o),lower=Math.min(c.o,c.c)-c.l,vol=+(c.qv??c.v??0);
+  const touchBar=c.l<=z.p+width&&c.h>=z.p-width;
+  const rejection=touchBar&&c.c>c.o&&lower>=Math.max(body,atr*.08)*1.15;
+  const volumeOK=vol>0&&avgVol>0&&vol>=avgVol*1.15;
+  const momentum=(rsi!=null&&I.rsiD?.[i-1]!=null&&rsi>I.rsiD[i-1])||(wt!=null&&I.wt2?.[i-1]!=null&&wt>I.wt2[i-1]);
+  return {lo:z.p-width,hi:z.p+width,mid:z.p,score,types:[...new Set(z.types)],touches,rejection,volumeOK,momentum,confirmed:rejection&&(volumeOK||momentum)};
+ }).filter(z=>z.mid<=price*1.01&&z.hi<price*1.035&&z.score>=48).sort((a,b)=>b.score-a.score).slice(0,8).sort((a,b)=>b.mid-a.mid).slice(0,5);
+}
+
+let homeH=store.get('btcz_homeH',182),orbScenario=store.get('btcz_orb_scenario','p50');
+let activeBuyZones=[],radarLastTouch=null;
+function updateRadarLive(){
+ if(curTab!=='home'||!activeBuyZones.length)return;
+ const px=liveSpotPrice>0&&Date.now()-liveSpotAt<20000?liveSpotPrice:(daily?.rows?.[daily.rows.length-1]?.c||0);
+ if(!Number.isFinite(px)||px<=0)return;
+ let hit=null;
+ document.querySelectorAll('.ck-buy-row[data-zone-mid]').forEach(row=>{
+  const lo=+row.dataset.zoneLo,hi=+row.dataset.zoneHi,mid=+row.dataset.zoneMid,inside=px>=lo&&px<=hi;
+  row.classList.toggle('is-active',inside);
+  const z=activeBuyZones.find(x=>Math.abs(x.mid-mid)<1),small=row.querySelector('.ck-buy-meta small');
+  if(small)small.textContent=inside?(z?.confirmed?'↗ REBOND':'⚡ TOUCHÉE'):'SURVEILLANCE';
+  if(inside&&!hit)hit=z||null;
+ });
+ const status=document.getElementById('buyRadarStatus'),panel=document.querySelector('.ck-dynamic-radar');
+ if(status)status.textContent=hit?(hit.confirmed?'REBOND':'ZONE TOUCHÉE'):activeBuyZones.length+' ZONES';
+ if(panel)panel.classList.toggle('radar-hit',!!hit);
+ if(hit&&!isDemo&&radarLastTouch!==Math.round(hit.mid)){
+  radarLastTouch=Math.round(hit.mid);
+  const key='radar:'+radarLastTouch+':'+Math.floor(Date.now()/86400000);
+  if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='⚡ ZONE BTC TOUCHÉE · '+fmt(hit.lo)+' – '+fmt(hit.hi)+' $ · '+(hit.confirmed?'RÉACTION HAUSSIÈRE':'ATTENDRE CONFIRMATION');t.className='toast buy radar-flash';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}
+ }
+ if(!hit)radarLastTouch=null;
+}
+
 /* ===== v20 : BOULE DE CRISTAL — un seul écran : prix, cône du futur, lecture au doigt, action du jour ===== */
 let orbSel=null;
 function pUp(qq){if(!qq)return null;if(Number.isFinite(qq.pUp))return qq.pUp;const P=[[qq.p10,.1],[qq.p25,.25],[qq.p50,.5],[qq.p75,.75],[qq.p90,.9]];
@@ -2604,18 +2660,15 @@ function pUp(qq){if(!qq)return null;if(Number.isFinite(qq.pUp))return qq.pUp;con
   for(let k=1;k<5;k++)if(0<=P[k][0]){const [x0,c0]=P[k-1],[x1,c1]=P[k];return 1-(c0+(c1-c0)*(0-x0)/(x1-x0));}return .5;}
 async function renderHome(){
   const el=$('home');let D;try{D=await getDaily();}catch(e){return;}const d=D.rows,I=D.ind,n=d.length,last=d[n-1];
-  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH;
+  const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH,spot=(liveSpotPrice>0&&Date.now()-liveSpotAt<20000)?liveSpotPrice:last.c,buyZones=buildDynamicBuyZones(d,I,spot),hitZone=buyZones.find(z=>spot>=z.lo&&spot<=z.hi);
   const prev=d[n-2],ch=(last.c-prev.c)/prev.c*100,T0=new Date().setHours(0,0,0,0);
-  const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),buyZones=PL.days.filter(c=>c.amt&&c.a>=T0).slice(0,4),trig=!!(td&&td.amt&&last.c<=td.zone);
-  if(trig&&!isDemo){const key='buy:'+T0;if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='▲ ACHAT DÉCLENCHÉ · '+td.amt.toLocaleString('fr-FR')+' € · BTC ≤ '+fmt(td.zone)+' $';t.className='toast buy';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}}
+  const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),trig=!!hitZone;activeBuyZones=buyZones;
+  if(trig&&!isDemo){const key='radar:'+Math.round(hitZone.mid)+':'+Math.floor(Date.now()/86400000);if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='⚡ ZONE BTC TOUCHÉE · '+fmt(hitZone.lo)+' – '+fmt(hitZone.hi)+' $ · '+(hitZone.confirmed?'RÉACTION HAUSSIÈRE':'ATTENDRE CONFIRMATION');t.className='toast buy radar-flash';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}}
   const r5=v=>v>=100000?Math.round(v/1000)*1000:Math.round(v/500)*500,k$=v=>Math.round(v/1000)+'k';
   const fut=k=>{const qq=K.q[Math.max(1,Math.min(365,k))];return qq?{mid:K.base*Math.exp(qq.p50),lo:K.base*Math.exp(qq.p10),hi:K.base*Math.exp(qq.p90),up:pUp(qq)}:null;};
   /* action du jour, en une ligne */
   const dl=t=>new Date(t).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
-  const act=trig?{c:'var(--buy)',t:`Achète ${td.amt.toLocaleString('fr-FR')} € maintenant`,s:`BTC est passé sous ta zone de ${fmt(td.zone)} $`}
-    :td&&td.amt?{c:'var(--accent)',t:`Ordre : ${td.amt.toLocaleString('fr-FR')} € à ${fmt(td.zone)} $`,s:`encore ${((td.zone/last.c-1)*100).toFixed(1)} % de baisse pour le déclencher`}
-    :td&&td.sc<0?{c:'var(--down)',t:'Sommet probable : on n\'achète pas',s:nb?`prochaine zone ${dl(nb.a)} · ${fmt(nb.zone)} $`:''}
-    :{c:'var(--fg)',t:'On attend le prochain repli',s:nb?`prochaine zone ${dl(nb.a)} · ${nb.amt.toLocaleString('fr-FR')} € à ${fmt(nb.zone)} $`:'aucun repli prévu'}; 
+  const act={c:trig?(hitZone.confirmed?'var(--buy)':'var(--accent)'):'var(--fg)',t:trig?(hitZone.confirmed?'Rebond confirmé dans une zone':'Zone d’achat touchée · attendre confirmation'):'Radar de supports dynamiques',s:trig?(hitZone.confirmed?'Rejet haussier détecté · confirmation technique':'Support touché, rebond non confirmé'):buyZones.length?'Supports calculés sous surveillance':'Pas de confluence suffisante'};
   /* 3 raisons, en pastilles */
   const wt=I.wt2[I.lastClosed],m=m2Read(I,I.lastClosed);
   const chip=(l,v,c)=>`<span class="chip"><i style="background:${c}"></i>${l} <b>${v}</b></span>`;
@@ -2632,8 +2685,8 @@ async function renderHome(){
   const regime=K.rg>0?['HAUSSIER','var(--up)']:K.rg<0?['BAISSIER','var(--down)']:['NEUTRE','var(--accent)'];
   const probLabel=p=>p==null?'—':Math.round(p*100)+' %';
   const fmtProb=(p)=>p==null?'Données insuffisantes':p>=.6?'Biais haussier':p<=.4?'Biais baissier':'Pas d’avantage net';
-  const actionTitle=trig?'Zone d’achat atteinte':td&&td.amt?'Ordre d’achat en attente':td&&td.sc<0?'Patience : risque de sommet':'Attendre un repli';
-  const actionDetail=trig?act.s:td&&td.amt?act.s:nb?'Prochaine zone surveillée : '+fmt(nb.zone)+' $':'Aucune zone d’achat imminente';
+  const actionTitle=trig?(hitZone.confirmed?'Zone touchée · réaction haussière détectée':'Zone d’achat pertinente touchée'):'Radar de supports dynamiques';
+  const actionDetail=trig?'BTC '+fmt(hitZone.lo)+' – '+fmt(hitZone.hi)+' $ · score '+hitZone.score+'/100 · '+hitZone.types.join(' / '):buyZones.length?'Zone la plus proche : '+fmt(buyZones[0].lo)+' – '+fmt(buyZones[0].hi)+' $ · score '+buyZones[0].score+'/100':'Le modèle attend plusieurs confluences techniques avant de proposer un niveau.';
   el.innerHTML=`
   <div class="ck-top"><div class="ck-brand"><span class="ck-mark">₿</span><span>CRISTAL <b>BTC</b></span></div><span class="ck-live"><i></i>${isDemo?'MODE DÉMO':'MARCHÉ · '+($('src')?.textContent||'LIVE')}</span></div>
   <section class="ck-hero">
@@ -2646,12 +2699,11 @@ async function renderHome(){
     <div class="ck-decision-main"><div class="ck-decision-icon" style="color:${act.c}">${trig?'↗':td&&td.amt?'◎':td&&td.sc<0?'Ⅱ':'…'}</div><div><h2>${actionTitle}</h2><p>${actionDetail}</p></div></div>
     <div class="ck-decision-foot">Décision indicative · pas un ordre automatique</div>
   </section>
-  <section class="ck-buy-zones">
-    <div class="ck-section-head"><span>ZONES D’ACHAT · PLAN DCA</span><span class="ck-tag">${buyZones.length?'SURVEILLANCE':'AUCUNE ZONE'}</span></div>
-    ${buyZones.length?buyZones.map((z,i)=>{const dist=(z.zone/last.c-1)*100,active=last.c<=z.zone;return `<div class="ck-buy-row ${active?'is-active':''}"><div class="ck-buy-rank">${String(i+1).padStart(2,'0')}</div><div class="ck-buy-info"><b>${fmt(z.zone)} $</b><small>${dl(z.a)} · ${z.ph==='creux'?'CREUX / ACCUMULATION':'REPLI PROGRAMMÉ'}</small></div><div class="ck-buy-meta"><b>${z.amt.toLocaleString('fr-FR')} €</b><small>${active?'ZONE ATTEINTE':(dist>=0?'+':'')+dist.toFixed(1)+' %'}</small></div><div class="ck-buy-bar"><i style="width:${Math.max(4,Math.min(100,100/(1+Math.max(0,-dist))))}%"></i></div></div>`;}).join(''):`<p class="ck-forecast-note">Aucune tranche d’achat planifiée dans les 53 prochains jours. Le modèle n’invente pas de niveau.</p>`}
-    <p class="ck-forecast-note">Niveaux et montants issus du calendrier de replis Crystal Ball · plan indicatif, à confirmer avec le marché et les frais.</p>
-  </section>
-  <div class="ck-section-head ck-forecast-head"><span>SCÉNARIOS HISTORIQUES</span><span class="ck-muted">Probabilité de clôturer plus haut</span></div>
+  <section class="ck-buy-zones ck-dynamic-radar ${trig?'radar-hit':''}">
+    <div class="ck-section-head"><span>RADAR D’ACHAT · SUPPORTS DYNAMIQUES</span><span class="ck-tag" id="buyRadarStatus">${trig?(hitZone.confirmed?'REBOND':'ZONE TOUCHÉE'):buyZones.length+' ZONES'}</span></div>
+    ${buyZones.length?buyZones.map((z,i)=>{const active=spot>=z.lo&&spot<=z.hi,dist=(z.mid/spot-1)*100;return `<div class="ck-buy-row ${active?'is-active':''}" data-zone-lo="${z.lo}" data-zone-hi="${z.hi}" data-zone-mid="${z.mid}"><div class="ck-buy-rank">${String(i+1).padStart(2,'0')}</div><div class="ck-buy-info"><b>${fmt(z.lo)} – ${fmt(z.hi)} $</b><small>${z.types.join(' · ')} · ${z.touches} contacts</small></div><div class="ck-buy-meta"><b>CONFLUENCE ${z.score}/100</b><small>${active?(z.confirmed?'↗ REBOND':'⚡ TOUCHÉE'):(dist>=0?'+':'')+dist.toFixed(1)+' %'}</small></div><div class="ck-buy-bar"><i style="width:${z.score}%"></i></div></div>`;}).join(''):`<p class="ck-forecast-note">Aucune zone ne réunit assez de confluences. Le radar préfère ne pas inventer un support.</p>`}
+    <p class="ck-forecast-note">Pivots confirmés · EMA50/200 · plus bas 30/90 j · FVG daily. Le flash signale le contact ; le rebond exige un rejet haussier et une confirmation de volume ou de momentum. Score technique, pas probabilité.</p>
+  </section>  <div class="ck-section-head ck-forecast-head"><span>SCÉNARIOS HISTORIQUES</span><span class="ck-muted">Probabilité de clôturer plus haut</span></div>
   <div class="ck-prob-grid">
     <div class="ck-prob"><span>30 JOURS</span><strong>${probLabel(p30)}</strong><small>${fmtProb(p30)}</small></div>
     <div class="ck-prob"><span>90 JOURS</span><strong>${probLabel(p90)}</strong><small>${fmtProb(p90)}</small></div>
@@ -2665,6 +2717,7 @@ async function renderHome(){
   <section class="ck-forecast-table" id="trajectoryAudit"><div class="ck-section-head"><span>FIABILITÉ RÉELLE · WALK-FORWARD</span><span class="ck-muted">Hors échantillon</span></div>${trajectoryWalkForwardHTML(WFA)}</section>
   <section class="ck-chart-card">
     <div class="ck-section-head"><span>TRAJECTOIRE CONDITIONNELLE</span><span class="ck-muted">Fourchette historique</span></div>
+    <div class="seg ck-scenarios"><button type="button" data-scenario="p10" class="${orbScenario==='p10'?'on':''}">P10 · STRESS</button><button type="button" data-scenario="p50" class="${orbScenario==='p50'?'on':''}">P50 · CENTRAL</button><button type="button" data-scenario="p90" class="${orbScenario==='p90'?'on':''}">P90 · EXPANSION</button></div>
     <div class="seg">${[[30,'30 J'],[91,'90 J'],[182,'6 M'],[365,'1 AN']].map(([h,t])=>`<button type="button" data-h="${h}" class="${h===HZ?'on':''}">${t}</button>`).join('')}</div>
     <canvas id="orb"></canvas>
     <div class="ck-path-legend"><span class="ck-path-key bear"><i></i><span>Stress / baisse <strong>P10</strong></span></span><span class="ck-path-key base"><i></i><span>Trajectoire centrale <strong>P50</strong></span></span><span class="ck-path-key bull"><i></i><span>Expansion <strong>P90</strong></span></span></div><div class="ck-path-foot"><span>40 chemins bootstrap · blocs historiques de 7 jours</span><b>ANCRAGE BTC : ${fmt(last.c)} $</b></div><div class="ck-chart-hint">Touchez / faites glisser pour lire le prix conditionnel à chaque échéance</div>
@@ -2679,19 +2732,20 @@ async function renderHome(){
   el.scrollTop=sc0;
   const c=$('orb'),read=k=>{const x=fut(k);if(!x){$('orbRead').innerHTML='';return;}
     const pu=Math.round(x.up*100),dt=new Date(T0+k*DAY).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:k>200?'numeric':undefined});
-    const q=K.q[Math.max(1,Math.min(365,k))],p25=K.base*Math.exp(q.p25),p75=K.base*Math.exp(q.p75);
+    const q=K.q[Math.max(1,Math.min(365,k))],p25=K.base*Math.exp(q.p25),p75=K.base*Math.exp(q.p75),paths=c._pathCache?.paths||[],rank=orbScenario==='p10'?.1:orbScenario==='p90'?.9:.5,selected=paths.length?paths[Math.round((paths.length-1)*rank)]:null,selectedPrice=selected?.vals?.[Math.min(k,selected.vals.length-1)]??x.mid,scenarioName=orbScenario==='p10'?'P10 · STRESS':orbScenario==='p90'?'P90 · EXPANSION':'P50 · CENTRAL';
     const pc=v=>{const r=(v/last.c-1)*100;return (r>=0?'+':'')+r.toFixed(0)+' %';};
     const pv=pu>=60?['Plutôt haussier','var(--up)']:pu<=40?['Plutôt baissier','var(--down)']:['Pas d\'avantage','var(--sub)'];
     $('orbRead').innerHTML=`<div class="sch"><b>Le ${dt}</b><span>dans ${k} j</span></div>
       <div class="row"><span class="ic" style="background:var(--up)">↑</span><span class="rl"><b>Haut</b><small>1 chance sur 10 d'aller au‑delà</small></span><span class="rv">${fmt(r5(x.hi))} $<small>${pc(x.hi)}</small></span></div>
-      <div class="row mid"><span class="ic" style="background:var(--violet)">●</span><span class="rl"><b>Probable</b><small>1 chance sur 2 entre ${k$(p25)} et ${k$(p75)}</small></span><span class="rv">${fmt(r5(x.mid))} $<small>${pc(x.mid)}</small></span></div>
+      <div class="row mid"><span class="ic" style="background:var(--violet)">●</span><span class="rl"><b>${scenarioName}</b><small>Trajectoire simulée sélectionnée · P25–P75 : ${k$(p25)}–${k$(p75)}</small></span><span class="rv">${fmt(r5(selectedPrice))} $<small>${pc(selectedPrice)}</small></span></div>
       <div class="row"><span class="ic" style="background:var(--down)">↓</span><span class="rl"><b>Bas</b><small>1 chance sur 10 d'aller en dessous</small></span><span class="rv">${fmt(r5(x.lo))} $<small>${pc(x.lo)}</small></span></div>
       <div class="pb"><div class="pbt"><span>Plus haut qu'aujourd'hui</span><b style="color:${pv[1]}">${pu} % · ${pv[0]}</b></div><div class="track"><i style="width:${pu}%"></i></div></div>`;};
-  const go=()=>{drawOrb(c,d,K,PL,HZ,sel(),I);read(sel());};go();
+  const go=()=>{drawOrb(c,d,K,PL,HZ,sel(),I,orbScenario);read(sel());};go();
   const pick=e=>{const g=c._g;if(!g)return;const r=c.getBoundingClientRect(),x=e.clientX-r.left,t=g.tA+(x-g.padL)/(g.w-g.padL-g.padR)*(g.tB-g.tA);
     const k=Math.round((t-g.t1)/DAY);if(k<1)return;orbSel=Math.min(HZ,k);go();};
   c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);pick(e);});c.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')pick(e);});
-  el.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{homeH=+b.dataset.h;orbSel=null;store.set('btcz_homeH',homeH);renderHome();}));
+  el.querySelectorAll('[data-scenario]').forEach(b=>b.addEventListener('click',()=>{orbScenario=b.dataset.scenario;store.set('btcz_orb_scenario',orbScenario);go();el.querySelectorAll('[data-scenario]').forEach(x=>x.classList.toggle('on',x===b));}));
+  el.querySelectorAll('.seg button[data-h]').forEach(b=>b.addEventListener('click',()=>{homeH=+b.dataset.h;orbSel=null;store.set('btcz_homeH',homeH);renderHome();}));
 }
 function drawOrb(c,d,K,PL,HZ,sel){
   const r=c.getBoundingClientRect(),dp=Math.min(window.devicePixelRatio||1,3),w=r.width,h=r.height;c.width=w*dp;c.height=h*dp;
@@ -2917,7 +2971,7 @@ setInterval(updateQuantTerminal,2000);
 
 /* V4 — trajectoires quotidiennes bootstrap : chemins réels rééchantillonnés,
    conditionnés au régime/liquidité/momentum courant. Déterministes entre deux bougies. */
-drawOrb=function(c,d,K,PL,HZ,sel,Iarg){
+drawOrb=function(c,d,K,PL,HZ,sel,Iarg,scenario='p50'){
  const r=c.getBoundingClientRect(),dp=Math.min(window.devicePixelRatio||1,3),w=r.width,h=r.height;
  if(!w||!h)return;c.width=w*dp;c.height=h*dp;
  const g=c.getContext('2d');g.setTransform(dp,0,0,dp,0,0);g.clearRect(0,0,w,h);
@@ -2968,7 +3022,7 @@ drawOrb=function(c,d,K,PL,HZ,sel,Iarg){
  paths.forEach((p,i)=>{const rank=i/(paths.length-1),col=rank<.2?'rgba(255,91,119,.42)':rank>.8?'rgba(74,231,166,.42)':'rgba(111,193,225,.22)';
    g.strokeStyle=col;g.lineWidth=.85;g.beginPath();p.vals.forEach((v,k)=>{const x=X(t1+k*DAY),y=Y(v);k?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();});
  const drawPath=(p,col,width,glow)=>{if(!p)return;g.save();g.strokeStyle=col;g.lineWidth=width;g.lineJoin='round';g.lineCap='round';if(glow){g.shadowColor=col;g.shadowBlur=glow;}g.beginPath();p.vals.forEach((v,k)=>{const x=X(t1+k*DAY),y=Y(v);k?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();g.restore();};
- drawPath(lowPath,'#ff607b',2.1,9);drawPath(midPath,'#5cddff',2.7,14);drawPath(highPath,'#5ce7a5',2.1,9);
+ const chosen=scenario==='p10'?lowPath:scenario==='p90'?highPath:midPath;drawPath(lowPath,chosen===lowPath?'#ff607b':'rgba(255,96,123,.25)',chosen===lowPath?3.5:1.25,chosen===lowPath?18:0);drawPath(midPath,chosen===midPath?'#5cddff':'rgba(92,221,255,.25)',chosen===midPath?3.8:1.25,chosen===midPath?20:0);drawPath(highPath,chosen===highPath?'#5ce7a5':'rgba(92,231,165,.25)',chosen===highPath?3.5:1.25,chosen===highPath?18:0);
  /* médiane de la distribution conditionnelle (ligne distincte des chemins bootstrap) */
  g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=1.4;g.setLineDash([5,5]);g.beginPath();cp.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.p50)):g.moveTo(X(p.t),Y(p.p50)));g.stroke();g.setLineDash([]);
  /* repères échéances et prix passés */
@@ -3041,7 +3095,7 @@ function tick(){const now=Date.now();if(now-lastCalc<2000){if(!calcT)calcT=setTi
   if(tf==='1d')daily={rows:data,ind,demo:false};
   updateHeader();draw();if(curTab==='chart')renderConfluence();
   if(now-lastPlan>30e3&&daily){lastPlan=now;try{plan=buildPlan(daily,16);cone=buildCone(daily,365);}catch(e){}draw();}
-  if(curTab==='home'&&now-lastSimple>10e3){lastSimple=now;renderHome();}}
+  if(curTab==='home'){updateRadarLive();if(now-lastSimple>10e3){lastSimple=now;renderHome();}}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible'||isDemo)return;connectWS();load(true);});
 /* filet de sécurité : rechargement complet toutes les 5 min avec le flux, toutes les minutes sans */
 setInterval(()=>{if(isDemo||document.visibilityState!=='visible')return;if(!wsOk||Date.now()-lastFull>300e3)load(true);},60000);
