@@ -27,6 +27,8 @@ jobs:
         run: node --test tests/market-data.test.mjs
       - name: Run strict backtest benchmark tests
         run: node --test tests/backtest-benchmarks.test.mjs
+      - name: Run causal feature prefix tests
+        run: node --test tests/causal-features.test.mjs
       - name: Validate PWA and local assets
         run: |
           python - <<'PY'
