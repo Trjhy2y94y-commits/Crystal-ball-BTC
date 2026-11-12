@@ -27,6 +27,9 @@ The endpoint's OPTIONS response checks CORS reachability; send a message to veri
 - Responses API requests use `store: false`.
 - The Worker has no exchange credentials and no order-execution tools.
 - The PWA sends a small market snapshot; it is context, not a verified oracle.
-- Add Cloudflare rate limiting and usage alerts before exposing the endpoint broadly. API usage may incur charges.
-- The `/api/session` route uses WebRTC and keeps the standard API key on the Worker. Voice API usage is billed separately; set spending limits and rate limits.
+- Cloudflare Rate Limiting bindings are configured in `wrangler.toml`: 30 chat calls/minute and 8 realtime session creations/minute per client IP. The Worker fails closed with HTTP 503 if a limiter binding is missing or unavailable, and returns HTTP 429 when a limit is reached.
+- The two `namespace_id` values in `wrangler.toml` must be unique within your Cloudflare account. Change them if either is already in use. Wrangler 4.36.0 or later is required.
+- Cloudflare rate limits are approximate and counters are local to each Cloudflare location; short bursts can exceed the threshold. IP-based limits can also group users behind the same mobile carrier/NAT. Treat them as an abuse-cost safeguard, not a strict global quota.
+- Configure usage alerts and spending limits as well: API usage may incur charges.
+- The `/api/session` route uses WebRTC and keeps the standard API key on the Worker. Voice API usage is billed separately.
 - This is a conversational bridge, not a persistent autonomous agent. Scheduled market monitoring requires a separate durable scheduler/queue and explicit alert destinations.

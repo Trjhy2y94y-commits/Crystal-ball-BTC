@@ -11,6 +11,17 @@ const json = (body, status, origin) => new Response(JSON.stringify(body), {
   headers: { ...corsHeaders(origin), "Content-Type": "application/json", "Cache-Control": "no-store" }
 });
 
+async function checkRateLimit(request, limiter) {
+  if (!limiter || typeof limiter.limit !== "function") return "unconfigured";
+  const key = request.headers.get("CF-Connecting-IP") || "unknown";
+  try {
+    const result = await limiter.limit({ key });
+    return result?.success === true ? "allowed" : "limited";
+  } catch {
+    return "unavailable";
+  }
+}
+
 async function readLimitedText(request, maxBytes) {
   const declared = Number(request.headers.get("Content-Length"));
   if (Number.isFinite(declared) && declared > maxBytes) return { tooLarge: true, text: "" };
@@ -64,6 +75,9 @@ export default {
     if (pathname === "/api/session") {
       if (request.method !== "POST") return new Response("Method not allowed", { status: 405, headers });
       if (!env.OPENAI_API_KEY) return new Response("Server AI configuration missing", { status: 503, headers });
+      const rate = await checkRateLimit(request, env.JARVIS_VOICE_LIMITER);
+      if (rate === "unconfigured" || rate === "unavailable") return new Response("Voice rate limiter unavailable", { status: 503, headers });
+      if (rate === "limited") return new Response("Rate limit exceeded", { status: 429, headers: { ...headers, "Retry-After": "60" } });
       const sdpBody = await readLimitedText(request, 180000);
       if (sdpBody.tooLarge) return new Response("SDP payload too large", { status: 413, headers });
       const sdp = sdpBody.text;
@@ -96,6 +110,12 @@ export default {
     }
     if (new URL(request.url).pathname !== "/api/jarvis") return json({ error: "Not found" }, 404, allowedOrigin);
     if (request.method !== "POST") return json({ error: "Method not allowed" }, 405, allowedOrigin);
+    const rate = await checkRateLimit(request, env.JARVIS_CHAT_LIMITER);
+    if (rate === "unconfigured" || rate === "unavailable") return json({ error: "Rate limiter unavailable" }, 503, allowedOrigin);
+    if (rate === "limited") return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+      status: 429,
+      headers: { ...corsHeaders(allowedOrigin), "Content-Type": "application/json", "Cache-Control": "no-store", "Retry-After": "60" }
+    });
     if (!env.OPENAI_API_KEY || !env.OPENAI_MODEL) return json({ error: "Server AI configuration missing" }, 503, allowedOrigin);
 
     let raw;

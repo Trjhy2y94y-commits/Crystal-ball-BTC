@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import worker from "./worker.js";
 
 const origin = "https://trjhy2y94y-commits.github.io";
-const env = { JARVIS_ALLOWED_ORIGIN: origin, OPENAI_API_KEY: "test-secret", OPENAI_MODEL: "test-model" };
+const allowLimiter = { limit: async () => ({ success: true }) };
+const env = { JARVIS_ALLOWED_ORIGIN: origin, OPENAI_API_KEY: "test-secret", OPENAI_MODEL: "test-model", JARVIS_CHAT_LIMITER: allowLimiter, JARVIS_VOICE_LIMITER: allowLimiter };
 const request = (path, { method = "POST", body = "", headers = {} } = {}) =>
   new Request("https://worker.example" + path, {
     method,
@@ -23,6 +24,41 @@ test("answers CORS preflight without exposing secrets", async () => {
   assert.equal(response.status, 204);
   assert.equal(response.headers.get("Access-Control-Allow-Origin"), origin);
   assert.equal(response.headers.get("Cache-Control"), null);
+});
+
+test("blocks chat requests when the Cloudflare limiter rejects the client", async () => {
+  let seenKey;
+  const limitedEnv = {
+    ...env,
+    JARVIS_CHAT_LIMITER: { limit: async ({ key }) => { seenKey = key; return { success: false }; } }
+  };
+  const response = await worker.fetch(request("/api/jarvis", {
+    body: JSON.stringify({ message: "Bonjour" }),
+    headers: { "CF-Connecting-IP": "203.0.113.10" }
+  }), limitedEnv);
+  assert.equal(response.status, 429);
+  assert.equal(response.headers.get("Retry-After"), "60");
+  assert.equal(seenKey, "203.0.113.10");
+});
+
+test("blocks realtime sessions when the voice limiter rejects the client", async () => {
+  const limitedEnv = {
+    ...env,
+    JARVIS_VOICE_LIMITER: { limit: async () => ({ success: false }) }
+  };
+  const response = await worker.fetch(request("/api/session", {
+    body: "v=0\\r\\n"
+  }), limitedEnv);
+  assert.equal(response.status, 429);
+  assert.equal(response.headers.get("Retry-After"), "60");
+});
+
+test("fails closed if a production rate limiter binding is missing", async () => {
+  const { JARVIS_CHAT_LIMITER, ...withoutLimiter } = env;
+  const response = await worker.fetch(request("/api/jarvis", {
+    body: JSON.stringify({ message: "Bonjour" })
+  }), withoutLimiter);
+  assert.equal(response.status, 503);
 });
 
 test("rejects malformed JSON and missing messages", async () => {

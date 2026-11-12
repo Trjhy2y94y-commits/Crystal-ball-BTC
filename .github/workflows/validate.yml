@@ -32,8 +32,21 @@ jobs:
           import json
           import subprocess
           import tempfile
+          import tomllib
 
           root = Path(".")
+          worker_config = tomllib.loads((root / "worker/wrangler.toml").read_text(encoding="utf-8"))
+          rate_limits = {item["name"]: item for item in worker_config.get("ratelimits", [])}
+          expected_limits = {"JARVIS_CHAT_LIMITER": (30, 60), "JARVIS_VOICE_LIMITER": (8, 60)}
+          if set(rate_limits) != set(expected_limits):
+              raise SystemExit("JARVIS Cloudflare rate-limit bindings are missing or duplicated")
+          namespace_ids = [item["namespace_id"] for item in rate_limits.values()]
+          if len(namespace_ids) != len(set(namespace_ids)) or any(not str(value).isdigit() or int(value) <= 0 for value in namespace_ids):
+              raise SystemExit("Cloudflare rate-limit namespace IDs must be unique positive integers")
+          for name, (limit, period) in expected_limits.items():
+              actual = rate_limits[name]["simple"]
+              if (actual.get("limit"), actual.get("period")) != (limit, period):
+                  raise SystemExit(f"Unexpected Cloudflare rate-limit policy for {name}")
           manifest = json.loads((root / "manifest.webmanifest").read_text(encoding="utf-8"))
           if manifest.get("start_url") != "./" or manifest.get("scope") != "./":
               raise SystemExit("Manifest start_url/scope must match the GitHub Pages subpath")
