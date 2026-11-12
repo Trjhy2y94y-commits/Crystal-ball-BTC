@@ -3,10 +3,10 @@
 Prototype SwiftUI natif destiné à remplacer progressivement l'enveloppe PWA sur iPhone.
 
 ## Architecture
-- SwiftUI pour l'interface native, avec deux onglets JARVIS et Crystal Ball. Le tableau de bord Crystal Ball existant est intégré dans WKWebView pendant que les modules sont progressivement portés en natif.
+- SwiftUI pour l'interface native, avec deux onglets JARVIS et Crystal Ball. Le tableau de bord Crystal Ball existant est intégré dans WKWebView ; un pont lit périodiquement prix, régime, RSI, WaveTrend, scénarios et radar pour fournir à JARVIS un contexte de marché récent.
 - AVAudioEngine pour le microphone et la lecture audio.
 - Speech framework pour détecter « Salut Jarvis » au premier plan.
-- Realtime WebSocket avec un jeton éphémère créé côté Worker Cloudflare.
+- Realtime WebSocket avec un jeton éphémère créé côté Worker Cloudflare et transmis au socket via l'en-tête Bearer natif.
 - Aucun secret OpenAI dans l'application.
 - App Intent « Parler à Jarvis » pour ouvrir l'app via Siri.
 
