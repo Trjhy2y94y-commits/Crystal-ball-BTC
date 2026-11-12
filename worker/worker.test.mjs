@@ -124,6 +124,28 @@ test("proxies a bounded chat request and never stores the response", async () =>
   }
 });
 
+test("returns sanitized OpenAI diagnostics when the provider rejects a chat request", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => Response.json({
+    error: { message: "Invalid API key", type: "authentication_error", code: "invalid_api_key" }
+  }, { status: 401, headers: { "x-request-id": "req_test_123" } });
+  try {
+    const response = await worker.fetch(request("/api/jarvis", {
+      body: JSON.stringify({ message: "Bonjour" })
+    }), env);
+    assert.equal(response.status, 502);
+    const body = await response.json();
+    assert.equal(body.error, "AI provider error");
+    assert.equal(body.status, 401);
+    assert.equal(body.code, "invalid_api_key");
+    assert.equal(body.detail, "Invalid API key");
+    assert.equal(typeof body.requestId, "string");
+    assert.equal(JSON.stringify(body).includes("test-secret"), false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("returns 404 for unknown paths and 405 for unsupported methods", async () => {
   let response = await worker.fetch(request("/unknown"), env);
   assert.equal(response.status, 404);
