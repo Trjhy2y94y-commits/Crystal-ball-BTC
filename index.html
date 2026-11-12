@@ -1624,18 +1624,7 @@ async function renderConfluence(){
   vpChartContext=z.vp||null;
   if(typeof draw==='function')draw();
   const K=buildCone(D,365),hs=[30,90,365],fmtScenario=v=>v?money(v):'—';
-  const pairedBlockCI=(a,b,key,seed)=>{
-  const n=Math.min(a.length,b.length);if(n<12)return null;
-  const diffs=Array.from({length:n},(_,i)=>a[i][key]-b[i][key]).filter(Number.isFinite);
-  if(diffs.length<12)return null;
-  const m=diffs.length,block=Math.max(2,Math.min(5,Math.round(Math.sqrt(m)))),B=1000,samples=[];
-  let state=(seed>>>0)||123456789;
-  const rand=()=>{state=(Math.imul(1664525,state)+1013904223)>>>0;return state/4294967296;};
-  for(let z=0;z<B;z++){let sum=0,count=0;while(count<m){const start=Math.floor(rand()*m);for(let k=0;k<block&&count<m;k++){sum+=diffs[(start+k)%m];count++;}}samples.push(sum/m);}
-  samples.sort((x,y)=>x-y);
-  return{n:m,mean:diffs.reduce((x,y)=>x+y,0)/m,low:samples[Math.floor(.025*(B-1))],high:samples[Math.floor(.975*(B-1))],block,B};
- };
- hs.forEach(h=>{
+  hs.forEach(h=>{
     const q=K.q[h],base=K.base;
     $('prob'+h+'low').textContent='↓ '+fmtScenario(q?base*Math.exp(q.p10):null);
     $('prob'+h).textContent=fmtScenario(q?base*Math.exp(q.p50):null);
@@ -2435,6 +2424,17 @@ function strictHoldoutAudit(D){
  const fitCalibration=a=>{if(a.length<40)return null;const z=a.slice().sort((x,y)=>x.prob-y.prob),bins=[];for(let k=0;k<5;k++){const v=z.slice(Math.floor(k*z.length/5),Math.floor((k+1)*z.length/5));if(v.length>=8)bins.push({x:v.reduce((s,x)=>s+x.prob,0)/v.length,y:(v.reduce((s,x)=>s+x.up,0)+1)/(v.length+2),n:v.length});}if(bins.length<3)return null;const blocks=[];bins.forEach(b=>{blocks.push({...b,w:b.n});while(blocks.length>1&&blocks[blocks.length-2].y>blocks[blocks.length-1].y){const z=blocks.splice(-2,2),w=z[0].w+z[1].w;blocks.push({x:(z[0].x*z[0].w+z[1].x*z[1].w)/w,y:(z[0].y*z[0].w+z[1].y*z[1].w)/w,n:w,w});}});return blocks.map(({x,y,n})=>({x,y,n}));};
  const applyCalibration=(m,p)=>{if(!m?.length||!Number.isFinite(p))return null;if(p<=m[0].x)return m[0].y;if(p>=m[m.length-1].x)return m[m.length-1].y;for(let k=1;k<m.length;k++)if(p<=m[k].x){const x=m[k-1],y=m[k],u=(p-x.x)/Math.max(1e-9,y.x-x.x);return Math.max(0,Math.min(1,x.y+(y.y-x.y)*u));}return null;};
  const stats=a=>{const n=a.length;if(!n)return{n:0,mae:null,hit5:null,dir:null,cover:null,brier:null,ece:null,calibration:[],hitCI:null,dirCI:null,coverCI:null};const w=a.filter(x=>x.hit5).length,d=a.filter(x=>x.dir).length,c=a.filter(x=>x.cover).length,bins=Array.from({length:5},(_,i)=>{const z=a.filter(x=>Math.min(4,Math.floor(x.prob*5))===i);return{lo:i*.2,hi:(i+1)*.2,n:z.length,p:z.length?z.reduce((v,x)=>v+x.prob,0)/z.length:null,observed:z.length?z.reduce((v,x)=>v+x.up,0)/z.length:null};}).filter(x=>x.n),ece=bins.reduce((v,x)=>v+x.n/n*Math.abs(x.p-x.observed),0);return{n,mae:a.reduce((z,x)=>z+x.err,0)/n,hit5:w/n,dir:d/n,cover:c/n,brier:a.reduce((z,x)=>z+x.brier,0)/n,ece,calibration:bins,hitCI:wilson(w,n),dirCI:wilson(d,n),coverCI:wilson(c,n)};};
+ const pairedBlockCI=(a,b,key,seed)=>{
+  const n=Math.min(a.length,b.length);if(n<12)return null;
+  const diffs=Array.from({length:n},(_,i)=>a[i][key]-b[i][key]).filter(Number.isFinite);
+  if(diffs.length<12)return null;
+  const m=diffs.length,block=Math.max(2,Math.min(5,Math.round(Math.sqrt(m)))),B=1000,samples=[];
+  let state=(seed>>>0)||123456789;
+  const rand=()=>{state=(Math.imul(1664525,state)+1013904223)>>>0;return state/4294967296;};
+  for(let z=0;z<B;z++){let sum=0,count=0;while(count<m){const start=Math.floor(rand()*m);for(let k=0;k<block&&count<m;k++){sum+=diffs[(start+k)%m];count++;}}samples.push(sum/m);}
+  samples.sort((x,y)=>x-y);
+  return{n:m,mean:diffs.reduce((x,y)=>x+y,0)/m,low:samples[Math.floor(.025*(B-1))],high:samples[Math.floor(.975*(B-1))],block,B};
+ };
  hs.forEach(h=>{
   const first=Math.max(700,Math.floor(end*.30)),last=end-h,stride=h;
   const model=[],base=[],ablationSets={full:[],regime:[],regimeMomentum:[],regimeVolatility:[],unfiltered:[],fvg:[],vp:[],smc:[],wyckoff:[],elliott:[],flow:[],rsi:[],fvgvp:[],advanced:[]};let origins=0,strict=0,fallbackRegime=0,fallbackAll=0;
