@@ -2619,15 +2619,12 @@ async function renderHome(){
   const K=buildCone(D,365),SIM=buildTrajectory(D,K,1200),WFA=memo('trajectory-wf',[D.rows.length,I.lastClosed,K.rg,K.lt].join(':'),()=>trajectoryWalkForwardAudit(D)),PL=buildPlan(D,53),HZ=homeH,buyZones=buildDynamicBuyZones(d,I,last.c);
   const prev=d[n-2],ch=(last.c-prev.c)/prev.c*100,T0=new Date().setHours(0,0,0,0);
   const td=PL.days.find(c=>c.a===T0),nb=PL.days.find(c=>c.a>T0&&c.amt),hitZone=buyZones.find(z=>last.c>=z.lo&&last.c<=z.hi),trig=!!hitZone;
-  if(trig&&!isDemo){const key='buy:'+Math.round(hitZone.mid)+':'+Math.floor(Date.now()/86400000);if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='⚡ RADAR ACHAT · '+fmt(hitZone.lo)+' – '+fmt(hitZone.hi)+' $ · score '+hitZone.score+'/100';t.className='toast buy';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}}
+  if(trig&&!isDemo){const key='buy:'+Math.round(hitZone.mid)+':'+Math.floor(Date.now()/86400000);if(store.get('btcz_trig',null)!==key){store.set('btcz_trig',key);const t=$('toast');t.textContent='⚡ RADAR ACHAT · '+fmt(hitZone.lo)+' – '+fmt(hitZone.hi)+' $ · score '+hitZone.score+'/100';t.className='toast buy radar-flash';t.hidden=false;setTimeout(()=>{t.hidden=true;},9000);}}
   const r5=v=>v>=100000?Math.round(v/1000)*1000:Math.round(v/500)*500,k$=v=>Math.round(v/1000)+'k';
   const fut=k=>{const qq=K.q[Math.max(1,Math.min(365,k))];return qq?{mid:K.base*Math.exp(qq.p50),lo:K.base*Math.exp(qq.p10),hi:K.base*Math.exp(qq.p90),up:pUp(qq)}:null;};
   /* action du jour, en une ligne */
   const dl=t=>new Date(t).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
-  const act=trig?{c:'var(--buy)',t:`Achète ${td.amt.toLocaleString('fr-FR')} € maintenant`,s:`BTC est passé sous ta zone de ${fmt(td.zone)} $`}
-    :td&&td.amt?{c:'var(--accent)',t:`Ordre : ${td.amt.toLocaleString('fr-FR')} € à ${fmt(td.zone)} $`,s:`encore ${((td.zone/last.c-1)*100).toFixed(1)} % de baisse pour le déclencher`}
-    :td&&td.sc<0?{c:'var(--down)',t:'Sommet probable : on n\'achète pas',s:nb?`prochaine zone ${dl(nb.a)} · ${fmt(nb.zone)} $`:''}
-    :{c:'var(--fg)',t:'On attend le prochain repli',s:nb?`prochaine zone ${dl(nb.a)} · ${nb.amt.toLocaleString('fr-FR')} € à ${fmt(nb.zone)} $`:'aucun repli prévu'}; 
+  const act={c:trig?'var(--buy)':'var(--accent)',t:trig?'Zone dynamique touchée':'Supports dynamiques sous surveillance',s:trig?'Confluence technique détectée':'En attente du prix dans une zone calculée'};
   /* 3 raisons, en pastilles */
   const wt=I.wt2[I.lastClosed],m=m2Read(I,I.lastClosed);
   const chip=(l,v,c)=>`<span class="chip"><i style="background:${c}"></i>${l} <b>${v}</b></span>`;
