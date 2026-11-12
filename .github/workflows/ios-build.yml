@@ -1,12 +1,6 @@
 name: Build native iOS app
 
 on:
-  push:
-    branches: [feature/native-ios-jarvis]
-    paths:
-      - "ios/**"
-      - "worker/**"
-      - ".github/workflows/ios-build.yml"
   pull_request:
     branches: [main]
     paths:
