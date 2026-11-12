@@ -3255,8 +3255,10 @@ setInterval(updateQuantTerminal,2000);
  const add=(who,msg)=>{const el=document.createElement('div');el.className='jv-msg '+who;el.textContent=msg;log.appendChild(el);log.scrollTop=log.scrollHeight;};
  const say=msg=>{if(!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(msg);u.lang='fr-FR';u.rate=1.02;u.onstart=()=>core.classList.add('speaking');u.onend=()=>core.classList.remove('speaking');window.speechSynthesis.speak(u);};
  const market=()=>{const p=$('homeQtPrice')?.textContent||$('px')?.textContent||'non disponible';const bias=$('homeQtBias')?.textContent||$('badge')?.textContent||'non déterminé';const wt=$('homeQtWT')?.textContent||$('wtNow')?.textContent||'—';const rsi=$('homeQtRSI')?.textContent||'—';return {p,bias,wt,rsi};};
- const history=[];let endpoint=store.get('jarvis_endpoint',''),activeRecognition=null;const endpointInput=$j('jvEndpoint'),connection=$j('jvConnection');
+ const history=[];const DEFAULT_JARVIS_ENDPOINT='https://crystal-ball-jarvis.crystal-jarvis.workers.dev/api/jarvis';let endpoint=store.get('jarvis_endpoint',DEFAULT_JARVIS_ENDPOINT)||DEFAULT_JARVIS_ENDPOINT,activeRecognition=null;const endpointInput=$j('jvEndpoint'),connection=$j('jvConnection');
  endpointInput.value=endpoint;
+ store.set('jarvis_endpoint',endpoint);
+ endpointInput.addEventListener('change',()=>{const v=endpointInput.value.trim();if(v){store.set('jarvis_endpoint',v);}});
  if(endpoint){connection.textContent='Adresse du Worker mémorisée · test de connexion à effectuer.';}
  const remoteAsk=async q=>{const m=market();const snapshot={price:m.p,regime:m.bias,wavetrend:m.wt,rsi:m.rsi,source:$('homeQtSource')?.textContent||$('qtSource')?.textContent||'non précisée',forecast:document.querySelector('#probabilityPanel')?.innerText?.slice(0,1800)||'non disponible',buyRadar:document.querySelector('.ck-dynamic-radar')?.innerText?.slice(0,1400)||'non disponible',activeModule:curTab,capturedAt:new Date().toISOString()};
   const payload={message:q,history:history.slice(-12),market:snapshot,locale:'fr-FR'};
