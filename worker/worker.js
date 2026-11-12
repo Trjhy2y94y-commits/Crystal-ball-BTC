@@ -34,10 +34,11 @@ export default {
     if (request.method !== "POST") return json({ error: "Method not allowed" }, 405, allowedOrigin);
     if (!env.OPENAI_API_KEY || !env.OPENAI_MODEL) return json({ error: "Server AI configuration missing" }, 503, allowedOrigin);
 
-    const declaredLength = Number(request.headers.get("Content-Length") || 0);
-    if (declaredLength > 24000) return json({ error: "Request too large" }, 413, allowedOrigin);
+    let raw;
+    try { raw = await request.text(); } catch { return json({ error: "Invalid request body" }, 400, allowedOrigin); }
+    if (new TextEncoder().encode(raw).byteLength > 24000) return json({ error: "Request too large" }, 413, allowedOrigin);
     let body;
-    try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400, allowedOrigin); }
+    try { body = JSON.parse(raw); } catch { return json({ error: "Invalid JSON" }, 400, allowedOrigin); }
     const message = typeof body.message === "string" ? body.message.trim().slice(0, 4000) : "";
     if (!message) return json({ error: "Message required" }, 400, allowedOrigin);
 
