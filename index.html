@@ -1121,6 +1121,26 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
 #vHome .cb-mission-actions button:active{border-color:#ffca43;color:#ffca43}
 @media(max-width:500px){#vHome .cb-mission-grid{grid-template-columns:1fr 1fr}#vHome .cb-mission-tile:last-child{grid-column:1/-1}#vHome .cb-mission-actions button{font-size:9px}#vHome .cb-mission-heading{font-size:9px}}
 
+/* V39: functional analysis and Jarvis command modules */
+#vChart .cb-chart-deck{margin:6px 8px;padding:10px;background:linear-gradient(135deg,#092d59,#031126);border:1px solid #208fff;box-shadow:inset 0 0 14px rgba(27,122,255,.17),0 0 10px rgba(12,111,255,.18);flex:none}
+#vChart .cb-chart-deck-title{display:flex;justify-content:space-between;gap:10px;align-items:center;color:#ffc84e;font-size:10px;font-weight:900;letter-spacing:.07em;margin-bottom:8px}
+#vChart .cb-chart-deck-title span{color:#7fc0ff;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#vChart .cb-chart-deck-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+#vChart .cb-chart-deck-grid>div{min-width:0;display:flex;flex-direction:column;gap:5px;background:#041a35;border:1px solid rgba(42,146,255,.52);padding:8px}
+#vChart .cb-chart-deck-grid small{font-size:9px;color:#9fcfff;font-weight:750}
+#vChart .cb-chart-deck-grid strong{font-size:clamp(11px,2.5vw,20px);color:#ffd065;overflow-wrap:anywhere;text-shadow:0 0 7px rgba(255,184,0,.3)}
+#vJarvis .cb-jarvis-command{display:flex;align-items:center;gap:10px;padding:12px;margin:8px 0;background:linear-gradient(100deg,#0b3667,#03152f);border:1px solid #248fff;box-shadow:0 0 16px rgba(21,128,255,.25)}
+#vJarvis .cb-jarvis-command>div:nth-child(2){display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
+#vJarvis .cb-jarvis-command strong{font-size:11px;color:#ffd166;letter-spacing:.08em}
+#vJarvis .cb-jarvis-command small{font-size:9px;color:#9bc9f0}
+#vJarvis .cb-jarvis-indicator{height:10px;width:10px;border-radius:50%;background:#279bff;box-shadow:0 0 12px #168fff;flex:none}
+#vJarvis .cb-jarvis-spectrum{display:flex;align-items:center;gap:3px;height:30px;flex:none}
+#vJarvis .cb-jarvis-spectrum i{width:3px;height:35%;background:#ffc342;box-shadow:0 0 6px #ffc342;animation:cbWave 1.4s ease-in-out infinite alternate}
+#vJarvis .cb-jarvis-spectrum i:nth-child(2n){height:80%;background:#208fff;animation-delay:.3s}
+#vJarvis .cb-jarvis-spectrum i:nth-child(3n){animation-delay:.6s}
+@media(max-width:430px){#vChart .cb-chart-deck{padding:7px;margin:4px}#vChart .cb-chart-deck-grid>div{padding:5px}#vChart .cb-chart-deck-grid small{font-size:8px}#vJarvis .cb-jarvis-command{padding:8px}}
+@media(prefers-reduced-motion:reduce){#vJarvis .cb-jarvis-spectrum i{animation:none!important}}
+
 </style>
 
 <div class="app">
@@ -1178,6 +1198,7 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
     <span class="sp"></span>
     <button type="button" id="bZones" aria-label="Réglages">Réglages</button>
   </div>
+<div class="cb-chart-deck" aria-label="Résumé de l'analyse en direct"><div class="cb-chart-deck-title">◈ ANALYSE TACTIQUE <span id="cbChartFeed">DONNÉES EN ATTENTE</span></div><div class="cb-chart-deck-grid"><div><small>PRIX BTC</small><strong id="cbChartPrice">—</strong></div><div><small>WAVETREND</small><strong id="cbChartWT">—</strong></div><div><small>RSI 14</small><strong id="cbChartRSI">—</strong></div><div><small>STRUCTURE</small><strong id="cbChartBias">—</strong></div></div></div>
   <section class="quant-terminal" id="quantTerminal" aria-label="Terminal quantitatif en direct">
     <div class="qt-main"><div class="qt-kicker"><i class="qt-pulse"></i><span>CRYSTAL QUANT · LIVE SCAN</span><span id="qtFeed">INITIALISATION</span></div>
       <div class="qt-headline"><span class="qt-label">BTC / USD</span><b class="qt-price" id="qtPrice">—</b><span class="qt-change" id="qtChange">—</span></div>
@@ -1217,6 +1238,7 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
     <div class="jarvis-view">
       <div class="jarvis-shell">
         <div class="jv-head"><div class="jv-brand">CRYSTAL <b>· JARVIS</b> / COMMAND INTELLIGENCE</div><div class="jv-state" id="jvEngineState">MOTEUR IA À CONNECTER</div></div>
+<div class="cb-jarvis-command"><span class="cb-jarvis-indicator"></span><div><strong>JARVIS · CENTRE DE COMMANDE</strong><small>Analyse assistée · aucune exécution automatique d'ordres</small></div><div class="cb-jarvis-spectrum" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
         <div class="jv-core" id="jvCore"><div class="jv-orb"><span>J</span></div><div class="jv-core-label">PERSONAL MARKET INTELLIGENCE</div></div>
         <div class="jv-status" id="jvStatus">Interface prête · moteur conversationnel non configuré</div>
         <div class="jv-grid">
@@ -3799,6 +3821,15 @@ function copy(from,to){const a=byId(from),b=byId(to);if(a&&b){const v=(a.textCon
 function sync(){[['prob30','cb30'],['prob90','cb90'],['prob365','cb365'],['probNote','cbMissionNote']].forEach(p=>copy(...p));[['prob30low','prob30high','cb30range'],['prob90low','prob90high','cb90range'],['prob365low','prob365high','cb365range']].forEach(([l,h,out])=>{const a=byId(l),b=byId(h),c=byId(out);if(a&&b&&c){const lo=a.textContent.trim(),hi=b.textContent.trim();if(lo&&hi&&lo!=='—'&&hi!=='—')c.textContent='P10 '+lo+' · P90 '+hi}})}
 function init(){sync();const ob=new MutationObserver(sync);['prob30','prob90','prob365','prob30low','prob30high','prob90low','prob90high','prob365low','prob365high','probNote'].forEach(id=>{const el=byId(id);if(el)ob.observe(el,{childList:true,characterData:true,subtree:true})});document.querySelectorAll('[data-cb-go]').forEach(b=>b.addEventListener('click',()=>{const tab=document.querySelector('.tabbar button[data-tab="'+b.dataset.cbGo+'"]');if(tab)tab.click()}))}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()
+})();
+</script>
+<script>
+/* V39: read-only mirrors of live values; missing values stay unverified. */
+(function(){
+const pairs=[['qtPrice','cbChartPrice'],['qtWT','cbChartWT'],['qtRSI','cbChartRSI'],['qtBias','cbChartBias'],['qtFeed','cbChartFeed']];
+function sync(){for(const [from,to] of pairs){const a=document.getElementById(from),b=document.getElementById(to);if(a&&b){const value=(a.textContent||'').trim();if(value&&b.textContent!==value)b.textContent=value}}}
+function init(){sync();const obs=new MutationObserver(sync);for(const [id] of pairs){const el=document.getElementById(id);if(el)obs.observe(el,{childList:true,characterData:true,subtree:true})}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
 </body>
