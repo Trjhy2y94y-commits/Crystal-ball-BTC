@@ -1166,9 +1166,33 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
 @media(max-width:430px){#vHome .hq-title{grid-template-columns:minmax(0,1fr) 40%!important}#vHome .hq-orbit{min-width:100px!important;min-height:100px!important;width:30vw!important;height:30vw!important}#vHome .hq-orbit b{font-size:clamp(50px,15vw,85px)!important}#vChart .cb-chart-deck-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#vChart .cb-chart-deck-grid>div{min-height:38px}#vHome .cb-command-grid{gap:6px}#vHome .cb-command-panel{min-height:105px}}
 @media(prefers-reduced-motion:reduce){#vHome:before,#vChart:before,#vCal:before,#vJarvis:before,#vStats:before{animation:none!important}}
 
+/* V41 UNIFIED HOLOGRAPHIC COMMAND HEADER */
+#cbUnifiedHeader{position:relative;z-index:5;flex:none;min-height:72px;padding:9px 15px;display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,auto) minmax(90px,auto);align-items:center;gap:14px;border-bottom:1px solid #248dff;background:linear-gradient(105deg,#051a34 0%,#0a315a 44%,#031326 100%);box-shadow:0 5px 23px rgba(0,101,255,.27),inset 0 -2px 0 rgba(255,196,54,.17);box-sizing:border-box}
+#cbUnifiedHeader:before{content:"";position:absolute;top:0;left:0;width:27%;height:2px;background:#ffc342;box-shadow:0 0 12px #ffbb29}
+#cbUnifiedHeader .cb-unified-brand{display:flex;align-items:center;gap:11px;min-width:0}
+#cbUnifiedHeader .cb-unified-mark{width:40px;height:40px;display:grid;place-items:center;border:1px solid #ffc342;border-radius:50%;color:#ffd366;font-size:25px;font-weight:900;background:radial-gradient(circle,#134b8b,#031428);box-shadow:0 0 14px rgba(255,186,0,.35),inset 0 0 11px rgba(28,135,255,.4)}
+#cbUnifiedHeader .cb-unified-brand strong{display:block;font-size:clamp(14px,2.7vw,24px);font-weight:900;letter-spacing:.08em;color:#b9e4ff;text-shadow:0 0 12px rgba(21,130,255,.7);white-space:nowrap}
+#cbUnifiedHeader .cb-unified-brand em{font-style:normal;color:#ffc342;text-shadow:0 0 12px rgba(255,176,0,.6)}
+#cbUnifiedHeader .cb-unified-brand small{display:block;color:#75b5ee;font-size:9px;letter-spacing:.12em;white-space:nowrap}
+#cbUnifiedHeader .cb-unified-market{text-align:right;min-width:0}
+#cbUnifiedHeader .cb-unified-market small{display:block;font-size:9px;color:#8fceff;white-space:nowrap}
+#cbUnifiedHeader #cbUnifiedFeed{color:#ffc342;margin-left:6px}
+#cbUnifiedHeader #cbUnifiedPrice{display:block;font-size:clamp(18px,3.5vw,30px);line-height:1.1;color:#d5f0ff;text-shadow:0 0 13px rgba(15,135,255,.7);white-space:nowrap}
+#cbUnifiedHeader .cb-unified-state{display:flex;align-items:center;gap:7px;padding:8px;border:1px solid rgba(255,194,59,.6);background:rgba(58,41,7,.22);color:#ffcf60;font-size:10px;font-weight:800;letter-spacing:.03em;max-width:210px}
+#cbUnifiedHeader .cb-unified-dot{width:7px;height:7px;border-radius:50%;background:#ffc342;box-shadow:0 0 10px #ffc342;flex:none;animation:cbOrbPulse 3s infinite}
+#cbUnifiedHeader #cbUnifiedRegime{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:680px){#cbUnifiedHeader{min-height:62px;padding:7px 10px;gap:6px;grid-template-columns:minmax(0,1fr) minmax(98px,auto)}#cbUnifiedHeader .cb-unified-mark{width:29px;height:29px;font-size:20px}#cbUnifiedHeader .cb-unified-brand{gap:7px}#cbUnifiedHeader .cb-unified-brand strong{font-size:clamp(12px,3.5vw,17px)}#cbUnifiedHeader .cb-unified-brand small{font-size:7px;letter-spacing:.02em}#cbUnifiedHeader .cb-unified-market small{font-size:8px}#cbUnifiedHeader #cbUnifiedPrice{font-size:clamp(16px,4.7vw,23px)}#cbUnifiedHeader .cb-unified-state{display:none}}
+@media(max-width:360px){#cbUnifiedHeader .cb-unified-brand small{display:none}#cbUnifiedHeader .cb-unified-brand strong{font-size:12px}}
+@media(prefers-reduced-motion:reduce){#cbUnifiedHeader .cb-unified-dot{animation:none!important}}
+
 </style>
 
 <div class="app">
+<div class="cb-unified-header" id="cbUnifiedHeader" aria-label="État du marché Bitcoin">
+  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>QUANTUM TRADING · COMMAND HUD</small></div></div>
+  <div class="cb-unified-market"><small>BTC / USD <span id="cbUnifiedFeed">FLUX EN ATTENTE</span></small><strong id="cbUnifiedPrice">—</strong></div>
+  <div class="cb-unified-state"><span class="cb-unified-dot"></span><span id="cbUnifiedRegime">ANALYSE EN COURS</span></div>
+</div>
   <section class="view" id="vHome">
     <section class="home-quant" id="homeQuant" aria-label="Crystal Ball — terminal quantitatif">
       <div class="hq-top"><span class="hq-brand"><i></i> CRYSTAL <b>BALL</b></span><span class="hq-status" id="homeQtFeed">SCAN EN ATTENTE</span></div>
@@ -3854,6 +3878,15 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 const pairs=[['qtPrice','cbChartPrice'],['qtWT','cbChartWT'],['qtRSI','cbChartRSI'],['qtBias','cbChartBias'],['qtFeed','cbChartFeed']];
 function sync(){for(const [from,to] of pairs){const a=document.getElementById(from),b=document.getElementById(to);if(a&&b){const value=(a.textContent||'').trim();if(value&&b.textContent!==value)b.textContent=value}}}
 function init(){sync();const obs=new MutationObserver(sync);for(const [id] of pairs){const el=document.getElementById(id);if(el)obs.observe(el,{childList:true,characterData:true,subtree:true})}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<script>
+/* V41: header reflects existing live engine values, no placeholder price injection. */
+(function(){
+const pairs=[['homeQtPrice','cbUnifiedPrice'],['homeQtFeed','cbUnifiedFeed'],['homeQtBias','cbUnifiedRegime']];
+function update(){for(const [source,target] of pairs){const a=document.getElementById(source),b=document.getElementById(target);if(a&&b){const v=(a.textContent||'').trim();if(v&&b.textContent!==v)b.textContent=v}}}
+function init(){update();const obs=new MutationObserver(update);for(const [id] of pairs){const el=document.getElementById(id);if(el)obs.observe(el,{subtree:true,characterData:true,childList:true})}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
