@@ -1377,11 +1377,42 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 @media(min-width:1050px){#vHome .hq-title{min-height:510px!important}#vHome .hq-orbit{width:350px!important;height:350px!important}.cb-motion-rig{max-width:1300px;margin:0 auto}}
 @media(max-width:430px){#vHome .hq-title{min-height:400px!important;padding:25px 8px 30px!important}#vHome .hq-orbit{width:270px!important;height:270px!important}#vHome .home-quant{padding-left:8px!important;padding-right:8px!important;margin-left:6px!important;margin-right:6px!important}.cb-module-head p{font-size:11px}}
 
+
+/* V50: compact portrait cockpit, instruments visible beside the core */
+@media(max-width:650px){
+#cbQuickNav{display:none!important}
+#cbUnifiedHeader{min-height:54px!important;padding:6px 10px!important;padding-top:max(6px,env(safe-area-inset-top))!important}
+#vHome .home-quant{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important;margin:8px!important;padding:0!important;width:calc(100% - 16px)!important;box-sizing:border-box}
+#vHome .hq-top{grid-column:1/-1;margin:0!important;padding:8px!important;min-width:0}
+#vHome .hq-brand{font-size:13px!important;letter-spacing:.12em!important}
+#vHome .hq-status{font-size:8px!important;max-width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#vHome .hq-title{grid-column:1/-1;grid-row:2;display:flex!important;flex-direction:row-reverse!important;min-height:190px!important;height:190px!important;padding:8px 12px!important;margin:0!important;gap:14px!important;text-align:left;box-sizing:border-box;justify-content:center!important}
+#vHome .hq-title>div:first-child{flex:1;min-width:0}
+#vHome .hq-orbit{width:155px!important;height:155px!important;min-width:0!important;flex:none!important}
+#vHome .hq-orbit b{font-size:48px!important}
+#vHome .hq-price{font-size:clamp(23px,6vw,30px)!important;overflow-wrap:normal!important}
+#vHome .hq-eyebrow{font-size:8px!important;line-height:1.6;letter-spacing:.1em!important}
+#vHome .hq-change{font-size:10px!important;line-height:1.5}
+#vHome .hq-title:after{font-size:7px!important;bottom:3px!important}
+#vHome .cb-command,#vHome .cb-command-grid{display:contents!important}
+#vHome .cb-command-head,#vHome .cb-command-bottom{display:none!important}
+#vHome .cb-command-panel{min-height:108px!important;height:108px!important;padding:10px!important;box-sizing:border-box;gap:6px!important}
+#vHome .cb-command-panel:nth-child(1){grid-column:1;grid-row:3}
+#vHome .cb-command-panel:nth-child(2){grid-column:2;grid-row:3}
+#vHome .cb-command-panel:nth-child(3){grid-column:1;grid-row:4}
+#vHome .cb-command-panel:nth-child(4){grid-column:2;grid-row:4}
+#vHome .cb-command-panel strong{font-size:18px!important}
+#vHome .cb-command-panel small{font-size:8px!important}
+#vHome .cb-mini-wave{height:24px!important;min-height:0!important}
+#vHome .cb-rsi-ring{width:45px!important;height:45px!important;min-height:0!important}
+#vHome .cb-mission,#vHome .hq-signal,#vHome .hq-metrics,#vHome .hq-foot{grid-column:1/-1}
+#vHome .cb-mission{grid-row:5;margin:2px 0!important}
+}
 </style>
 
 <div class="app">
 <div class="cb-unified-header" id="cbUnifiedHeader" aria-label="État du marché Bitcoin">
-  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>COCKPIT IMMERSIF · V49</small></div></div>
+  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>COCKPIT IMMERSIF · V50</small></div></div>
   <div class="cb-unified-market"><small>BTC / USD <span id="cbUnifiedFeed">FLUX EN ATTENTE</span></small><strong id="cbUnifiedPrice">—</strong></div>
   <div class="cb-unified-state"><span class="cb-unified-dot"></span><span id="cbUnifiedRegime">ANALYSE EN COURS</span></div>
 </div>
