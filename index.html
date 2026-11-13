@@ -4566,6 +4566,32 @@ deck.addEventListener('pointerleave',function(){
 });
 })();
 </script>
+<style id="dark-cockpit-v57">
+/* V57 unified midnight cockpit: home, chart, cycle, reliability and JARVIS */
+:root{color-scheme:dark;--cb-midnight:#010208;--cb-panel:#060c18;--cb-panel-edge:#254a80;--cb-blue:#3d7fff;--cb-gold:#eebc69}
+html,body,.app{background-color:#010208!important;color:#dce7fc!important}
+.app{background-image:radial-gradient(ellipse at 50% -12%,#12244b44,transparent 52%),linear-gradient(180deg,#010208,#030611 65%,#010208)!important}
+.app .view:not([hidden]){background:transparent!important}
+.cb-unified-header{background:linear-gradient(95deg,#01040af9,#071126f5,#01040af9)!important;border-bottom-color:#b18b4d66!important}
+.cb-quick-nav,.tabbar{background:#030713f5!important;border-color:#294b7777!important}
+.cb-quick-nav button,.tabbar button{color:#aabddf!important}
+.cb-quick-nav button[aria-current="page"],.cb-quick-nav button.active,.tabbar button.active,.tabbar button[aria-selected="true"]{color:#f4c77d!important;background:linear-gradient(180deg,#0e234d,#040b19)!important;box-shadow:inset 0 -2px #e5b55e,0 0 20px #2158ad55!important}
+#vHome #homeQuant .cb-flightdeck{background:radial-gradient(ellipse 40% 44% at 50% 44%,#102b6559,transparent 86%),linear-gradient(155deg,#010208,#050b19 52%,#010208)!important;border-color:#9a743f88!important;box-shadow:inset 0 0 135px #000c,0 0 35px #174aa62e,0 24px 75px #000e!important}
+#vHome #homeQuant .cb-flightdeck .cb-command-panel{background:linear-gradient(145deg,#030815f7,#071124f2)!important;border-color:#264778bb!important}
+#vHome #homeQuant .cb-flightdeck .hq-orbit{filter:drop-shadow(0 0 20px #2463d788)!important}
+#vHome .cb-mission,#vHome .cb-mission-tile,#vHome .home-quant,#vHome .cb-command{background-color:transparent!important}
+#vHome .cb-mission-tile{background:linear-gradient(135deg,#040916,#09142a)!important;border:1px solid #31558a88!important;box-shadow:inset 2px 0 #bd944c66,0 8px 25px #0009!important}
+#vJarvis .jarvis-shell{background:radial-gradient(ellipse at 50% 22%,#112a6050,transparent 58%),linear-gradient(160deg,#010309,#060e1c)!important;border-color:#a67b4488!important;box-shadow:inset 0 0 120px #000b,0 20px 65px #000c!important}
+#vJarvis .jv-tile,#vJarvis .jv-chat,#vJarvis .jv-log{background:#050b18f2!important;border-color:#2a4d7d99!important}
+#vJarvis .jv-orb{background:radial-gradient(circle at 40% 34%,#1b4caa,#071735 58%,#010208 78%)!important}
+.app .cb-module-head{background:linear-gradient(100deg,#050d1cf5,#01040af0)!important;border-color:#294b7c88!important;box-shadow:inset 3px 0 #d5a35466!important}
+.app .view:not([hidden]) :is(.card,.panel,.tile,.metric,.stat-card,.chart-card,.cycle-card){background-color:#060d1c!important;border-color:#29497899!important}
+.app :is(input,select,textarea){background-color:#050c1b!important;color:#e0eaff!important;border-color:#31517f!important}
+.app :is(input,select,textarea):focus-visible{outline:2px solid #e5b35e!important;outline-offset:1px}
+.app .view:not([hidden]) :is(canvas,svg){max-width:100%}
+@media(max-width:600px){.app .view:not([hidden]){overflow-x:clip}#vHome #homeQuant .cb-flightdeck{box-shadow:inset 0 0 70px #000b,0 9px 30px #000c!important}}
+@media(prefers-reduced-motion:reduce){.app .view:not([hidden]){animation:none!important}}
+</style>
 <script defer src="./jarvis-reactive-core.js"></script>
   </body>
 </html>
