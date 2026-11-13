@@ -1105,6 +1105,22 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
 @media(max-width:600px){#vJarvis .jv-core:before{width:126px;height:126px}#vJarvis .jv-core:after{width:160px;height:160px}#vChart .qt-wave i{animation-duration:2.2s}}
 @media(prefers-reduced-motion:reduce){#vJarvis .jv-core:before,#vJarvis .jv-core:after,#vChart .qt-wave i{animation:none!important}}
 
+/* V38: functional command projections and mobile layout */
+#vHome .cb-mission{margin:12px 0;padding:12px;background:linear-gradient(155deg,#071e3d,#020b1b);border:1px solid #208aff;box-shadow:inset 0 0 22px rgba(23,123,255,.15),0 0 14px rgba(23,123,255,.2);position:relative}
+#vHome .cb-mission:before{content:"";position:absolute;top:0;left:0;width:35%;height:2px;background:#ffc342;box-shadow:0 0 9px #ffc342}
+#vHome .cb-mission-heading{display:flex;justify-content:space-between;gap:10px;color:#ffcb52;font-size:10px;letter-spacing:.07em;font-weight:850;margin-bottom:12px}
+#vHome .cb-mission-heading span:last-child{color:#9dcaff}
+#vHome .cb-mission-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#vHome .cb-mission-tile{min-width:0;padding:11px 9px;display:flex;flex-direction:column;gap:9px;background:linear-gradient(145deg,#0a2c58,#031227);border:1px solid rgba(40,143,255,.72);box-shadow:inset 0 0 14px rgba(22,112,255,.14)}
+#vHome .cb-mission-tile small{font-size:9px;color:#a4d6ff;font-weight:800}
+#vHome .cb-mission-tile strong{font-size:clamp(15px,2.6vw,27px);color:#ffd063;text-shadow:0 0 9px rgba(255,188,0,.35);overflow-wrap:anywhere}
+#vHome .cb-mission-tile span{font-size:9px;color:#91b7dc;overflow-wrap:anywhere}
+#vHome .cb-mission-note{font-size:10px;color:#8eb8dc;padding:10px 0}
+#vHome .cb-mission-actions{display:flex;gap:8px}
+#vHome .cb-mission-actions button{flex:1;min-width:0;border:1px solid #1b8fff;background:linear-gradient(180deg,#123a68,#041a34);color:#d7eeff;font-size:10px;font-weight:800;padding:10px 5px;border-radius:6px;box-shadow:0 0 8px rgba(12,117,255,.2)}
+#vHome .cb-mission-actions button:active{border-color:#ffca43;color:#ffca43}
+@media(max-width:500px){#vHome .cb-mission-grid{grid-template-columns:1fr 1fr}#vHome .cb-mission-tile:last-child{grid-column:1/-1}#vHome .cb-mission-actions button{font-size:9px}#vHome .cb-mission-heading{font-size:9px}}
+
 </style>
 
 <div class="app">
@@ -1122,6 +1138,16 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
         </div>
         <div class="cb-command-bottom"><span>◉ SCAN QUANTITATIF</span><span>WYCKOFF · SMC · ELLIOTT · FVG</span></div>
       </div>
+<section class="cb-mission" aria-label="Centre de commande Crystal Ball">
+<div class="cb-mission-heading"><span>◈ TERMINAL DE PROJECTION</span><span>HORIZONS CONDITIONNELS</span></div>
+<div class="cb-mission-grid">
+<article class="cb-mission-tile"><small>SCÉNARIO · 30 JOURS</small><strong id="cb30">—</strong><span id="cb30range">Fourchette en attente</span></article>
+<article class="cb-mission-tile"><small>SCÉNARIO · 90 JOURS</small><strong id="cb90">—</strong><span id="cb90range">Fourchette en attente</span></article>
+<article class="cb-mission-tile"><small>SCÉNARIO · 12 MOIS</small><strong id="cb365">—</strong><span id="cb365range">Fourchette en attente</span></article>
+</div>
+<div class="cb-mission-note" id="cbMissionNote">Scénarios historiques conditionnels, non garantis.</div>
+<div class="cb-mission-actions"><button type="button" data-cb-go="chart">◈ ANALYSE & GRAPHIQUES</button><button type="button" data-cb-go="cal">◇ CYCLE</button><button type="button" data-cb-go="jarvis">◉ JARVIS IA</button></div>
+</section>
       <div class="hq-signal"><div><small>RÉGIME DE MARCHÉ</small><strong id="homeQtBias">ANALYSE EN COURS</strong></div><div class="hq-scan"><i></i><span>QUANT SCAN <b>2s</b></span></div></div>
       <div class="hq-metrics"><div><small>WAVETREND</small><b id="homeQtWT">—</b></div><div><small>RSI · 14</small><b id="homeQtRSI">—</b></div><div><small>FLUX DE DONNÉES</small><b id="homeQtSource">—</b></div></div>
       <div class="hq-foot"><span>WYCKOFF / SMC / ELLIOTT / FVG / VOLUME PROFILE</span><span>MODÈLE · EN OBSERVATION</span></div>
@@ -3763,6 +3789,16 @@ setInterval(()=>{if(document.visibilityState!=='visible'||isDemo)return;if(wsOk&
   function sync(){for(const [from,to] of map){const a=document.getElementById(from),b=document.getElementById(to);if(a&&b){const value=(a.textContent||'').trim();if(value&&b.textContent!==value)b.textContent=value;}}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
   function init(){sync();const obs=new MutationObserver(sync);for(const [id] of map){const el=document.getElementById(id);if(el)obs.observe(el,{childList:true,subtree:true,characterData:true});}}
+})();
+</script>
+<script>
+/* V38: synchronize scenario data from the original engine, without invented values. */
+(function(){
+function byId(id){return document.getElementById(id)}
+function copy(from,to){const a=byId(from),b=byId(to);if(a&&b){const v=(a.textContent||'').trim();if(v&&b.textContent!==v)b.textContent=v}}
+function sync(){[['prob30','cb30'],['prob90','cb90'],['prob365','cb365'],['probNote','cbMissionNote']].forEach(p=>copy(...p));[['prob30low','prob30high','cb30range'],['prob90low','prob90high','cb90range'],['prob365low','prob365high','cb365range']].forEach(([l,h,out])=>{const a=byId(l),b=byId(h),c=byId(out);if(a&&b&&c){const lo=a.textContent.trim(),hi=b.textContent.trim();if(lo&&hi&&lo!=='—'&&hi!=='—')c.textContent='P10 '+lo+' · P90 '+hi}})}
+function init(){sync();const ob=new MutationObserver(sync);['prob30','prob90','prob365','prob30low','prob30high','prob90low','prob90high','prob365low','prob365high','probNote'].forEach(id=>{const el=byId(id);if(el)ob.observe(el,{childList:true,characterData:true,subtree:true})});document.querySelectorAll('[data-cb-go]').forEach(b=>b.addEventListener('click',()=>{const tab=document.querySelector('.tabbar button[data-tab="'+b.dataset.cbGo+'"]');if(tab)tab.click()}))}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init()
 })();
 </script>
 </body>
