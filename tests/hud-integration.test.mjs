@@ -14,12 +14,13 @@ test('five tabs and live panels exist', () => {
 });
 
 test('blue gold HUD modules and real-data mirrors exist', () => {
-  for (const id of ['cbDeckBias','cbDeckWT','cbDeckRSI','cbDeckSource','cb30','cb90','cb365','cbChartPrice','cbChartWT','cbChartRSI','cbChartBias','cbChartFeed']) {
+  for (const id of ['cbDeckBias','cbDeckWT','cbDeckRSI','cbDeckSource','cb30','cb90','cb365','cbChartPrice','cbChartWT','cbChartRSI','cbChartBias','cbChartFeed','cbUnifiedHeader','cbUnifiedPrice','cbUnifiedFeed','cbUnifiedRegime']) {
     assert.ok(ids.includes(id), 'Missing HUD value '+id);
   }
   assert.match(html,/V38: synchronize scenario data/);
   assert.match(html,/V39: read-only mirrors of live values/);
   assert.match(html,/V40: responsive cinematic shell/);
+  assert.match(html,/V41: header reflects existing live engine values/);
   assert.match(html,/prefers-reduced-motion:reduce/);
 });
 
