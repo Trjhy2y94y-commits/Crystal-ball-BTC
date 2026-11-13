@@ -4274,6 +4274,44 @@ nav.querySelectorAll('button').forEach(button=>observer.observe(button,{attribut
 activate();
 })();
 </script>
+
+<!-- JARVIS REACTOR V3: visual-only animated core; no market/voice logic modified -->
+<style id="jarvis-reactor-v3">
+.jarvis-reactor-v3{position:relative;width:min(76vw,290px);height:min(76vw,290px);margin:12px auto 18px;isolation:isolate;pointer-events:none;contain:layout style paint}
+.jarvis-reactor-v3 .jr-aura{position:absolute;inset:1%;border-radius:50%;background:radial-gradient(circle,#6bb9ff33 0%,#2368d422 38%,transparent 69%);filter:blur(10px);animation:jr-breathe 4s ease-in-out infinite}
+.jarvis-reactor-v3 .jr-ring{position:absolute;border-radius:50%;border:1px solid #4eacff;box-shadow:inset 0 0 16px #287aff55,0 0 14px #287aff55}
+.jarvis-reactor-v3 .jr-ring.outer{inset:2%;border:2px dashed #569fff99;animation:jr-spin 32s linear infinite}
+.jarvis-reactor-v3 .jr-ring.mid{inset:13%;border:3px dotted #eebc5d;animation:jr-spin 17s linear infinite reverse}
+.jarvis-reactor-v3 .jr-ring.inner{inset:24%;border:2px solid #6cbdff;animation:jr-breathe 3s ease-in-out infinite}
+.jarvis-reactor-v3 .jr-ring.outer:after{content:"";position:absolute;inset:9px;border-radius:50%;border:3px solid transparent;border-top-color:#f7cb72;border-bottom-color:#f7cb72;filter:drop-shadow(0 0 7px #f7cb72)}
+.jarvis-reactor-v3 .jr-core{position:absolute;inset:33%;border-radius:50%;background:radial-gradient(circle at 42% 38%,#e4faff,#64bdff 22%,#135fbd 48%,#051b40 72%);box-shadow:0 0 22px #4b9bff,0 0 54px #287aff66,inset 0 0 18px #e5f9ff80;animation:jr-breathe 3s ease-in-out infinite}
+.jarvis-reactor-v3 .jr-core:after{content:"";position:absolute;inset:22%;border:1px solid #d7edff;border-radius:50%;box-shadow:0 0 14px #cce9ff}
+.jarvis-reactor-v3 .jr-label{position:absolute;bottom:0;left:50%;transform:translateX(-50%);white-space:nowrap;font:700 10px -apple-system,system-ui,sans-serif;letter-spacing:.27em;color:#f4c66b;text-shadow:0 0 12px #e5b35b88}
+@keyframes jr-spin{to{transform:rotate(360deg)}}
+@keyframes jr-breathe{0%,100%{opacity:.65;scale:.97}50%{opacity:1;scale:1.03}}
+@media(prefers-reduced-motion:reduce){.jarvis-reactor-v3 *{animation:none!important}}
+</style>
+<script id="jarvis-reactor-v3-script">
+(function(){
+'use strict';
+const markup='<div class="jr-aura"></div><div class="jr-ring outer"></div><div class="jr-ring mid"></div><div class="jr-ring inner"></div><div class="jr-core"></div><div class="jr-label">JARVIS · REACTOR ONLINE</div>';
+let active=null;
+function sync(){
+ const selected=document.querySelector('.tabbar button[data-tab="jarvis"].on');
+ const page=document.querySelector('.page:not([hidden])');
+ if(!selected||!page){if(active){active.remove();active=null;}return;}
+ if(active&&active.parentNode===page)return;
+ if(active)active.remove();
+ const el=document.createElement('div');el.className='jarvis-reactor-v3';el.setAttribute('role','img');el.setAttribute('aria-label','Réacteur holographique décoratif Jarvis');el.innerHTML=markup;
+ const target=page.querySelector('[id*="jv"],[class*="jarvis"],[class*="voice"]');
+ if(target&&target.parentNode===page)page.insertBefore(el,target);else page.prepend(el);
+ active=el;
+}
+document.querySelectorAll('.tabbar button[data-tab]').forEach(b=>b.addEventListener('click',()=>requestAnimationFrame(sync)));
+const root=document.querySelector('.tabbar');if(root)new MutationObserver(()=>requestAnimationFrame(sync)).observe(root,{subtree:true,attributes:true,attributeFilter:['class']});
+sync();
+})();
+</script>
 </body>
 </html>
 ).join(' · '):'historique insuffisant pour comparer les découpages'}. Les IC Monte Carlo à 95 % quantifient uniquement l’erreur d’échantillonnage des simulations, pas l’incertitude du modèle ni sa capacité prédictive. Scénarios empiriques non calibrés : aucune fiabilité prédictive n’est revendiquée avant validation walk-forward indépendante.</p>
