@@ -1141,6 +1141,31 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
 @media(max-width:430px){#vChart .cb-chart-deck{padding:7px;margin:4px}#vChart .cb-chart-deck-grid>div{padding:5px}#vChart .cb-chart-deck-grid small{font-size:8px}#vJarvis .cb-jarvis-command{padding:8px}}
 @media(prefers-reduced-motion:reduce){#vJarvis .cb-jarvis-spectrum i{animation:none!important}}
 
+/* V40: responsive cinematic shell, cross-tab coherence */
+#vHome,#vChart,#vCal,#vJarvis,#vStats{background-image:radial-gradient(ellipse at 50% 10%,rgba(22,104,255,.17),transparent 55%),repeating-linear-gradient(90deg,transparent 0 79px,rgba(37,120,238,.055) 80px)!important}
+#vHome:before,#vChart:before,#vCal:before,#vJarvis:before,#vStats:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.2;background:linear-gradient(180deg,transparent 0 95%,rgba(20,140,255,.14) 100%);background-size:100% 5px;z-index:0}
+#vHome>* ,#vChart>* ,#vCal>* ,#vJarvis>* ,#vStats>*{position:relative;z-index:1}
+#vHome .hq-title{overflow:visible!important}
+#vHome .hq-orbit{transform-style:preserve-3d}
+#vHome .hq-orbit span{border-color:#ffc342!important;box-shadow:0 0 13px rgba(255,182,0,.35)}
+#vHome .hq-orbit i{border-color:#228fff!important;box-shadow:0 0 15px rgba(17,138,255,.5)}
+#vHome .hq-signal,#vHome .hq-metrics,#vHome .hq-foot{border-color:rgba(32,138,255,.65)!important}
+#vHome .hq-signal strong,#vHome .hq-metrics b{color:#ffd05e!important;text-shadow:0 0 10px rgba(255,181,0,.25)}
+#vHome .hq-metrics>div{background:linear-gradient(145deg,rgba(6,36,73,.95),rgba(2,16,37,.95))!important;border:1px solid rgba(37,142,255,.6)!important}
+#vChart .probability-panel{overflow:visible!important}
+#vChart .prob-grid{gap:7px}
+#vChart .prob-cell{border-radius:7px!important}
+#vChart .prob-cell b{color:#ffd05b!important}
+#vJarvis .jv-core-label{color:#ffd05b!important;letter-spacing:.1em;text-shadow:0 0 12px rgba(255,186,0,.35)}
+#vJarvis .jv-chat-head{border-bottom:1px solid rgba(34,141,255,.5)!important}
+#vJarvis #jvInput,#vJarvis #jvEndpoint{border:1px solid rgba(31,139,255,.75)!important;background:#03162e!important;color:#e5f3ff!important}
+#vCal .proj.page,#vStats .proj.page{border-radius:12px!important}
+#vCal .proj.page .card,#vStats .proj.page .card{box-shadow:inset 0 0 12px rgba(20,116,255,.1),0 0 9px rgba(20,116,255,.1)!important}
+.tabbar{gap:3px!important;padding-left:max(5px,env(safe-area-inset-left))!important;padding-right:max(5px,env(safe-area-inset-right))!important}
+.tabbar button{min-width:0!important;flex:1 1 0!important;font-size:clamp(9px,2.2vw,12px)!important;white-space:nowrap}
+@media(max-width:430px){#vHome .hq-title{grid-template-columns:minmax(0,1fr) 40%!important}#vHome .hq-orbit{min-width:100px!important;min-height:100px!important;width:30vw!important;height:30vw!important}#vHome .hq-orbit b{font-size:clamp(50px,15vw,85px)!important}#vChart .cb-chart-deck-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#vChart .cb-chart-deck-grid>div{min-height:38px}#vHome .cb-command-grid{gap:6px}#vHome .cb-command-panel{min-height:105px}}
+@media(prefers-reduced-motion:reduce){#vHome:before,#vChart:before,#vCal:before,#vJarvis:before,#vStats:before{animation:none!important}}
+
 </style>
 
 <div class="app">
