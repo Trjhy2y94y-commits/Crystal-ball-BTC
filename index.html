@@ -4521,6 +4521,51 @@ html,body{background:#01030b!important}
 @media(max-width:600px){#vHome #homeQuant .cb-flightdeck{perspective:none!important}#vHome #homeQuant .cb-flightdeck .hq-orbit{transform:none!important}#vHome #homeQuant .cb-flightdeck .hq-top,#vHome #homeQuant .cb-flightdeck .hq-title,#vHome #homeQuant .cb-flightdeck .cb-command{transform:none!important}}
 @media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-flightdeck .cb-ring-outer,#vHome #homeQuant .cb-flightdeck .cb-ring-inner,#vHome #homeQuant .cb-flightdeck .cb-command-panel:before,#vJarvis .jv-core:before,#vJarvis .jv-core:after{animation:none!important}}
 </style>
+<style id="cockpit-motion-v56">
+/* V56 — coordinated HUD motion across every active tab, dark spatial ambience */
+.app{background:radial-gradient(ellipse at 50% -8%,#122a5366,transparent 60%),#01040b!important}
+.app .view:not([hidden]){animation:cbV56ViewArrive .48s cubic-bezier(.2,.8,.2,1) both}
+.app .view[hidden]{display:none!important}
+.cb-quick-nav button,.tabbar button{position:relative;transition:background .28s ease,color .28s ease,text-shadow .28s ease,box-shadow .28s ease!important}
+.cb-quick-nav button:focus-visible,.tabbar button:focus-visible{outline:2px solid #f6bd62!important;outline-offset:3px}
+.cb-quick-nav button:active,.tabbar button:active{background:#14326a!important;box-shadow:inset 0 0 24px #3277ff66,0 0 12px #f3b95d44!important}
+#vHome .cb-command-panel,#vJarvis .jv-tile{transition:transform .35s ease,border-color .35s ease,box-shadow .35s ease!important}
+@media(hover:hover) and (pointer:fine){#vHome .cb-command-panel:hover,#vJarvis .jv-tile:hover{transform:translateY(-4px)!important;border-color:#f3b95d9c!important;box-shadow:inset 2px 0 #ffc76f,0 14px 34px #000a,0 0 25px #2a6cff44!important}}
+#vHome .cb-command-head,#vJarvis .jv-head{position:relative;overflow:hidden}
+#vHome .cb-command-head:after,#vJarvis .jv-head:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 20%,#f3ba5622 50%,transparent 80%);transform:translateX(-130%);animation:cbV56HeaderSweep 9s ease-in-out infinite}
+#vHome #homeQuant .cb-flightdeck{--cb-v56-parallax-x:0px;--cb-v56-parallax-y:0px}
+#vHome #homeQuant .cb-flightdeck .hq-orbit{translate:var(--cb-v56-parallax-x) var(--cb-v56-parallax-y);transition:translate .22s ease-out}
+#vHome #homeQuant .cb-flightdeck .cb-command{translate:calc(var(--cb-v56-parallax-x) * -.32) calc(var(--cb-v56-parallax-y) * -.32);transition:translate .25s ease-out}
+@keyframes cbV56ViewArrive{from{opacity:.15;transform:translateY(9px);filter:brightness(.7)}to{opacity:1;transform:translateY(0);filter:brightness(1)}}
+@keyframes cbV56HeaderSweep{0%,70%,100%{transform:translateX(-130%)}85%{transform:translateX(130%)}}
+@media(prefers-reduced-motion:reduce){.app .view:not([hidden]),#vHome .cb-command-head:after,#vJarvis .jv-head:after{animation:none!important}#vHome #homeQuant .cb-flightdeck .hq-orbit,#vHome #homeQuant .cb-flightdeck .cb-command{translate:none!important;transition:none!important}}
+</style>
+<script id="cockpit-motion-v56-script">
+(function(){
+'use strict';
+const deck=document.querySelector('#vHome #homeQuant .cb-flightdeck');
+if(!deck||!window.matchMedia||window.matchMedia('(prefers-reduced-motion: reduce)').matches||!window.matchMedia('(hover: hover) and (pointer: fine)').matches)return;
+let frame=0;
+deck.addEventListener('pointermove',function(event){
+ if(frame)return;
+ const x=event.clientX,y=event.clientY;
+ frame=requestAnimationFrame(function(){
+  frame=0;
+  const rect=deck.getBoundingClientRect();
+  if(!rect.width||!rect.height)return;
+  const px=Math.max(-1,Math.min(1,(x-rect.left)/rect.width*2-1));
+  const py=Math.max(-1,Math.min(1,(y-rect.top)/rect.height*2-1));
+  deck.style.setProperty('--cb-v56-parallax-x',(px*8).toFixed(1)+'px');
+  deck.style.setProperty('--cb-v56-parallax-y',(py*6).toFixed(1)+'px');
+ });
+},{passive:true});
+deck.addEventListener('pointerleave',function(){
+ if(frame){cancelAnimationFrame(frame);frame=0}
+ deck.style.setProperty('--cb-v56-parallax-x','0px');
+ deck.style.setProperty('--cb-v56-parallax-y','0px');
+});
+})();
+</script>
 <script defer src="./jarvis-reactive-core.js"></script>
   </body>
 </html>
