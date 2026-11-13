@@ -1195,6 +1195,40 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
 @media(max-width:650px){#cbQuickNav{gap:3px;padding:5px 6px}#cbQuickNav button{padding:6px 2px;gap:2px;flex-direction:column;font-size:8px;letter-spacing:0}#cbQuickNav button span{font-size:13px}}
 @media(min-width:1050px){#vHome .home-quant{max-width:1320px;width:calc(100% - 28px);margin:14px auto}#vHome .cb-mission-grid{grid-template-columns:repeat(3,minmax(0,1fr))}#vHome .cb-command{max-width:100%}#vChart .cb-chart-deck,#vChart .quant-terminal,#vChart .probability-panel{max-width:1320px;width:calc(100% - 28px);margin-left:auto;margin-right:auto}#vJarvis .jarvis-shell{max-width:1280px;margin-left:auto;margin-right:auto}}
 
+
+/* V43: Cycle and reliability mission panels */
+.cb-module-head{flex:none;position:relative;display:flex;align-items:center;gap:14px;margin:14px 14px 0;padding:16px;border:1px solid #287cda;border-left:3px solid #ffc342;background:linear-gradient(115deg,#0c315a,#041328);border-radius:4px;overflow:hidden}
+.cb-module-head:after{content:"";position:absolute;bottom:0;left:0;width:35%;height:1px;background:#ffc342;box-shadow:0 0 12px #ffc342;animation:cbModuleScan 7s ease-in-out infinite alternate}
+.cb-module-icon{flex:none;width:42px;height:42px;display:grid;place-items:center;border:1px solid #328fff;border-radius:50%;color:#ffc342;font-size:25px;box-shadow:inset 0 0 18px #14559a66}
+.cb-module-head h1{margin:3px 0 5px;font-size:clamp(19px,4vw,28px);color:#e4f1ff;letter-spacing:.04em}
+.cb-module-head small{color:#ffc342;font-size:9px;letter-spacing:.17em;font-weight:700}
+.cb-module-head p{margin:0;color:#a8bfd9;font-size:12px;line-height:1.4}
+#vCal #cal,#vStats #proj{box-sizing:border-box;width:100%;max-width:1100px;margin:0 auto;padding:14px!important;gap:12px!important;background:transparent!important;scrollbar-color:#246fc0 #06142a}
+#vCal #cal>.lt{display:none}
+#vCal .card,#vStats #proj section{position:relative;min-width:0;border:1px solid #2566a5!important;border-top-color:#388fe7!important;border-radius:6px!important;background:linear-gradient(135deg,#0b2441,#051329)!important;padding:16px!important;box-shadow:inset 0 1px 0 #509fff15!important}
+#vStats #proj h2,#vCal .lbl2{color:#ffd16b!important;font-size:13px;letter-spacing:.06em}
+#vStats #proj h2 small{color:#a7bdd5;font-size:11px;line-height:1.5}
+#vStats #proj .k{gap:8px 14px;font-size:13px}
+#vStats #proj .k span:nth-child(even){text-align:right;overflow-wrap:anywhere}
+#vCal .cal7{gap:6px}
+#vCal .cal7 button{min-height:44px;border-radius:5px;border:1px solid #487ab144;font-variant-numeric:tabular-nums}
+#vCal .cal7 button.sel{outline:2px solid #ffc342;outline-offset:1px}
+#vCal .cal7 button.today{outline-color:#4c9fff}
+#vCal .more,#vStats .stats-more{border:1px solid #2566a5;border-radius:6px;background:#071a31}
+#vCal summary,#vStats .stats-more>summary{padding:16px!important;color:#ffd16b;min-height:44px;box-sizing:border-box;cursor:pointer;line-height:1.4}
+#vStats .stats-more-in{display:grid;gap:12px;padding:10px}
+#vCal button,#vCal input,#vStats button{min-height:44px;box-sizing:border-box}
+#vStats table{font-variant-numeric:tabular-nums}
+#vStats tbody tr:nth-child(even){background:#347bc00a}
+#vStats th{color:#9cc6ee!important}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid #ffd16b!important;outline-offset:3px}
+.view:not([hidden]){animation:cbViewEnter .28s ease-out}
+@keyframes cbViewEnter{from{opacity:.5;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cbModuleScan{from{transform:translateX(0)}to{transform:translateX(180%)}}
+@media(min-width:1050px){.cb-module-head{width:calc(100% - 60px);max-width:1070px;box-sizing:border-box;margin:18px auto 0}#vCal #cal{display:grid!important;grid-template-columns:minmax(240px,.75fr) minmax(0,1.25fr);align-content:start;align-items:start}#vCal #cal>.more{grid-column:1/-1}}
+@media(max-width:430px){.cb-module-head{margin:10px 10px 0;padding:12px;gap:10px}.cb-module-head p{font-size:11px}.cb-module-icon{width:34px;height:34px;font-size:21px}#vCal #cal,#vStats #proj{padding:10px!important}#vStats #proj .k{font-size:12px;gap:7px 10px}}
+@media(prefers-reduced-motion:reduce){.view:not([hidden]),.cb-module-head:after{animation:none!important}}
+
 </style>
 
 <div class="app">
@@ -1324,8 +1358,8 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
       </div>
     </div>
   </section>
-  <section class="view" id="vCal" hidden><div class="proj page" id="cal"></div></section>
-  <section class="view" id="vStats" hidden><div class="proj page" id="proj"></div></section>
+  <section class="view" id="vCal" hidden><header class="cb-module-head"><span class="cb-module-icon" aria-hidden="true">◎</span><div><small>CRYSTAL BALL / CYCLE</small><h1>Fenêtres de marché</h1><p>Calendrier, replis et allocation par paliers</p></div></header><div class="proj page" id="cal"></div></section>
+  <section class="view" id="vStats" hidden><header class="cb-module-head"><span class="cb-module-icon" aria-hidden="true">◇</span><div><small>CRYSTAL BALL / FIABILITÉ</small><h1>Épreuve des signaux</h1><p>Couverture des données et résultats historiques</p></div></header><div class="proj page" id="proj"></div></section>
   <div class="toast" id="toast" hidden></div>
   <nav class="tabbar" aria-label="Navigation">
     <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11" r="7"></circle><path d="M7 21h10M9 11a3 3 0 0 1 3-3"></path></svg>Crystal Ball</button>
