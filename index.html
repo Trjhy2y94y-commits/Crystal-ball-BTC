@@ -1229,6 +1229,104 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 @media(max-width:430px){.cb-module-head{margin:10px 10px 0;padding:12px;gap:10px}.cb-module-head p{font-size:11px}.cb-module-icon{width:34px;height:34px;font-size:21px}#vCal #cal,#vStats #proj{padding:10px!important}#vStats #proj .k{font-size:12px;gap:7px 10px}}
 @media(prefers-reduced-motion:reduce){.view:not([hidden]),.cb-module-head:after{animation:none!important}}
 
+
+/* V44: cinematic reactor and immersive instrument surfaces */
+:root{--cb-electric:#348cff;--cb-gold:#ffc342}
+#vHome .home-quant{background:radial-gradient(ellipse at 50% 18%,#113b7955,transparent 55%),linear-gradient(160deg,#07172e,#020711)!important;border-color:#2768ad!important;box-shadow:inset 0 0 70px #06172d,0 15px 60px #0009!important}
+#vHome .hq-title{display:flex!important;flex-direction:column-reverse!important;justify-content:center!important;gap:18px!important;min-height:380px!important;padding:24px 16px 34px!important;text-align:center;overflow:hidden!important;background:radial-gradient(ellipse at 50% 40%,#1554a64d,transparent 65%),repeating-linear-gradient(0deg,transparent 0 39px,#378dff0c 40px),repeating-linear-gradient(90deg,transparent 0 39px,#378dff0c 40px),#030d1e!important;border:1px solid #2c65a4!important;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px))}
+#vHome .hq-title>div:first-child{position:relative;z-index:2}
+#vHome .hq-title:before{content:"";position:absolute;left:12%;right:12%;top:40%;height:1px;background:linear-gradient(90deg,transparent,#4797ff,transparent);box-shadow:0 0 30px 8px #267aff38;pointer-events:none}
+#vHome .hq-title:after{content:"◈  MARKET INTELLIGENCE  /  BTC";left:0;right:0;bottom:13px;font-size:8px;letter-spacing:.23em;color:#8bb4e8;text-shadow:none}
+#vHome .hq-orbit{position:relative!important;flex:none!important;width:246px!important;height:246px!important;min-width:0!important;min-height:0!important;margin:0!important;background:radial-gradient(circle,#1c5dbc66,transparent 66%)!important;border:none!important;box-shadow:none!important;animation:none!important;isolation:isolate}
+#vHome .hq-orbit:before,#vHome .hq-orbit:after{display:none!important}
+.cb-reactor{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 5px #277eff77);pointer-events:none}
+.cb-ring-outer{transform-origin:160px 160px;animation:cbReactorRotate 40s linear infinite}
+.cb-ring-inner{transform-origin:160px 160px;animation:cbReactorRotate 22s linear infinite reverse}
+#vHome .hq-orbit b{font-size:94px!important;line-height:1;color:#ffd36e!important;text-shadow:0 0 18px #ffc34277,0 0 55px #c8861733!important;animation:cbReactorBreathe 6s ease-in-out infinite!important}
+#vHome .hq-price{font-size:clamp(36px,10vw,64px)!important;letter-spacing:-.045em!important;color:#edf5ff!important;text-shadow:0 0 32px #3983ff55!important;font-variant-numeric:tabular-nums}
+#vHome .hq-eyebrow{color:#ffc342!important;font-size:9px;letter-spacing:.19em}
+#vHome .cb-command{clip-path:none!important;background:transparent!important;border:0!important;padding:0!important;box-shadow:none!important;margin-top:18px!important}
+#vHome .cb-command-grid{gap:10px!important}
+#vHome .cb-command-panel{clip-path:none!important;border:1px solid #27558c!important;border-radius:3px!important;background:radial-gradient(ellipse at 100% 0,#1b61b633,transparent 70%),linear-gradient(145deg,#0b203c,#040e1e)!important;box-shadow:inset 0 1px #619cff22,0 8px 18px #0005!important;min-height:142px!important;padding:14px!important;overflow:hidden}
+#vHome .cb-command-panel:after{content:"";position:absolute;bottom:7px;right:7px;width:14px;height:14px;border-right:2px solid #3c8bff;border-bottom:2px solid #3c8bff;pointer-events:none}
+#vHome .cb-command-panel:before{width:26px!important;background:#ffc342!important;box-shadow:0 0 12px #ffc34266!important}
+#vHome .cb-command-panel strong{font-size:clamp(18px,4.6vw,28px)!important;font-variant-numeric:tabular-nums}
+#vHome .cb-panel-label{font-size:9px!important;letter-spacing:.1em;color:#9cb6d5!important}
+#vChart .quant-terminal{background:radial-gradient(ellipse at 80% 0,#15408077,transparent 60%),#041023!important;border:1px solid #3571b7!important;box-shadow:inset 0 0 35px #16468722,0 8px 30px #0005!important}
+#vChart .cb-chart-deck{border-left:3px solid #ffc342!important;background:linear-gradient(110deg,#102e53,#040d1e)!important}
+#vJarvis .jv-core{min-height:290px!important;background:radial-gradient(ellipse at center,#1b56b14d,transparent 66%)!important;overflow:hidden}
+#vJarvis .jv-orb{width:145px!important;height:145px!important;box-shadow:0 0 45px #1d6bff66,inset 0 0 40px #2379ff99!important;background:radial-gradient(circle at 40% 30%,#387ee4,#0b2b67 55%,#020b1b)!important}
+#vJarvis .jv-core:before{width:210px!important;height:210px!important;border:3px dashed #348cff!important;box-shadow:none!important}
+#vJarvis .jv-core:after{width:255px!important;height:255px!important;border:1px solid #ffc342!important;box-shadow:0 0 0 8px #267bff0d,0 0 30px #267bff22!important}
+.cb-module-icon{position:relative;width:54px;height:54px;font-size:28px;background:radial-gradient(circle,#225eab66,#030e20);box-shadow:0 0 24px #227bff33,inset 0 0 16px #227bff33}
+.cb-module-icon:after{content:"";position:absolute;inset:-5px;border:1px dashed #ffc342;border-radius:50%;animation:cbReactorRotate 30s linear infinite}
+.cb-module-head{min-height:112px;background:radial-gradient(ellipse at 95% 0,#1b5caf66,transparent 65%),linear-gradient(110deg,#0b2445,#030b18)!important;gap:20px!important}
+.tabbar{background:linear-gradient(180deg,#0c2140,#030b18)!important;box-shadow:0 -5px 30px #0006!important}
+.tabbar button.on{background:radial-gradient(ellipse at 50% 100%,#2865ad55,transparent 75%)!important;text-shadow:0 0 12px #ffbf3b66}
+@keyframes cbReactorRotate{to{transform:rotate(360deg)}}
+@keyframes cbReactorBreathe{0%,100%{opacity:.85}50%{opacity:1}}
+@media(min-width:850px){#vHome .hq-title{flex-direction:row!important;min-height:360px!important;gap:70px!important;text-align:left}#vHome .hq-orbit{width:310px!important;height:310px!important}#vHome .cb-command-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:430px){#vHome .hq-title{min-height:370px!important;padding-top:20px!important}#vHome .hq-orbit{width:220px!important;height:220px!important}#vHome .cb-command-panel{min-height:128px!important;padding:11px!important}}
+@media(prefers-reduced-motion:reduce){.cb-ring-outer,.cb-ring-inner,#vHome .hq-orbit b,.cb-module-icon:after{animation:none!important}}
+
+
+/* V45: reference cockpit, animated modules across all five views */
+.app{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%201600%201000%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22sky%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%2301050b%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2307172b%22/%3E%3C/linearGradient%3E%3CradialGradient%20id%3D%22glow%22%3E%3Cstop%20stop-color%3D%22%231b73c6%22%20stop-opacity%3D%22.2%22/%3E%3Cstop%20offset%3D%221%22%20stop-opacity%3D%220%22/%3E%3C/radialGradient%3E%3Cpattern%20id%3D%22windows%22%20width%3D%2224%22%20height%3D%2236%22%20patternUnits%3D%22userSpaceOnUse%22%3E%3Crect%20x%3D%225%22%20y%3D%228%22%20width%3D%223%22%20height%3D%2210%22%20fill%3D%22%23458ec0%22%20opacity%3D%22.25%22/%3E%3C/pattern%3E%3C/defs%3E%3Cpath%20fill%3D%22url%28%23sky%29%22%20d%3D%22M0%200h1600v1000H0z%22/%3E%3Cellipse%20cx%3D%22800%22%20cy%3D%22550%22%20rx%3D%22650%22%20ry%3D%22450%22%20fill%3D%22url%28%23glow%29%22/%3E%3Cpath%20d%3D%22M0%20-300h220v900H0z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M0%20-300h220v900H0z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M65%20-215h197v815H65z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M65%20-215h197v815H65z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M130%20-130h174v730H130z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M130%20-130h174v730H130z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M195%20-45h151v645H195z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M195%20-45h151v645H195z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M260%2040h128v560H260z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M260%2040h128v560H260z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M325%20125h105v475H325z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M325%20125h105v475H325z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M390%20210h82v390H390z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M390%20210h82v390H390z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M1380%20-300h220v900H1380z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M1380%20-300h220v900H1380z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M1338%20-215h197v815H1338z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M1338%20-215h197v815H1338z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M1296%20-130h174v730H1296z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M1296%20-130h174v730H1296z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M1254%20-45h151v645H1254z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M1254%20-45h151v645H1254z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M1212%2040h128v560H1212z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M1212%2040h128v560H1212z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M1170%20125h105v475H1170z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M1170%20125h105v475H1170z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M1128%20210h82v390H1128z%22%20fill%3D%22%23020910%22%20stroke%3D%22%2312354d%22/%3E%3Cpath%20d%3D%22M1128%20210h82v390H1128z%22%20fill%3D%22url%28%23windows%29%22/%3E%3Cpath%20d%3D%22M800%20570L-800%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L-660%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L-520%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L-380%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L-240%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L-100%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L40%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L180%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L320%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L460%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L600%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L740%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L880%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L1020%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L1160%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L1300%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L1440%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L1580%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L1720%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L1860%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L2000%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L2140%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L2280%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M800%20570L2420%201000%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.22%22/%3E%3Cpath%20d%3D%22M0%20610h1600%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.16%22/%3E%3Cpath%20d%3D%22M0%20645h1600%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.16%22/%3E%3Cpath%20d%3D%22M0%20700h1600%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.16%22/%3E%3Cpath%20d%3D%22M0%20785h1600%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.16%22/%3E%3Cpath%20d%3D%22M0%20910h1600%22%20stroke%3D%22%2322537b%22%20opacity%3D%22.16%22/%3E%3C/svg%3E") center/cover!important}
+#vHome,#vChart,#vCal,#vJarvis,#vStats{background:linear-gradient(180deg,#01071022,#01071066)!important;isolation:isolate}
+#vHome:before,#vChart:before,#vCal:before,#vJarvis:before,#vStats:before{inset:8px!important;border:1px solid #3886c255;clip-path:polygon(0 20px,20px 0,calc(100% - 20px) 0,100% 20px,100% calc(100% - 20px),calc(100% - 20px) 100%,20px 100%,0 calc(100% - 20px));background:repeating-linear-gradient(0deg,transparent 0 4px,#348cff09 5px)!important;opacity:.65!important;pointer-events:none}
+#cbUnifiedHeader,#cbQuickNav,.tabbar{background:linear-gradient(90deg,#02080fee,#071a2bdd,#02080fee)!important;border-color:#3776a5!important;box-shadow:0 0 18px #0c6bbc22!important}
+#cbUnifiedHeader .cb-unified-brand strong{color:#90bce2!important;font-size:18px!important;letter-spacing:.16em!important}
+#vHome .home-quant{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;overflow:visible!important}
+#vHome .home-quant:before,#vHome .home-quant:after{display:none!important}
+#vHome .hq-title{background:radial-gradient(ellipse,#124c8c28,transparent 66%)!important;border:0!important;clip-path:none!important;min-height:390px!important}
+#vHome .hq-orbit{width:260px!important;height:260px!important;background:radial-gradient(circle,#2769bb33,transparent 65%)!important}
+#vHome .hq-orbit b{color:#9ac5ee!important;font-size:65px!important;text-shadow:0 0 25px #2687ef!important}
+#vHome .hq-price{font-size:clamp(30px,7vw,48px)!important}
+#vHome .cb-command-panel,#vHome .cb-mission,#vHome .cb-mission-tile,#vChart .cb-chart-deck,#vChart .quant-terminal,#vChart .probability-panel,#vCal #cal .card,#vStats #proj section,#vJarvis .jv-chat,#vJarvis .jv-settings,.cb-module-head{border-radius:0!important;border:1px solid #3779b4aa!important;background:linear-gradient(135deg,#051524dd,#020a13bb)!important;box-shadow:inset 0 0 20px #1a649d11,0 6px 22px #0006!important;clip-path:polygon(0 12px,12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px))}
+#vHome .cb-command-panel:before{background:#509be0!important;box-shadow:0 0 12px #328dff!important}
+#vHome .cb-command-panel strong{color:#b0d5f7!important;text-shadow:0 0 12px #397aba77!important}
+#vHome .hq-signal,#vHome .hq-metrics>div{background:#03111caa!important;border-color:#2b6798!important}
+#vHome .hq-top{border-bottom:1px solid #3877a455;padding:7px!important}
+#vHome .cb-command-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.cb-motion-rig{position:relative;flex:none;width:100%;height:94px;overflow:hidden;pointer-events:none;opacity:.8;background:radial-gradient(ellipse,#1264ba18,transparent 65%)}
+.cb-motion-rig svg{display:block;width:100%;height:100%;filter:drop-shadow(0 0 4px #338fff66)}
+.cb-motion-rig .cb-motion-loop{transform-origin:240px 54px;animation:cbReactorRotate 18s linear infinite}
+.cb-motion-rig .cb-motion-reverse{transform-origin:240px 54px;animation:cbReactorRotate 28s linear infinite reverse}
+.cb-motion-rig .cb-motion-sweep{animation:cbScopeSweep 6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+#vChart .cb-motion-rig{height:54px}
+#vCal .cb-motion-rig{height:80px}
+#vStats .cb-motion-rig{height:68px}
+#vJarvis .cb-motion-rig{height:50px}
+#vCal .cb-motion-loop{animation-duration:35s}
+#vStats .cb-motion-loop{animation:cbInstrumentPulse 4s ease-in-out infinite;transform-origin:240px 54px}
+#vChart .cb-motion-sweep{animation-duration:3.5s}
+.cb-motion-rig text{fill:#82acd3;font:8px monospace;letter-spacing:2px}
+#cbQuickNav button,.tabbar button{position:relative;overflow:hidden}
+#cbQuickNav button[aria-current="page"]:after,.tabbar button.on:after{content:"";position:absolute;bottom:0;left:0;width:35%;height:2px;background:#68adff;box-shadow:0 0 9px #4a9aff;animation:cbNavTrace 3s ease-in-out infinite alternate;pointer-events:none}
+#cbQuickNav button[aria-current="page"] span,.tabbar button.on svg{animation:cbIconGlow 3s ease-in-out infinite}
+.view[hidden] *, .view[hidden]:before{animation-play-state:paused!important}
+@keyframes cbScopeSweep{from{transform:translateX(-120px)}to{transform:translateX(120px)}}
+@keyframes cbInstrumentPulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes cbNavTrace{from{transform:translateX(0)}to{transform:translateX(180%)}}
+@keyframes cbIconGlow{0%,100%{filter:drop-shadow(0 0 1px #479dff)}50%{filter:drop-shadow(0 0 7px #479dff)}}
+@media(min-width:1050px){
+#vHome .home-quant{display:grid!important;grid-template-columns:minmax(210px,1fr) minmax(320px,1.6fr) minmax(210px,1fr);gap:16px;align-items:start;max-width:1500px!important}
+#vHome .hq-top{grid-column:1/-1}
+#vHome .hq-title{grid-column:2;grid-row:2/span 3;flex-direction:column-reverse!important;min-height:470px!important;gap:24px!important;text-align:center}
+#vHome .hq-orbit{width:310px!important;height:310px!important}
+#vHome .cb-command,#vHome .cb-command-grid{display:contents!important}
+#vHome .cb-command-head,#vHome .cb-command-bottom{display:none!important}
+#vHome .cb-command-panel:nth-child(1){grid-column:1;grid-row:2}
+#vHome .cb-command-panel:nth-child(2){grid-column:1;grid-row:3}
+#vHome .cb-command-panel:nth-child(3){grid-column:3;grid-row:2}
+#vHome .cb-command-panel:nth-child(4){grid-column:3;grid-row:3}
+#vHome .cb-mission{grid-column:1/-1;grid-row:5}
+#vHome .hq-signal{grid-column:1;grid-row:4}#vHome .hq-metrics{grid-column:3;grid-row:4;display:grid!important;grid-template-columns:1fr!important}
+#vHome .hq-foot{grid-column:1/-1}
+}
+@media(max-width:430px){#vHome .hq-orbit{width:238px!important;height:238px!important}#vHome .hq-title{min-height:360px!important;gap:12px!important}.cb-module-head{min-height:95px!important}}
+@media(prefers-reduced-motion:reduce){.cb-motion-rig *,.tabbar button.on:after,#cbQuickNav button[aria-current="page"]:after,.tabbar button.on svg,#cbQuickNav button[aria-current="page"] span{animation:none!important}}
+
 </style>
 
 <div class="app">
@@ -1247,7 +1345,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
   <section class="view" id="vHome">
     <section class="home-quant" id="homeQuant" aria-label="Crystal Ball — terminal quantitatif">
       <div class="hq-top"><span class="hq-brand"><i></i> CRYSTAL <b>BALL</b></span><span class="hq-status" id="homeQtFeed">SCAN EN ATTENTE</span></div>
-      <div class="hq-title"><div><div class="hq-eyebrow">BITCOIN · MARKET INTELLIGENCE</div><div class="hq-price" id="homeQtPrice">—</div><div class="hq-change" id="homeQtChange">Prix de marché en attente</div></div><div class="hq-orbit" aria-hidden="true"><span></span><i></i><b>₿</b></div></div>
+      <div class="hq-title"><div><div class="hq-eyebrow">BITCOIN · MARKET INTELLIGENCE</div><div class="hq-price" id="homeQtPrice">—</div><div class="hq-change" id="homeQtChange">Prix de marché en attente</div></div><div class="hq-orbit" aria-hidden="true"><svg class="cb-reactor" viewBox="0 0 320 320" fill="none" aria-hidden="true"><defs><radialGradient id="cbCoreGlow"><stop stop-color="#287fff" stop-opacity=".55"/><stop offset="1" stop-color="#084ea8" stop-opacity="0"/></radialGradient></defs><circle cx="160" cy="160" r="145" fill="url(#cbCoreGlow)"/><g class="cb-ring-outer" stroke="#348cff"><circle cx="160" cy="160" r="147" stroke-width="3" stroke-dasharray="80 12 4 12"/><circle cx="160" cy="160" r="136" stroke-dasharray="1 9" stroke-width="6"/></g><g class="cb-ring-inner" stroke="#ffc342"><circle cx="160" cy="160" r="120" stroke-width="2" stroke-dasharray="120 45 12 45"/><path d="M160 32v15M160 273v15M32 160h15M273 160h15" stroke-width="3"/></g><g stroke="#428fff" opacity=".6"><circle cx="160" cy="160" r="103"/><ellipse cx="160" cy="160" rx="103" ry="38"/><ellipse cx="160" cy="160" rx="38" ry="103"/><ellipse cx="160" cy="160" rx="73" ry="103" transform="rotate(45 160 160)"/></g><circle cx="160" cy="160" r="84" stroke="#438fff" stroke-opacity=".35" stroke-width="12"/><g fill="#ffc342"><circle cx="160" cy="13" r="4"/><circle cx="307" cy="160" r="4"/><circle cx="160" cy="307" r="4"/><circle cx="13" cy="160" r="4"/></g></svg><b>₿</b></div></div>
       <div class="cb-command" aria-label="Tableau de bord holographique">
         <div class="cb-command-head"><span>◈ CRYSTAL BALL · QUANTUM COMMAND</span><span class="cb-live"><i></i> DONNÉES OBSERVÉES</span></div>
         <div class="cb-command-grid">
@@ -1274,7 +1372,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
     </section>
     <div class="proj page" id="home"></div>
   </section>
-  <section class="view" id="vChart" hidden>
+  <section class="view" id="vChart" hidden><div class="cb-motion-rig" aria-hidden="true"><svg viewBox="0 0 480 108" fill="none"><path d="M20 60h30l14-25 18 45 18-40 20 15h35l18-25 24 42 19-20h45l15-30 20 55 19-30h55l15-12 20 20h40" stroke="#619ee8"/><path class="cb-motion-sweep" d="M240 8v84" stroke="#7fbdff"/><text x="20" y="20">ANALYSE / SPECTRE VISUEL</text></svg></div>
   <header>
     <div>
       <div class="sym"><b>BTC</b>USD · <span id="tfLabel">1D</span> · <span id="src">…</span></div>
@@ -1334,7 +1432,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
     <div class="prob-layers" id="probLayers"></div><div class="prob-note" id="probNote">Les fourchettes proviennent des rendements historiques conditionnés au régime. Les méthodes chartistes affinent la lecture, elles ne garantissent pas le prix.</div>
   </div>
   </section>
-  <section class="view" id="vJarvis" hidden>
+  <section class="view" id="vJarvis" hidden><div class="cb-motion-rig" aria-hidden="true"><svg viewBox="0 0 480 108" fill="none"><path d="M30 54h80m260 0h80" stroke="#386da5"/><g class="cb-motion-loop" stroke="#619fe6"><ellipse cx="240" cy="54" rx="65" ry="25"/><ellipse cx="240" cy="54" rx="65" ry="25" transform="rotate(90 240 54)"/></g><text x="16" y="22">JARVIS / INTERFACE VOCALE</text></svg></div>
     <div class="jarvis-view">
       <div class="jarvis-shell">
         <div class="jv-head"><div class="jv-brand">CRYSTAL <b>· JARVIS</b> / COMMAND INTELLIGENCE</div><div class="jv-state" id="jvEngineState">MOTEUR IA À CONNECTER</div></div>
@@ -1358,8 +1456,8 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
       </div>
     </div>
   </section>
-  <section class="view" id="vCal" hidden><header class="cb-module-head"><span class="cb-module-icon" aria-hidden="true">◎</span><div><small>CRYSTAL BALL / CYCLE</small><h1>Fenêtres de marché</h1><p>Calendrier, replis et allocation par paliers</p></div></header><div class="proj page" id="cal"></div></section>
-  <section class="view" id="vStats" hidden><header class="cb-module-head"><span class="cb-module-icon" aria-hidden="true">◇</span><div><small>CRYSTAL BALL / FIABILITÉ</small><h1>Épreuve des signaux</h1><p>Couverture des données et résultats historiques</p></div></header><div class="proj page" id="proj"></div></section>
+  <section class="view" id="vCal" hidden><div class="cb-motion-rig" aria-hidden="true"><svg viewBox="0 0 480 108" fill="none"><g class="cb-motion-loop" stroke="#5b9bdb"><ellipse cx="240" cy="54" rx="98" ry="24"/><ellipse cx="240" cy="54" rx="98" ry="24" transform="rotate(60 240 54)"/><ellipse cx="240" cy="54" rx="98" ry="24" transform="rotate(120 240 54)"/><circle cx="338" cy="54" r="4" fill="#ffc342"/></g><circle cx="240" cy="54" r="10" stroke="#ffc342"/><text x="16" y="22">CYCLE / ORBITES</text></svg></div><header class="cb-module-head"><span class="cb-module-icon" aria-hidden="true">◎</span><div><small>CRYSTAL BALL / CYCLE</small><h1>Fenêtres de marché</h1><p>Calendrier, replis et allocation par paliers</p></div></header><div class="proj page" id="cal"></div></section>
+  <section class="view" id="vStats" hidden><div class="cb-motion-rig" aria-hidden="true"><svg viewBox="0 0 480 108" fill="none"><g class="cb-motion-loop" stroke="#65a4df"><circle cx="240" cy="54" r="36" stroke-dasharray="3 6" stroke-width="5"/><path d="M240 18v72M204 54h72"/><circle cx="240" cy="54" r="20"/></g><text x="16" y="22">FIABILITÉ / INSTRUMENTS</text></svg></div><header class="cb-module-head"><span class="cb-module-icon" aria-hidden="true">◇</span><div><small>CRYSTAL BALL / FIABILITÉ</small><h1>Épreuve des signaux</h1><p>Couverture des données et résultats historiques</p></div></header><div class="proj page" id="proj"></div></section>
   <div class="toast" id="toast" hidden></div>
   <nav class="tabbar" aria-label="Navigation">
     <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11" r="7"></circle><path d="M7 21h10M9 11a3 3 0 0 1 3-3"></path></svg>Crystal Ball</button>
