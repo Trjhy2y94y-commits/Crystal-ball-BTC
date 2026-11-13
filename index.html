@@ -1046,6 +1046,36 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
 @keyframes cbOrbSpin{to{transform:rotate(360deg)}}@keyframes cbOrbPulse{50%{filter:brightness(1.3);box-shadow:0 0 42px #198fff,inset 0 0 40px #167eff,0 0 65px rgba(255,181,0,.4)}}
 @media(prefers-reduced-motion:reduce){#vHome .hq-orbit,#vHome .hq-orbit:before,#vJarvis .jv-orb,#vJarvis .jv-orb:before{animation:none!important}}
 
+/* CRYSTAL BALL COMMAND DECK V36 */
+#vHome .home-quant{overflow-y:auto!important;overflow-x:hidden!important;min-height:0!important;padding-bottom:16px!important;scrollbar-width:thin;scrollbar-color:#168bff transparent}
+#vHome .hq-top{padding:13px 16px!important;background:linear-gradient(90deg,rgba(7,46,93,.95),rgba(2,12,31,.96))!important;border:1px solid #187fff!important;clip-path:polygon(0 0,97% 0,100% 18%,100% 100%,3% 100%,0 75%)}
+#vHome .hq-brand{font-size:clamp(17px,4.6vw,28px)!important;font-style:italic}
+#vHome .hq-title{min-height:260px!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(140px,42%)!important;align-items:center!important;gap:8px!important;background:radial-gradient(circle at 75% 50%,rgba(13,103,227,.3),transparent 48%)!important;border:1px solid rgba(25,132,255,.6)!important;margin-top:10px!important;padding:18px!important;position:relative!important}
+#vHome .hq-title:after{content:"CRYSTAL · BTC";position:absolute;bottom:8px;right:18px;color:#ffca42;font-size:10px;letter-spacing:.24em;text-shadow:0 0 10px #ffb200}
+#vHome .hq-orbit{width:min(35vw,240px)!important;height:min(35vw,240px)!important;min-width:120px!important;min-height:120px!important;justify-self:center!important;display:grid!important;place-items:center!important;border-radius:50%!important;background:radial-gradient(circle at 35% 28%,#2165a4 0%,#0a3268 30%,#031228 68%,#000916 100%)!important}
+#vHome .hq-orbit b{font-size:clamp(70px,14vw,148px)!important;line-height:1!important}
+#vHome .hq-price{font-size:clamp(29px,6.5vw,62px)!important;overflow-wrap:anywhere}
+#vHome .hq-eyebrow{color:#ffc342!important;font-size:10px!important;letter-spacing:.13em!important}
+#vHome .cb-command{margin:12px 0!important;padding:12px!important;background:linear-gradient(150deg,rgba(4,28,61,.95),rgba(1,9,25,.97))!important;border:1px solid #178cff!important;box-shadow:0 0 26px rgba(18,111,255,.3),inset 0 0 30px rgba(11,76,168,.18)!important;clip-path:polygon(0 0,98.5% 0,100% 8%,100% 100%,1.5% 100%,0 92%)}
+#vHome .cb-command-head,#vHome .cb-command-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:10px;font-weight:850;letter-spacing:.08em;color:#ffc342;padding:4px 3px 10px}
+#vHome .cb-command-bottom{padding:12px 3px 2px;color:#7cbbff;font-size:9px}
+#vHome .cb-live{color:#48d7a2;white-space:nowrap;font-size:9px}
+#vHome .cb-live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#39f4a6;box-shadow:0 0 8px #39f4a6;margin-right:4px;animation:cbOrbPulse 2s infinite}
+#vHome .cb-command-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#vHome .cb-command-panel{position:relative;min-width:0;min-height:136px;padding:12px;background:linear-gradient(140deg,rgba(6,37,79,.95),rgba(1,13,32,.96));border:1px solid #197eff;box-shadow:inset 0 0 18px rgba(18,119,255,.15),0 0 9px rgba(13,112,255,.26);clip-path:polygon(0 0,93% 0,100% 12%,100% 100%,7% 100%,0 88%);display:flex;flex-direction:column;gap:8px}
+#vHome .cb-command-panel:before{content:"";position:absolute;top:0;left:0;width:40%;height:2px;background:#ffc342;box-shadow:0 0 9px #ffc342}
+#vHome .cb-panel-label{color:#95ceff;font-size:10px;letter-spacing:.07em;font-weight:850}
+#vHome .cb-command-panel strong{font-size:clamp(16px,3vw,29px);color:#ffcb4c;text-shadow:0 0 12px rgba(255,177,0,.35);overflow-wrap:anywhere}
+#vHome .cb-command-panel small{color:#7da8d3;font-size:9px;margin-top:auto}
+#vHome .cb-panel-track{display:flex;gap:3px}.cb-panel-track i{height:7px;flex:1;background:#ffc342;box-shadow:0 0 6px #ffb000}
+#vHome .cb-mini-wave svg{width:100%;height:35px;filter:drop-shadow(0 0 5px #168cff)}
+#vHome .cb-rsi-ring{width:74px;height:74px;align-self:center;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#05182e 55%,transparent 57%),conic-gradient(#ffc342 0 34%,#1b91ff 34% 76%,#153a68 76%);box-shadow:0 0 14px rgba(22,138,255,.3)}
+#vHome .cb-rsi-ring strong{font-size:21px}
+#vHome .cb-pulse-bars{height:32px;display:flex;align-items:center;gap:5px}.cb-pulse-bars i{width:6px;height:45%;background:#198fff;box-shadow:0 0 8px #1b94ff;animation:cbWave 1.2s ease-in-out infinite alternate}.cb-pulse-bars i:nth-child(2n){height:85%;animation-delay:.2s;background:#ffc342}.cb-pulse-bars i:nth-child(3n){height:30%;animation-delay:.5s}
+@keyframes cbWave{to{height:95%;opacity:.6}}
+@media(max-width:430px){#vHome .hq-title{min-height:205px!important;padding:12px!important}#vHome .cb-command-panel{padding:9px;min-height:119px}#vHome .cb-command-head{font-size:9px}#vHome .cb-command-bottom span:last-child{display:none}}
+@media(prefers-reduced-motion:reduce){#vHome .cb-pulse-bars i,#vHome .cb-live i{animation:none!important}}
+
 </style>
 
 <div class="app">
@@ -1053,6 +1083,16 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
     <section class="home-quant" id="homeQuant" aria-label="Crystal Ball — terminal quantitatif">
       <div class="hq-top"><span class="hq-brand"><i></i> CRYSTAL <b>BALL</b></span><span class="hq-status" id="homeQtFeed">SCAN EN ATTENTE</span></div>
       <div class="hq-title"><div><div class="hq-eyebrow">BITCOIN · MARKET INTELLIGENCE</div><div class="hq-price" id="homeQtPrice">—</div><div class="hq-change" id="homeQtChange">Prix de marché en attente</div></div><div class="hq-orbit" aria-hidden="true"><span></span><i></i><b>₿</b></div></div>
+      <div class="cb-command" aria-label="Tableau de bord holographique">
+        <div class="cb-command-head"><span>◈ CRYSTAL BALL · QUANTUM COMMAND</span><span class="cb-live"><i></i> DONNÉES OBSERVÉES</span></div>
+        <div class="cb-command-grid">
+          <div class="cb-command-panel"><div class="cb-panel-label">◉ RÉGIME DE MARCHÉ</div><strong id="cbDeckBias">Analyse en cours</strong><div class="cb-panel-track"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><small>Signal du moteur quantitatif</small></div>
+          <div class="cb-command-panel"><div class="cb-panel-label">◈ WAVETREND</div><strong id="cbDeckWT">—</strong><div class="cb-mini-wave" aria-hidden="true"><svg viewBox="0 0 220 48" preserveAspectRatio="none"><path d="M0 25 Q14 2 28 24 T56 25 T84 25 T112 25 T140 25 T168 25 T196 25 T224 25" fill="none" stroke="#299fff" stroke-width="2.5"/><path d="M0 33 Q14 10 28 33 T56 33 T84 33 T112 33 T140 33 T168 33 T196 33 T224 33" fill="none" stroke="#ffc342" stroke-width="2"/></svg></div><small>Indicateur technique réel</small></div>
+          <div class="cb-command-panel"><div class="cb-panel-label">◉ RSI · 14</div><div class="cb-rsi-ring"><strong id="cbDeckRSI">—</strong></div><small>Lecture du marché</small></div>
+          <div class="cb-command-panel"><div class="cb-panel-label">◇ INTÉGRITÉ DU FLUX</div><strong id="cbDeckSource">En attente</strong><div class="cb-pulse-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><small>Source remontée par l'application</small></div>
+        </div>
+        <div class="cb-command-bottom"><span>◉ SCAN QUANTITATIF</span><span>WYCKOFF · SMC · ELLIOTT · FVG</span></div>
+      </div>
       <div class="hq-signal"><div><small>RÉGIME DE MARCHÉ</small><strong id="homeQtBias">ANALYSE EN COURS</strong></div><div class="hq-scan"><i></i><span>QUANT SCAN <b>2s</b></span></div></div>
       <div class="hq-metrics"><div><small>WAVETREND</small><b id="homeQtWT">—</b></div><div><small>RSI · 14</small><b id="homeQtRSI">—</b></div><div><small>FLUX DE DONNÉES</small><b id="homeQtSource">—</b></div></div>
       <div class="hq-foot"><span>WYCKOFF / SMC / ELLIOTT / FVG / VOLUME PROFILE</span><span>MODÈLE · EN OBSERVATION</span></div>
@@ -3687,7 +3727,16 @@ setInterval(()=>{if(document.visibilityState!=='visible'||isDemo)return;if(wsOk&
         });
       }
     </script>
-  </body>
+  <script>
+/* V36: live dashboard mirrors the existing quantitative engine; never fabricates readings. */
+(function(){
+  const map=[['homeQtBias','cbDeckBias'],['homeQtWT','cbDeckWT'],['homeQtRSI','cbDeckRSI'],['homeQtSource','cbDeckSource']];
+  function sync(){for(const [from,to] of map){const a=document.getElementById(from),b=document.getElementById(to);if(a&&b){const value=(a.textContent||'').trim();if(value&&b.textContent!==value)b.textContent=value;}}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  function init(){sync();const obs=new MutationObserver(sync);for(const [id] of map){const el=document.getElementById(id);if(el)obs.observe(el,{childList:true,subtree:true,characterData:true});}}
+})();
+</script>
+</body>
 </html>
 ).join(' · '):'historique insuffisant pour comparer les découpages'}. Les IC Monte Carlo à 95 % quantifient uniquement l’erreur d’échantillonnage des simulations, pas l’incertitude du modèle ni sa capacité prédictive. Scénarios empiriques non calibrés : aucune fiabilité prédictive n’est revendiquée avant validation walk-forward indépendante.</p>
   </section>
