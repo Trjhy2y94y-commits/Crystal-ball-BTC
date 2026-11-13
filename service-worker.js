@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v51-panoramic-flightdeck";
+const CACHE = "cristal-btc-v52-panoramic-flightdeck";
 const SHELL = [
   "./",
   "./index.html",
