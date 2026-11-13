@@ -1185,6 +1185,16 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
 @media(max-width:360px){#cbUnifiedHeader .cb-unified-brand small{display:none}#cbUnifiedHeader .cb-unified-brand strong{font-size:12px}}
 @media(prefers-reduced-motion:reduce){#cbUnifiedHeader .cb-unified-dot{animation:none!important}}
 
+/* V42: synced command navigation and desktop layout */
+#cbQuickNav{position:relative;z-index:4;display:flex;flex:none;gap:6px;align-items:center;justify-content:center;padding:7px 10px;background:linear-gradient(90deg,#031326,#082d56,#031326);border-bottom:1px solid rgba(39,137,255,.55)}
+#cbQuickNav button{min-width:0;flex:1 1 0;max-width:170px;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid rgba(42,133,255,.48);background:linear-gradient(145deg,#082b52,#04172d);color:#a8d7ff;font-weight:850;letter-spacing:.07em;font-size:10px;padding:10px 6px;border-radius:3px;cursor:pointer;transition:box-shadow .2s,border-color .2s,color .2s}
+#cbQuickNav button span{color:#249bff;font-size:16px}
+#cbQuickNav button[aria-current="page"]{color:#ffd16b;border-color:#ffc342;box-shadow:0 0 13px rgba(255,184,0,.23),inset 0 0 9px rgba(255,184,0,.1);background:linear-gradient(150deg,#10395f,#1e230e)}
+#cbQuickNav button[aria-current="page"] span{color:#ffc342}
+#cbQuickNav button:focus-visible{outline:2px solid #ffcc52;outline-offset:2px}
+@media(max-width:650px){#cbQuickNav{gap:3px;padding:5px 6px}#cbQuickNav button{padding:6px 2px;gap:2px;flex-direction:column;font-size:8px;letter-spacing:0}#cbQuickNav button span{font-size:13px}}
+@media(min-width:1050px){#vHome .home-quant{max-width:1320px;width:calc(100% - 28px);margin:14px auto}#vHome .cb-mission-grid{grid-template-columns:repeat(3,minmax(0,1fr))}#vHome .cb-command{max-width:100%}#vChart .cb-chart-deck,#vChart .quant-terminal,#vChart .probability-panel{max-width:1320px;width:calc(100% - 28px);margin-left:auto;margin-right:auto}#vJarvis .jarvis-shell{max-width:1280px;margin-left:auto;margin-right:auto}}
+
 </style>
 
 <div class="app">
@@ -1192,6 +1202,13 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
   <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>QUANTUM TRADING · COMMAND HUD</small></div></div>
   <div class="cb-unified-market"><small>BTC / USD <span id="cbUnifiedFeed">FLUX EN ATTENTE</span></small><strong id="cbUnifiedPrice">—</strong></div>
   <div class="cb-unified-state"><span class="cb-unified-dot"></span><span id="cbUnifiedRegime">ANALYSE EN COURS</span></div>
+</div>
+<div class="cb-quick-nav" id="cbQuickNav" aria-label="Accès rapide aux modules">
+<button type="button" data-cb-quick="home"><span>◉</span>CRYSTAL</button>
+<button type="button" data-cb-quick="chart"><span>⌁</span>ANALYSE</button>
+<button type="button" data-cb-quick="cal"><span>◷</span>CYCLE</button>
+<button type="button" data-cb-quick="jarvis"><span>◎</span>JARVIS</button>
+<button type="button" data-cb-quick="stats"><span>▥</span>FIABILITÉ</button>
 </div>
   <section class="view" id="vHome">
     <section class="home-quant" id="homeQuant" aria-label="Crystal Ball — terminal quantitatif">
@@ -3887,6 +3904,13 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 const pairs=[['homeQtPrice','cbUnifiedPrice'],['homeQtFeed','cbUnifiedFeed'],['homeQtBias','cbUnifiedRegime']];
 function update(){for(const [source,target] of pairs){const a=document.getElementById(source),b=document.getElementById(target);if(a&&b){const v=(a.textContent||'').trim();if(v&&b.textContent!==v)b.textContent=v}}}
 function init(){update();const obs=new MutationObserver(update);for(const [id] of pairs){const el=document.getElementById(id);if(el)obs.observe(el,{subtree:true,characterData:true,childList:true})}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<script>
+/* V42: route quick navigation through the existing app tabs. */
+(function(){
+function init(){const buttons=[...document.querySelectorAll('#cbQuickNav [data-cb-quick]')];const tabs=[...document.querySelectorAll('.tabbar button[data-tab]')];function sync(){for(const b of buttons){const tab=tabs.find(t=>t.dataset.tab===b.dataset.cbQuick);if(tab&&tab.classList.contains('on'))b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')}}for(const b of buttons)b.addEventListener('click',()=>{const tab=tabs.find(t=>t.dataset.tab===b.dataset.cbQuick);if(tab)tab.click();sync()});for(const t of tabs)t.addEventListener('click',()=>queueMicrotask(sync));sync()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
