@@ -1329,6 +1329,11 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 
 
 /* V46: contain instrument panels inside the mobile viewport */
+#cbUnifiedHeader{min-width:0;max-width:100%;overflow:hidden}
+#cbUnifiedHeader .cb-unified-market,#cbUnifiedHeader .cb-unified-brand{overflow:hidden}
+#cbUnifiedHeader .cb-unified-market small,#cbUnifiedHeader #cbUnifiedPrice{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#cbQuickNav,.tabbar{min-width:0;max-width:100%;box-sizing:border-box;overflow:hidden}
+
 .app{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
 .app>.view{width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow-x:clip}
 .cb-motion-rig{min-width:0;max-width:100%;box-sizing:border-box}
