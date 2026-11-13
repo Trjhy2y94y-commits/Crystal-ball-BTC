@@ -19,7 +19,9 @@ const style=document.createElement('style');style.textContent=`
 `;document.head.appendChild(style);
 document.addEventListener('crystal:jarvis:voice',e=>{const type=e.detail?.type||'';
  clearTimeout(reset);
- if(type==='input_audio_buffer.speech_started')setState('listening');
+ if(type==='session.open')setState('listening');
+ else if(type==='session.closed')setState('idle');
+ else if(type==='input_audio_buffer.speech_started')setState('listening');
  else if(type==='input_audio_buffer.speech_stopped')setState('thinking');
  else if(type==='response.created')setState('thinking');
  else if(type==='response.audio.delta'||type==='response.output_audio.delta')setState('speaking');
