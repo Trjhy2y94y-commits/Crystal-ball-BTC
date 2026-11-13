@@ -1342,6 +1342,41 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 #vStats #proj .k{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 #vStats #proj .k>span{min-width:0;overflow-wrap:anywhere}
 #vStats #proj table{display:block;max-width:100%;overflow-x:auto}
+
+/* V48: cinematic scene design, rendered holography */
+:root{--cb-glass:rgba(3,13,27,.72)}
+.app{background-color:#020710!important;background-image:linear-gradient(180deg,#01071144,#01071177),url('./cockpit-night-v48.webp')!important;background-size:cover!important;background-position:center!important}
+#vHome,#vChart,#vCal,#vJarvis,#vStats{background:transparent!important}
+#cbUnifiedHeader{min-height:74px;background:linear-gradient(90deg,#020811ed,#081b30aa,#020811ed)!important;border-bottom:1px solid #5b9ae666;backdrop-filter:blur(14px)}
+#cbUnifiedHeader:before{width:45%;background:#478fff!important;box-shadow:0 0 15px #3986ff!important}
+#cbUnifiedHeader .cb-unified-brand strong{font-size:clamp(14px,3.5vw,22px)!important;letter-spacing:.15em!important}
+#cbQuickNav{background:#030b17bb!important;backdrop-filter:blur(12px)}
+#cbQuickNav button{min-height:46px!important;background:linear-gradient(145deg,#112a4366,#020a1555)!important;border-color:#5791cb44!important;clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}
+#vHome .hq-title{min-height:430px!important;background:radial-gradient(ellipse at 50% 35%,#135bb73d,transparent 65%)!important;position:relative}
+#vHome .hq-title:before{height:1px!important;top:45%;left:0;right:0;background:linear-gradient(90deg,transparent,#519eff88,transparent)!important;box-shadow:0 0 35px #3375f1!important}
+#vHome .hq-orbit{width:290px!important;height:290px!important;overflow:visible!important}
+#vHome .hq-orbit b{position:relative;z-index:3;font-size:76px!important;color:#d0e5ff!important;text-shadow:0 0 30px #348aff!important}
+#vHome .cb-reactor{z-index:2;opacity:.75}
+.cb-scene{display:block;width:100%;height:100%;pointer-events:none;position:absolute;inset:0}
+.cb-scene-home{inset:-22%!important;width:144%!important;height:144%!important;opacity:.9}
+#vHome .cb-command-panel,#vHome .cb-mission,#vChart .quant-terminal,#vChart .probability-panel,#vCal #cal .card,#vStats #proj section,#vJarvis .jv-chat{background:linear-gradient(130deg,#071a2bd9,#020a16aa)!important;border-color:#4382b777!important;box-shadow:inset 0 1px #75b9ff22,0 12px 28px #0008!important;backdrop-filter:blur(9px)}
+#vHome .cb-command-panel{min-height:150px!important}
+#vHome .cb-panel-label{font-size:9px!important;letter-spacing:.15em!important;color:#94b6d7!important}
+#vHome .cb-command-panel strong{color:#d6eaff!important;font-weight:600!important}
+.cb-motion-rig{height:210px!important;opacity:1!important;background:radial-gradient(ellipse at 50% 60%,#1967b429,transparent 68%)!important;border-bottom:1px solid #4287be33;margin-bottom:0}
+.cb-motion-rig>svg{position:absolute;left:0;bottom:0;height:40px!important;opacity:.3}
+#vChart .cb-motion-rig{height:142px!important}
+#vCal .cb-motion-rig,#vStats .cb-motion-rig{height:180px!important}
+#vJarvis .cb-motion-rig{height:230px!important}
+#vJarvis .jv-core{display:none!important}
+.cb-module-head{min-height:90px!important;margin-top:0!important;border-top:0!important;background:linear-gradient(90deg,#081b2dcc,#030c18aa)!important}
+#vJarvis .jarvis-shell{background:transparent!important}
+.tabbar{backdrop-filter:blur(16px);background:#030a15de!important;border-top:1px solid #548bc777!important;padding-top:9px!important}
+.tabbar button{transition:color .3s,background .3s}
+.tabbar button.on{color:#d5eaff!important;background:radial-gradient(ellipse at bottom,#2879d655,transparent 80%)!important;text-shadow:0 0 12px #4e9bff!important}
+@media(min-width:1050px){#vHome .hq-title{min-height:510px!important}#vHome .hq-orbit{width:350px!important;height:350px!important}.cb-motion-rig{max-width:1300px;margin:0 auto}}
+@media(max-width:430px){#vHome .hq-title{min-height:400px!important;padding:25px 8px 30px!important}#vHome .hq-orbit{width:270px!important;height:270px!important}#vHome .home-quant{padding-left:8px!important;padding-right:8px!important;margin-left:6px!important;margin-right:6px!important}.cb-module-head p{font-size:11px}}
+
 </style>
 
 <div class="app">
@@ -1360,7 +1395,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
   <section class="view" id="vHome">
     <section class="home-quant" id="homeQuant" aria-label="Crystal Ball — terminal quantitatif">
       <div class="hq-top"><span class="hq-brand"><i></i> CRYSTAL <b>BALL</b></span><span class="hq-status" id="homeQtFeed">SCAN EN ATTENTE</span></div>
-      <div class="hq-title"><div><div class="hq-eyebrow">BITCOIN · MARKET INTELLIGENCE</div><div class="hq-price" id="homeQtPrice">—</div><div class="hq-change" id="homeQtChange">Prix de marché en attente</div></div><div class="hq-orbit" aria-hidden="true"><svg class="cb-reactor" viewBox="0 0 320 320" fill="none" aria-hidden="true"><defs><radialGradient id="cbCoreGlow"><stop stop-color="#287fff" stop-opacity=".55"/><stop offset="1" stop-color="#084ea8" stop-opacity="0"/></radialGradient></defs><circle cx="160" cy="160" r="145" fill="url(#cbCoreGlow)"/><g class="cb-ring-outer" stroke="#348cff"><circle cx="160" cy="160" r="147" stroke-width="3" stroke-dasharray="80 12 4 12"/><circle cx="160" cy="160" r="136" stroke-dasharray="1 9" stroke-width="6"/></g><g class="cb-ring-inner" stroke="#ffc342"><circle cx="160" cy="160" r="120" stroke-width="2" stroke-dasharray="120 45 12 45"/><path d="M160 32v15M160 273v15M32 160h15M273 160h15" stroke-width="3"/></g><g stroke="#428fff" opacity=".6"><circle cx="160" cy="160" r="103"/><ellipse cx="160" cy="160" rx="103" ry="38"/><ellipse cx="160" cy="160" rx="38" ry="103"/><ellipse cx="160" cy="160" rx="73" ry="103" transform="rotate(45 160 160)"/></g><circle cx="160" cy="160" r="84" stroke="#438fff" stroke-opacity=".35" stroke-width="12"/><g fill="#ffc342"><circle cx="160" cy="13" r="4"/><circle cx="307" cy="160" r="4"/><circle cx="160" cy="307" r="4"/><circle cx="13" cy="160" r="4"/></g></svg><b>₿</b></div></div>
+      <div class="hq-title"><div><div class="hq-eyebrow">BITCOIN · MARKET INTELLIGENCE</div><div class="hq-price" id="homeQtPrice">—</div><div class="hq-change" id="homeQtChange">Prix de marché en attente</div></div><div class="hq-orbit" aria-hidden="true"><canvas class="cb-scene cb-scene-home" data-scene="sphere"></canvas><svg class="cb-reactor" viewBox="0 0 320 320" fill="none" aria-hidden="true"><defs><radialGradient id="cbCoreGlow"><stop stop-color="#287fff" stop-opacity=".55"/><stop offset="1" stop-color="#084ea8" stop-opacity="0"/></radialGradient></defs><circle cx="160" cy="160" r="145" fill="url(#cbCoreGlow)"/><g class="cb-ring-outer" stroke="#348cff"><circle cx="160" cy="160" r="147" stroke-width="3" stroke-dasharray="80 12 4 12"/><circle cx="160" cy="160" r="136" stroke-dasharray="1 9" stroke-width="6"/></g><g class="cb-ring-inner" stroke="#ffc342"><circle cx="160" cy="160" r="120" stroke-width="2" stroke-dasharray="120 45 12 45"/><path d="M160 32v15M160 273v15M32 160h15M273 160h15" stroke-width="3"/></g><g stroke="#428fff" opacity=".6"><circle cx="160" cy="160" r="103"/><ellipse cx="160" cy="160" rx="103" ry="38"/><ellipse cx="160" cy="160" rx="38" ry="103"/><ellipse cx="160" cy="160" rx="73" ry="103" transform="rotate(45 160 160)"/></g><circle cx="160" cy="160" r="84" stroke="#438fff" stroke-opacity=".35" stroke-width="12"/><g fill="#ffc342"><circle cx="160" cy="13" r="4"/><circle cx="307" cy="160" r="4"/><circle cx="160" cy="307" r="4"/><circle cx="13" cy="160" r="4"/></g></svg><b>₿</b></div></div>
       <div class="cb-command" aria-label="Tableau de bord holographique">
         <div class="cb-command-head"><span>◈ CRYSTAL BALL · QUANTUM COMMAND</span><span class="cb-live"><i></i> DONNÉES OBSERVÉES</span></div>
         <div class="cb-command-grid">
@@ -1387,7 +1422,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
     </section>
     <div class="proj page" id="home"></div>
   </section>
-  <section class="view" id="vChart" hidden><div class="cb-motion-rig" aria-hidden="true"><svg viewBox="0 0 480 108" fill="none"><path d="M20 60h30l14-25 18 45 18-40 20 15h35l18-25 24 42 19-20h45l15-30 20 55 19-30h55l15-12 20 20h40" stroke="#619ee8"/><path class="cb-motion-sweep" d="M240 8v84" stroke="#7fbdff"/><text x="20" y="20">ANALYSE / SPECTRE VISUEL</text></svg></div>
+  <section class="view" id="vChart" hidden><div class="cb-motion-rig" aria-hidden="true"><canvas class="cb-scene" data-scene="scan" aria-label="Analyse · balayage holographique"></canvas><svg viewBox="0 0 480 108" fill="none"><path d="M20 60h30l14-25 18 45 18-40 20 15h35l18-25 24 42 19-20h45l15-30 20 55 19-30h55l15-12 20 20h40" stroke="#619ee8"/><path class="cb-motion-sweep" d="M240 8v84" stroke="#7fbdff"/><text x="20" y="20">ANALYSE / SPECTRE VISUEL</text></svg></div>
   <header>
     <div>
       <div class="sym"><b>BTC</b>USD · <span id="tfLabel">1D</span> · <span id="src">…</span></div>
@@ -1447,7 +1482,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
     <div class="prob-layers" id="probLayers"></div><div class="prob-note" id="probNote">Les fourchettes proviennent des rendements historiques conditionnés au régime. Les méthodes chartistes affinent la lecture, elles ne garantissent pas le prix.</div>
   </div>
   </section>
-  <section class="view" id="vJarvis" hidden><div class="cb-motion-rig" aria-hidden="true"><svg viewBox="0 0 480 108" fill="none"><path d="M30 54h80m260 0h80" stroke="#386da5"/><g class="cb-motion-loop" stroke="#619fe6"><ellipse cx="240" cy="54" rx="65" ry="25"/><ellipse cx="240" cy="54" rx="65" ry="25" transform="rotate(90 240 54)"/></g><text x="16" y="22">JARVIS / INTERFACE VOCALE</text></svg></div>
+  <section class="view" id="vJarvis" hidden><div class="cb-motion-rig" aria-hidden="true"><canvas class="cb-scene" data-scene="core" aria-label="Jarvis · cœur neuronal"></canvas><svg viewBox="0 0 480 108" fill="none"><path d="M30 54h80m260 0h80" stroke="#386da5"/><g class="cb-motion-loop" stroke="#619fe6"><ellipse cx="240" cy="54" rx="65" ry="25"/><ellipse cx="240" cy="54" rx="65" ry="25" transform="rotate(90 240 54)"/></g><text x="16" y="22">JARVIS / INTERFACE VOCALE</text></svg></div>
     <div class="jarvis-view">
       <div class="jarvis-shell">
         <div class="jv-head"><div class="jv-brand">CRYSTAL <b>· JARVIS</b> / COMMAND INTELLIGENCE</div><div class="jv-state" id="jvEngineState">MOTEUR IA À CONNECTER</div></div>
@@ -1471,8 +1506,8 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
       </div>
     </div>
   </section>
-  <section class="view" id="vCal" hidden><div class="cb-motion-rig" aria-hidden="true"><svg viewBox="0 0 480 108" fill="none"><g class="cb-motion-loop" stroke="#5b9bdb"><ellipse cx="240" cy="54" rx="98" ry="24"/><ellipse cx="240" cy="54" rx="98" ry="24" transform="rotate(60 240 54)"/><ellipse cx="240" cy="54" rx="98" ry="24" transform="rotate(120 240 54)"/><circle cx="338" cy="54" r="4" fill="#ffc342"/></g><circle cx="240" cy="54" r="10" stroke="#ffc342"/><text x="16" y="22">CYCLE / ORBITES</text></svg></div><header class="cb-module-head"><span class="cb-module-icon" aria-hidden="true">◎</span><div><small>CRYSTAL BALL / CYCLE</small><h1>Fenêtres de marché</h1><p>Calendrier, replis et allocation par paliers</p></div></header><div class="proj page" id="cal"></div></section>
-  <section class="view" id="vStats" hidden><div class="cb-motion-rig" aria-hidden="true"><svg viewBox="0 0 480 108" fill="none"><g class="cb-motion-loop" stroke="#65a4df"><circle cx="240" cy="54" r="36" stroke-dasharray="3 6" stroke-width="5"/><path d="M240 18v72M204 54h72"/><circle cx="240" cy="54" r="20"/></g><text x="16" y="22">FIABILITÉ / INSTRUMENTS</text></svg></div><header class="cb-module-head"><span class="cb-module-icon" aria-hidden="true">◇</span><div><small>CRYSTAL BALL / FIABILITÉ</small><h1>Épreuve des signaux</h1><p>Couverture des données et résultats historiques</p></div></header><div class="proj page" id="proj"></div></section>
+  <section class="view" id="vCal" hidden><div class="cb-motion-rig" aria-hidden="true"><canvas class="cb-scene" data-scene="orbit" aria-label="Cycle · mécanique orbitale"></canvas><svg viewBox="0 0 480 108" fill="none"><g class="cb-motion-loop" stroke="#5b9bdb"><ellipse cx="240" cy="54" rx="98" ry="24"/><ellipse cx="240" cy="54" rx="98" ry="24" transform="rotate(60 240 54)"/><ellipse cx="240" cy="54" rx="98" ry="24" transform="rotate(120 240 54)"/><circle cx="338" cy="54" r="4" fill="#ffc342"/></g><circle cx="240" cy="54" r="10" stroke="#ffc342"/><text x="16" y="22">CYCLE / ORBITES</text></svg></div><header class="cb-module-head"><span class="cb-module-icon" aria-hidden="true">◎</span><div><small>CRYSTAL BALL / CYCLE</small><h1>Fenêtres de marché</h1><p>Calendrier, replis et allocation par paliers</p></div></header><div class="proj page" id="cal"></div></section>
+  <section class="view" id="vStats" hidden><div class="cb-motion-rig" aria-hidden="true"><canvas class="cb-scene" data-scene="mesh" aria-label="Fiabilité · réseau de validation"></canvas><svg viewBox="0 0 480 108" fill="none"><g class="cb-motion-loop" stroke="#65a4df"><circle cx="240" cy="54" r="36" stroke-dasharray="3 6" stroke-width="5"/><path d="M240 18v72M204 54h72"/><circle cx="240" cy="54" r="20"/></g><text x="16" y="22">FIABILITÉ / INSTRUMENTS</text></svg></div><header class="cb-module-head"><span class="cb-module-icon" aria-hidden="true">◇</span><div><small>CRYSTAL BALL / FIABILITÉ</small><h1>Épreuve des signaux</h1><p>Couverture des données et résultats historiques</p></div></header><div class="proj page" id="proj"></div></section>
   <div class="toast" id="toast" hidden></div>
   <nav class="tabbar" aria-label="Navigation">
     <button type="button" data-tab="home" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="11" r="7"></circle><path d="M7 21h10M9 11a3 3 0 0 1 3-3"></path></svg>Crystal Ball</button>
@@ -4059,6 +4094,25 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 (function(){
 function init(){const buttons=[...document.querySelectorAll('#cbQuickNav [data-cb-quick]')];const tabs=[...document.querySelectorAll('.tabbar button[data-tab]')];function sync(){for(const b of buttons){const tab=tabs.find(t=>t.dataset.tab===b.dataset.cbQuick);if(tab&&tab.classList.contains('on'))b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')}}for(const b of buttons)b.addEventListener('click',()=>{const tab=tabs.find(t=>t.dataset.tab===b.dataset.cbQuick);if(tab)tab.click();sync()});for(const t of tabs)t.addEventListener('click',()=>queueMicrotask(sync));sync()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<script>
+/* V48: bounded 30fps holographic renderer; only the visible scene is rendered. */
+(()=>{
+ const scenes=[...document.querySelectorAll('canvas.cb-scene')];
+ const reduce=matchMedia('(prefers-reduced-motion: reduce)');let frame=0,previous=0;
+ const points=Array.from({length:96},(_,i)=>{const y=1-2*(i+.5)/96,r=Math.sqrt(1-y*y),a=i*2.399963;return [r*Math.cos(a),y,r*Math.sin(a)];});
+ function draw(c,t){const box=c.getBoundingClientRect();if(!box.width||!box.height)return;const dpr=Math.min(devicePixelRatio||1,1.5),w=box.width,h=box.height;if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);}const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);const x=w/2,y=h*.5,R=Math.min(w*.30,h*.39),mode=c.dataset.scene;g.lineWidth=.7;
+ const a=t*.16,cs=Math.cos(a),sn=Math.sin(a);const pr=points.map(([px,py,pz])=>{let z=pz*cs-px*sn,xx=px*cs+pz*sn;const k=1+z*.18;return [x+xx*R*k,y+py*R*k,z];});
+ const glow=g.createRadialGradient(x,y,0,x,y,R*1.8);glow.addColorStop(0,'rgba(33,111,238,.22)');glow.addColorStop(1,'rgba(15,67,144,0)');g.fillStyle=glow;g.fillRect(0,0,w,h);
+ if(mode==='scan'){g.strokeStyle='rgba(53,126,211,.23)';for(let i=-5;i<=5;i++){g.beginPath();g.moveTo(x+i*R*.32,y-R*.6);g.lineTo(x+i*R*.5,y+R*.8);g.stroke();}for(let i=0;i<5;i++){g.beginPath();g.ellipse(x,y+(i-2)*R*.3,R*(.65+i*.13),R*.15,0,0,Math.PI*2);g.stroke();}const xx=x+Math.sin(t*.7)*R;g.strokeStyle='#579eff';g.shadowBlur=12;g.shadowColor='#438dff';g.beginPath();g.moveTo(xx,y-R);g.lineTo(xx,y+R);g.stroke();g.shadowBlur=0;
+ }else if(mode==='orbit'){for(let i=0;i<3;i++){g.save();g.translate(x,y);g.rotate(i*Math.PI/3);g.strokeStyle='rgba(87,156,242,.6)';g.beginPath();g.ellipse(0,0,R*1.4,R*.4,0,0,Math.PI*2);g.stroke();const q=t*(.3+i*.08)+i*2;g.fillStyle=i===1?'#ffd38a':'#a5d4ff';g.shadowColor=g.fillStyle;g.shadowBlur=14;g.beginPath();g.arc(Math.cos(q)*R*1.4,Math.sin(q)*R*.4,3.4,0,7);g.fill();g.restore();}
+ }else{for(let i=0;i<pr.length;i++){let [px,py,z]=pr[i];if(z<-.3)continue;for(let j=i+1;j<pr.length;j++){const [qx,qy,qz]=pr[j];const dist=Math.hypot(px-qx,py-qy);if(qz>-.3&&dist<R*.32&&dist>R*.08){g.strokeStyle='rgba(67,139,239,'+(.14+z*.14)+')';g.beginPath();g.moveTo(px,py);g.lineTo(qx,qy);g.stroke();}}g.fillStyle='rgba(139,193,255,'+(.4+z*.5)+')';g.beginPath();g.arc(px,py,mode==='mesh'?1.7:1.2,0,7);g.fill();}}
+ if(mode!=='sphere'){g.strokeStyle='rgba(91,157,237,.6)';g.setLineDash([2,8]);g.beginPath();g.arc(x,y,R*1.6,0,7);g.stroke();g.setLineDash([]);g.save();g.translate(x,y);g.rotate(-t*.12);g.strokeStyle='rgba(255,204,122,.6)';for(let i=0;i<3;i++){g.beginPath();g.arc(0,0,R*1.47,i*2.094,i*2.094+.6);g.stroke();}g.restore();g.fillStyle='#b6d9ff';g.shadowColor='#358aff';g.shadowBlur=15;g.beginPath();g.arc(x,y,mode==='core'?9:4,0,7);g.fill();g.shadowBlur=0;}
+ }
+ function tick(now){frame=0;if(document.hidden)return;if(now-previous>33){previous=now;for(const c of scenes)if(!c.closest('.view')?.hidden)draw(c,reduce.matches?0:now/1000);}if(!reduce.matches)frame=requestAnimationFrame(tick);}
+ function resume(){if(frame)cancelAnimationFrame(frame);previous=0;frame=requestAnimationFrame(tick);}
+ document.addEventListener('visibilitychange',resume);reduce.addEventListener('change',resume);window.addEventListener('resize',resume);document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',resume));resume();
 })();
 </script>
 </body>

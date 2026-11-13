@@ -232,6 +232,10 @@ jobs:
                   page.wait_for_timeout(350)
                   instrument = page.locator(f"#{view} .cb-reactor" if tab == "home" else f"#{view} .cb-motion-rig")
                   assert instrument.is_visible(), f"Animated instrument hidden: {tab}"
+                  scene = page.locator(f"#{view} canvas.cb-scene")
+                  assert scene.is_visible(), f"Holographic scene hidden: {tab}"
+                  assert scene.evaluate("c => c.width > 0 && c.height > 0 && c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i) => i%4===3 && v>0)"), f"Scene did not draw: {tab}"
+
                   assert instrument.evaluate("el => el.getAnimations({subtree:true}).some(a => a.playState === 'running')"), f"No running animation: {tab}"
                   assert page.locator(f"#{view}").evaluate("el => el.getBoundingClientRect().right <= innerWidth + 1"), f"View exceeds viewport: {tab}"
                   page.screenshot(path=f"artifacts/iphone-{tab}.png")

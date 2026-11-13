@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v47-header-containment";
+const CACHE = "cristal-btc-v48-cinematic-scenes";
 const SHELL = [
   "./",
   "./index.html",
@@ -6,7 +6,8 @@ const SHELL = [
   "./icon-192.png",
   "./icon-512.png",
   "./apple-touch-icon.png",
-  "./favicon.png"
+  "./favicon.png",
+  "./cockpit-night-v48.webp"
 ];
 
 self.addEventListener("install", (event) => {
