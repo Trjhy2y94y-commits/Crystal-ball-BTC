@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v63-clear-depth";
+const CACHE = "cristal-btc-v64-glass-instruments";
 const SHELL = [
   "./",
   "./index.html",
