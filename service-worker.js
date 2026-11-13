@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v48-cinematic-scenes";
+const CACHE = "cristal-btc-v49-app-refresh";
 const SHELL = [
   "./",
   "./index.html",
@@ -11,7 +11,7 @@ const SHELL = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL.map(path => new Request(path, {cache:"reload"})))));
   self.skipWaiting();
 });
 
@@ -19,9 +19,8 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
       keys.filter((key) => key.startsWith("cristal-btc-") && key !== CACHE).map((key) => caches.delete(key))
-    ))
+    )).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
@@ -34,7 +33,7 @@ self.addEventListener("fetch", (event) => {
   if (request.mode === "navigate") {
     event.respondWith((async () => {
       try {
-        const response = await fetch(request);
+        const response = await fetch(request, {cache:"no-cache"});
         if (response.ok) {
           const cache = await caches.open(CACHE);
           await cache.put("./index.html", response.clone());

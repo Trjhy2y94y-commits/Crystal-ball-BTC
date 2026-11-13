@@ -1381,7 +1381,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 
 <div class="app">
 <div class="cb-unified-header" id="cbUnifiedHeader" aria-label="État du marché Bitcoin">
-  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>QUANTUM TRADING · COMMAND HUD</small></div></div>
+  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>COCKPIT IMMERSIF · V49</small></div></div>
   <div class="cb-unified-market"><small>BTC / USD <span id="cbUnifiedFeed">FLUX EN ATTENTE</span></small><strong id="cbUnifiedPrice">—</strong></div>
   <div class="cb-unified-state"><span class="cb-unified-dot"></span><span id="cbUnifiedRegime">ANALYSE EN COURS</span></div>
 </div>
@@ -4045,10 +4045,22 @@ setInterval(()=>{if(document.visibilityState!=='visible'||isDemo)return;if(wsOk&
 
     <script>
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("./service-worker.js").catch((err) => {
-            console.warn("Service worker non enregistré", err);
-          });
+        let reloading = false;
+        const wasControlled = !!navigator.serviceWorker.controller;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (!wasControlled || reloading) return;
+          reloading = true;
+          window.location.reload();
+        });
+        window.addEventListener("load", async () => {
+          try {
+            const registration = await navigator.serviceWorker.register("./service-worker.js", {updateViaCache:"none"});
+            const check = () => { if (document.visibilityState === "visible" && navigator.onLine) registration.update().catch(() => {}); };
+            document.addEventListener("visibilitychange", check);
+            window.addEventListener("pageshow", check);
+            window.addEventListener("online", check);
+            check();
+          } catch (err) { console.warn("Service worker non enregistré", err); }
         });
       }
     </script>
