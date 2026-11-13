@@ -27,6 +27,8 @@ jobs:
         run: node --test tests/hud-integration.test.mjs
       - name: Test JARVIS voice reactivity
         run: node --test tests/jarvis-voice-reactivity.test.mjs
+      - name: Test JARVIS PWA offline integration
+        run: node --test tests/jarvis-pwa-offline.test.mjs
       - name: Run market-data integrity tests
         run: node --test tests/market-data.test.mjs
       - name: Run strict backtest benchmark tests
