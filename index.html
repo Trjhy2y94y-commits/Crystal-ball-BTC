@@ -4312,6 +4312,48 @@ const root=document.querySelector('.tabbar');if(root)new MutationObserver(()=>re
 sync();
 })();
 </script>
+
+<!-- JARVIS VOICE REACTIVITY V4: status-aware reactor with accessible low-motion fallback -->
+<style id="jarvis-voice-reactivity-v4">
+.jarvis-reactor-v3{transition:filter .35s ease}
+.jarvis-reactor-v3[data-mode="listening"]{filter:brightness(1.3) saturate(1.25)}
+.jarvis-reactor-v3[data-mode="listening"] .jr-ring.mid{animation-duration:5s;border-color:#ffe09a}
+.jarvis-reactor-v3[data-mode="listening"] .jr-core{animation-duration:.9s;box-shadow:0 0 35px #74caff,0 0 75px #318aff,inset 0 0 20px #fff}
+.jarvis-reactor-v3[data-mode="speaking"] .jr-core{animation-duration:.55s}
+.jarvis-reactor-v3[data-mode="speaking"] .jr-ring.outer{animation-duration:9s}
+.jarvis-reactor-v3[data-mode="error"]{filter:hue-rotate(125deg) saturate(1.3)}
+.jarvis-reactor-v3[data-mode="connecting"] .jr-ring.outer{animation-duration:8s}
+.jarvis-reactor-v3 .jr-label{bottom:2px;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-align:center}
+@media(prefers-reduced-motion:reduce){.jarvis-reactor-v3[data-mode] *{animation:none!important}}
+</style>
+<script id="jarvis-voice-reactivity-v4-script">
+(function(){
+'use strict';
+let lastMode='',lastLabel='';
+function update(){
+ const reactor=document.querySelector('.jarvis-reactor-v3');
+ if(!reactor||!reactor.isConnected)return;
+ const status=document.getElementById('jvStatus');
+ const voice=document.getElementById('jvVoice');
+ const engine=document.getElementById('jvEngineState');
+ const content=[status?.textContent,voice?.textContent,engine?.textContent].filter(Boolean).join(' ').toLowerCase();
+ let mode='idle',label='JARVIS · EN VEILLE';
+ if(/erreur|échec|failed|indisponible|non connecté|déconnecté/.test(content)){mode='error';label='JARVIS · VÉRIFIER CONNEXION'}
+ if(/connexion|connecting|initialisation|chargement/.test(content)){mode='connecting';label='JARVIS · CONNEXION'}
+ if(/écoute|listening|microphone actif|parlez|parle maintenant/.test(content)){mode='listening';label='JARVIS · ÉCOUTE ACTIVE'}
+ if(/répond|synthèse|speaking|lecture audio/.test(content)){mode='speaking';label='JARVIS · RÉPONSE VOCALE'}
+ if(mode!==lastMode||label!==lastLabel){reactor.dataset.mode=mode;const el=reactor.querySelector('.jr-label');if(el)el.textContent=label;lastMode=mode;lastLabel=label;}
+}
+const nodes=['jvStatus','jvVoice','jvEngineState'].map(id=>document.getElementById(id)).filter(Boolean);
+const observer=new MutationObserver(update);
+nodes.forEach(node=>observer.observe(node,{subtree:true,childList:true,characterData:true}));
+const nav=document.querySelector('.tabbar');
+if(nav)observer.observe(nav,{subtree:true,attributes:true,attributeFilter:['class']});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)requestAnimationFrame(update)});
+document.querySelectorAll('.tabbar button[data-tab="jarvis"]').forEach(b=>b.addEventListener('click',()=>requestAnimationFrame(update)));
+update();
+})();
+</script>
 </body>
 </html>
 ).join(' · '):'historique insuffisant pour comparer les découpages'}. Les IC Monte Carlo à 95 % quantifient uniquement l’erreur d’échantillonnage des simulations, pas l’incertitude du modèle ni sa capacité prédictive. Scénarios empiriques non calibrés : aucune fiabilité prédictive n’est revendiquée avant validation walk-forward indépendante.</p>
