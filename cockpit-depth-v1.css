@@ -1,0 +1,15 @@
+/* Crystal Ball BTC — cockpit depth layer, progressive enhancement */
+:root{--cockpit-blue:#377fff;--cockpit-gold:#ffb42c;--cockpit-deep:#03060e}
+body{background:radial-gradient(ellipse at 50% -20%,#11234b 0%,#050b19 44%,#010309 100%);background-attachment:fixed}
+.app{isolation:isolate}
+.app::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background:repeating-linear-gradient(0deg,transparent 0 37px,rgba(65,116,255,.035) 38px),linear-gradient(110deg,transparent 30%,rgba(43,91,202,.045) 55%,transparent 75%)}
+.tabbar{background:linear-gradient(180deg,#0a1428,#030712);border-top:1px solid rgba(81,137,255,.4);box-shadow:0 -12px 36px rgba(13,61,168,.15);perspective:700px}
+.tabbar button{position:relative;transition:transform .28s ease,color .28s ease,text-shadow .28s ease}
+.tabbar button.on{color:var(--cockpit-gold);transform:translateY(-3px) scale(1.06);text-shadow:0 0 18px rgba(255,180,44,.65)}
+.tabbar button.on::before{content:"";position:absolute;top:-7px;width:60%;height:2px;background:var(--cockpit-gold);box-shadow:0 0 12px var(--cockpit-gold)}
+.tabbar svg{filter:drop-shadow(0 0 6px rgba(55,127,255,.35))}
+.hm .card,.hm .tile,.orb .ball,.orb .ot,.simple .card{background:linear-gradient(145deg,rgba(17,32,65,.94),rgba(3,8,21,.98));border-color:rgba(74,126,235,.3);box-shadow:inset 0 1px rgba(126,168,255,.15),0 16px 32px rgba(0,0,0,.28)}
+.orb .ball{background:radial-gradient(ellipse at 50% 36%,rgba(44,103,236,.23),transparent 63%),linear-gradient(150deg,#0c1c3b,#030713)}
+.page{animation:cockpit-arrive .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes cockpit-arrive{from{opacity:.5;filter:brightness(.65);transform:translateY(9px) scale(.985)}to{opacity:1;filter:brightness(1);transform:none}}
+@media(prefers-reduced-motion:reduce){.page{animation:none}.tabbar button{transition:none}}
