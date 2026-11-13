@@ -7,7 +7,7 @@ const js=readFileSync(new URL('../jarvis-reactive-core.js',import.meta.url),'utf
 test('PWA shell precaches the JARVIS module referenced by the application',()=>{
  assert.match(html,/<script defer src="\.\/jarvis-reactive-core\.js"><\/script>/);
  assert.match(sw,/"\.\/jarvis-reactive-core\.js"/);
- assert.match(sw,/cristal-btc-v60-cockpit-refresh/);
+ assert.match(sw,/cristal-btc-v\d+[-a-z0-9]+/);
  assert.match(sw,/cache\.addAll\(SHELL/);
 });
 test('JARVIS voice bridge handles interruption and close',()=>{

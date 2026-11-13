@@ -1450,7 +1450,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 
 <div class="app">
 <div class="cb-unified-header" id="cbUnifiedHeader" aria-label="État du marché Bitcoin">
-  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>COCKPIT IMMERSIF · V55</small></div></div>
+  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>COCKPIT PROFONDEUR · V62</small></div></div>
   <div class="cb-unified-market"><small>BTC / USD <span id="cbUnifiedFeed">FLUX EN ATTENTE</span></small><strong id="cbUnifiedPrice">—</strong></div>
   <div class="cb-unified-state"><span class="cb-unified-dot"></span><span id="cbUnifiedRegime">ANALYSE EN COURS</span></div>
 </div>
@@ -1463,7 +1463,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 </div>
   <section class="view" id="vHome">
     <section class="home-quant" id="homeQuant" aria-label="Crystal Ball — terminal quantitatif">
-<div class="cb-flightdeck" aria-label="Cockpit panoramique animé">      <div class="hq-top"><span class="hq-brand"><i></i> CRYSTAL <b>BALL</b></span><span class="hq-status" id="homeQtFeed">SCAN EN ATTENTE</span></div>
+<div class="cb-flightdeck" aria-label="Cockpit panoramique animé"><div class="cb-depth-world" aria-hidden="true"><div class="cb-depth-city"></div><div class="cb-depth-haze"></div><div class="cb-depth-floor"></div><div class="cb-depth-glass"></div></div><div class="cb-depth-frame" aria-hidden="true"></div>      <div class="hq-top"><span class="hq-brand"><i></i> CRYSTAL <b>BALL</b></span><span class="hq-status" id="homeQtFeed">SCAN EN ATTENTE</span></div>
       <div class="hq-title"><div><div class="hq-eyebrow">BITCOIN · MARKET INTELLIGENCE</div><div class="hq-price" id="homeQtPrice">—</div><div class="hq-change" id="homeQtChange">Prix de marché en attente</div></div><div class="hq-orbit" aria-hidden="true"><canvas class="cb-scene cb-scene-home" data-scene="sphere"></canvas><svg class="cb-reactor" viewBox="0 0 320 320" fill="none" aria-hidden="true"><defs><radialGradient id="cbCoreGlow"><stop stop-color="#287fff" stop-opacity=".55"/><stop offset="1" stop-color="#084ea8" stop-opacity="0"/></radialGradient></defs><circle cx="160" cy="160" r="145" fill="url(#cbCoreGlow)"/><g class="cb-ring-outer" stroke="#348cff"><circle cx="160" cy="160" r="147" stroke-width="3" stroke-dasharray="80 12 4 12"/><circle cx="160" cy="160" r="136" stroke-dasharray="1 9" stroke-width="6"/></g><g class="cb-ring-inner" stroke="#ffc342"><circle cx="160" cy="160" r="120" stroke-width="2" stroke-dasharray="120 45 12 45"/><path d="M160 32v15M160 273v15M32 160h15M273 160h15" stroke-width="3"/></g><g stroke="#428fff" opacity=".6"><circle cx="160" cy="160" r="103"/><ellipse cx="160" cy="160" rx="103" ry="38"/><ellipse cx="160" cy="160" rx="38" ry="103"/><ellipse cx="160" cy="160" rx="73" ry="103" transform="rotate(45 160 160)"/></g><circle cx="160" cy="160" r="84" stroke="#438fff" stroke-opacity=".35" stroke-width="12"/><g fill="#ffc342"><circle cx="160" cy="13" r="4"/><circle cx="307" cy="160" r="4"/><circle cx="160" cy="307" r="4"/><circle cx="13" cy="160" r="4"/></g></svg><b>₿</b></div></div>
       <div class="cb-cockpit-atmosphere" aria-hidden="true"><span class="cb-atmosphere-beam cb-beam-left"></span><span class="cb-atmosphere-beam cb-beam-right"></span><span class="cb-atmosphere-horizon"></span><span class="cb-atmosphere-scan"></span></div>
       <div class="cb-holo-reticle" aria-hidden="true"><span class="cb-holo-reticle-ring"></span><span class="cb-holo-reticle-axis"></span><span class="cb-holo-reticle-cross"></span></div>
@@ -4664,6 +4664,34 @@ html,body,.app{background-color:#010208!important;color:#dce7fc!important}
  #vHome #homeQuant .cb-cockpit-atmosphere{opacity:.35!important}
 }
 </style>
+<style id="cockpit-depth-v62">
+/* V62: separated scenery, atmospheric distance and foreground cockpit */
+#vHome #homeQuant .cb-flightdeck{--depth-x:0px;--depth-y:0px;position:relative!important;background:#01040a!important;perspective:1100px!important;box-shadow:inset 0 0 45px #0009,0 30px 90px #000c!important;border-color:#3c587288!important}
+#vHome #homeQuant .cb-flightdeck:before{display:none!important}
+#vHome #homeQuant .cb-depth-world{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;contain:paint}
+#vHome #homeQuant .cb-depth-city{position:absolute;inset:-3%;background:url('./cockpit-night-v48.webp') center/100% 100% no-repeat;filter:brightness(.79) saturate(.85);transform:translate(calc(var(--depth-x) * -.25),calc(var(--depth-y) * -.25)) scale(1.06);will-change:transform;transition:transform .6s ease-out}
+#vHome #homeQuant .cb-depth-haze{position:absolute;inset:0;background:radial-gradient(ellipse 35% 25% at 50% 46%,#3974af30,transparent 90%),linear-gradient(180deg,#0003,transparent 24%,#0715261a 55%,#01050d55);animation:cbDepthMist 20s ease-in-out infinite alternate;pointer-events:none}
+#vHome #homeQuant .cb-depth-floor{position:absolute;left:-40%;right:-40%;top:54%;height:95%;background:repeating-linear-gradient(90deg,transparent 0 11.9%,#3e80b21a 12% 12.1%,transparent 12.2% 24%),repeating-linear-gradient(0deg,transparent 0 45px,#428ec51a 46px 47px);transform-origin:50% 0;transform:perspective(450px) rotateX(64deg);mask-image:linear-gradient(transparent,#0008 35%,#000);opacity:.42}
+#vHome #homeQuant .cb-depth-glass{position:absolute;inset:0;background:linear-gradient(116deg,transparent 23%,#79a6da08 24%,transparent 25% 74%,#97bdd50b 75%,transparent 76%);box-shadow:inset 0 0 100px #0008;transform:translate(calc(var(--depth-x) * .3),calc(var(--depth-y) * .3));transition:transform .45s ease-out}
+#vHome #homeQuant .cb-depth-frame{position:absolute;inset:-1%;z-index:9;pointer-events:none;background:url('./cockpit-night-v48.webp') center/100% 100% no-repeat;mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22white%22%20fill-rule%3D%22evenodd%22%20d%3D%22M0%200H100V100H0Z%20M22%208H78L96%2044V58L79%2083H21L4%2058V44Z%22/%3E%3C/svg%3E");-webkit-mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20fill%3D%22white%22%20fill-rule%3D%22evenodd%22%20d%3D%22M0%200H100V100H0Z%20M22%208H78L96%2044V58L79%2083H21L4%2058V44Z%22/%3E%3C/svg%3E");mask-size:100% 100%;-webkit-mask-size:100% 100%;filter:brightness(.66) drop-shadow(0 10px 10px #000);transform:translate(calc(var(--depth-x) * .85),calc(var(--depth-y) * .85));transition:transform .3s ease-out;will-change:transform}
+#vHome #homeQuant .cb-flightdeck .cb-command-panel{background:linear-gradient(125deg,#06172a94,#0208126b)!important;backdrop-filter:blur(3px)!important;border-color:#5588bb99!important;box-shadow:0 18px 30px -12px #000e,0 0 18px #0c48a529,inset 0 1px #b7d9ff44!important;transition:transform .45s ease-out,box-shadow .3s}
+#vHome #homeQuant .cb-flightdeck .cb-command-panel:nth-child(1),#vHome #homeQuant .cb-flightdeck .cb-command-panel:nth-child(2){transform:perspective(700px) rotateY(12deg) translateX(calc(var(--depth-x) * .55))!important;transform-origin:left center}
+#vHome #homeQuant .cb-flightdeck .cb-command-panel:nth-child(3),#vHome #homeQuant .cb-flightdeck .cb-command-panel:nth-child(4){transform:perspective(700px) rotateY(-12deg) translateX(calc(var(--depth-x) * .55))!important;transform-origin:right center}
+#vHome #homeQuant .cb-flightdeck .hq-title{z-index:5!important;transform:translate(calc(var(--depth-x) * .8),calc(var(--depth-y) * .65))!important;transition:transform .35s ease-out}
+#vHome #homeQuant .cb-flightdeck .hq-orbit{filter:drop-shadow(0 20px 14px #000a) drop-shadow(0 0 10px #2977e355)!important}
+#vHome #homeQuant .cb-flightdeck .cb-holo-reticle{z-index:2!important;opacity:.45!important;transform:perspective(900px) rotateX(25deg) scale(1.24)!important;filter:blur(.3px)}
+#vHome #homeQuant .cb-flightdeck .cb-cockpit-atmosphere{opacity:.28!important;z-index:2!important}
+@keyframes cbDepthMist{from{opacity:.4;transform:translateX(-1%)}to{opacity:.85;transform:translateX(1%)}}
+@media(max-width:600px) and (orientation:portrait){#vHome #homeQuant .cb-depth-city{background-size:auto 100%;inset:-2% -50%}#vHome #homeQuant .cb-depth-frame{background-size:auto 100%;mask-image:linear-gradient(#000 0 7%,transparent 16% 80%,#000 94%);-webkit-mask-image:linear-gradient(#000 0 7%,transparent 16% 80%,#000 94%);opacity:.75}#vHome #homeQuant .cb-flightdeck .cb-command-panel{transform:none!important}#vHome #homeQuant .cb-flightdeck .hq-title{transform:none!important}#vHome #homeQuant .cb-depth-floor{opacity:.2}}
+@media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-depth-haze{animation:none!important}#vHome #homeQuant .cb-depth-city,#vHome #homeQuant .cb-depth-glass,#vHome #homeQuant .cb-depth-frame,#vHome #homeQuant .cb-flightdeck .hq-title,#vHome #homeQuant .cb-flightdeck .cb-command-panel{transition:none!important;transform:none!important;will-change:auto}}
+</style>
+<script>
+/* V62: local pointer parallax. No device sensors or permissions. */
+(()=>{const deck=document.querySelector('.cb-flightdeck');if(!deck)return;const reduce=matchMedia('(prefers-reduced-motion: reduce)');let pending=0,px=0,py=0;
+const reset=()=>{cancelAnimationFrame(pending);pending=0;deck.style.setProperty('--depth-x','0px');deck.style.setProperty('--depth-y','0px');};
+const move=e=>{if(reduce.matches||e.pointerType==='touch')return;const r=deck.getBoundingClientRect();px=Math.max(-1,Math.min(1,(e.clientX-r.left)/r.width*2-1))*14;py=Math.max(-1,Math.min(1,(e.clientY-r.top)/r.height*2-1))*9;if(!pending)pending=requestAnimationFrame(()=>{pending=0;deck.style.setProperty('--depth-x',px.toFixed(2)+'px');deck.style.setProperty('--depth-y',py.toFixed(2)+'px');});};
+deck.addEventListener('pointermove',move,{passive:true});deck.addEventListener('pointerleave',reset);reduce.addEventListener('change',reset);document.addEventListener('visibilitychange',()=>{if(document.hidden)reset();});})();
+</script>
 <script defer src="./jarvis-reactive-core.js"></script>
   </body>
 </html>
