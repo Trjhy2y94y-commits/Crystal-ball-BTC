@@ -1076,6 +1076,35 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opaci
 @media(max-width:430px){#vHome .hq-title{min-height:205px!important;padding:12px!important}#vHome .cb-command-panel{padding:9px;min-height:119px}#vHome .cb-command-head{font-size:9px}#vHome .cb-command-bottom span:last-child{display:none}}
 @media(prefers-reduced-motion:reduce){#vHome .cb-pulse-bars i,#vHome .cb-live i{animation:none!important}}
 
+/* CRYSTAL BALL V37 FULL HUD INTEGRATION */
+#vChart header,#vChart .toolbar,#vChart .probability-panel,#vChart .quant-terminal,#vChart .stage,#vJarvis .jv-chat,#vJarvis .jv-actions,#vCal #cal,#vStats #proj{border:1px solid rgba(34,142,255,.7)!important;box-shadow:inset 0 0 20px rgba(0,94,215,.13),0 0 15px rgba(0,103,255,.18)!important;background:linear-gradient(145deg,rgba(5,29,62,.96),rgba(1,10,25,.98))!important}
+#vChart header,#vChart .toolbar,#vChart .quant-terminal,#vChart .probability-panel,#vJarvis .jv-head,#vJarvis .jv-chat,#vJarvis .jv-actions{position:relative}
+#vChart header:before,#vChart .quant-terminal:before,#vChart .probability-panel:before,#vJarvis .jv-chat:before,#vCal #cal:before,#vStats #proj:before{content:"";position:absolute;left:0;top:0;width:33%;height:2px;background:#ffc342;box-shadow:0 0 12px #ffc342;pointer-events:none;z-index:2}
+#vChart header .sym,#vChart .qt-kicker,#vChart .prob-head strong,#vJarvis .jv-chat-head{color:#ffca49!important;text-shadow:0 0 9px rgba(255,179,0,.4)!important;letter-spacing:.08em}
+#vChart .toolbar button,#vChart .overlay-legend button,#vJarvis .jv-btn,#vJarvis .jv-actions button{border:1px solid rgba(29,133,255,.65)!important;background:linear-gradient(180deg,#0a3563,#03142b)!important;color:#c7e9ff!important;box-shadow:0 0 8px rgba(0,115,255,.15)!important}
+#vChart .toolbar button.on,#vChart .overlay-legend button.on,#vJarvis .jv-btn.primary{border-color:#ffc342!important;color:#ffcf60!important;box-shadow:0 0 13px rgba(255,177,0,.28)!important}
+#vChart .qt-cell,#vChart .prob-cell,#vChart .prob-agreement,#vChart .prob-layers>*{background:linear-gradient(140deg,#09264c,#04152e)!important;border-color:rgba(33,138,255,.62)!important}
+#vChart .qt-wave i{background:linear-gradient(0deg,#0866e7,#ffc342)!important;box-shadow:0 0 7px #168cff;animation:cbWave 1.5s ease-in-out infinite alternate}
+#vChart .qt-wave i:nth-child(3n){animation-delay:.4s}
+#vChart .stage{background:radial-gradient(ellipse at 50% 20%,rgba(16,96,205,.2),#020d1d 75%)!important}
+#vJarvis .jarvis-view{background:radial-gradient(ellipse at 50% 25%,rgba(19,102,216,.22),transparent 65%)!important}
+#vJarvis .jv-core{position:relative;background:radial-gradient(circle at center,rgba(20,115,255,.19),transparent 60%)!important;min-height:185px}
+#vJarvis .jv-core:before,#vJarvis .jv-core:after{content:"";position:absolute;left:50%;top:46%;width:155px;height:155px;transform:translate(-50%,-50%);border:1px dashed #ffc342;border-radius:50%;box-shadow:0 0 16px rgba(255,180,0,.35);pointer-events:none;animation:cbHalo 16s linear infinite}
+#vJarvis .jv-core:after{width:195px;height:195px;border-color:#168dff;animation-duration:22s;animation-direction:reverse}
+@keyframes cbHalo{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+#vJarvis .jv-tile{border-left:2px solid #ffc342!important}
+#vJarvis .jv-tile strong{color:#c9e9ff!important;text-shadow:0 0 10px rgba(32,136,255,.25)}
+#vJarvis .jv-status,#vJarvis .jv-state{color:#ffcf60!important}
+#vJarvis .jv-msg.bot{border-left:2px solid #168dff!important;background:rgba(6,42,83,.7)!important}
+#vJarvis .jv-msg.user{border-right:2px solid #ffc342!important;background:rgba(67,45,7,.25)!important}
+#vCal #cal,#vStats #proj{position:relative!important;overflow:auto!important;scrollbar-color:#198cff transparent}
+#vCal #cal h1,#vCal #cal h2,#vCal #cal h3,#vStats #proj h1,#vStats #proj h2,#vStats #proj h3{color:#ffc342!important;text-shadow:0 0 12px rgba(255,178,0,.3)}
+#vCal #cal .card,#vCal #cal section,#vStats #proj .card,#vStats #proj section{border-color:rgba(31,133,255,.45)!important}
+#vCal #cal canvas,#vStats #proj canvas{filter:drop-shadow(0 0 5px rgba(21,121,255,.25))}
+#vCal #cal button,#vStats #proj button{border-color:#248fff!important}
+@media(max-width:600px){#vJarvis .jv-core:before{width:126px;height:126px}#vJarvis .jv-core:after{width:160px;height:160px}#vChart .qt-wave i{animation-duration:2.2s}}
+@media(prefers-reduced-motion:reduce){#vJarvis .jv-core:before,#vJarvis .jv-core:after,#vChart .qt-wave i{animation:none!important}}
+
 </style>
 
 <div class="app">
