@@ -23,6 +23,8 @@ jobs:
         run: node --check worker/worker.js
       - name: Run JARVIS Worker security and API tests
         run: node --experimental-default-type=module --test worker/worker.test.mjs
+      - name: Validate blue-gold HUD integration
+        run: node --test tests/hud-integration.test.mjs
       - name: Run market-data integrity tests
         run: node --test tests/market-data.test.mjs
       - name: Run strict backtest benchmark tests
