@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v51-panoramic-flightdeck";
+const CACHE = "cristal-btc-v52-jarvis-realtime";
 const SHELL = [
   "./",
   "./index.html",
@@ -7,6 +7,7 @@ const SHELL = [
   "./icon-512.png",
   "./apple-touch-icon.png",
   "./favicon.png",
+  "./jarvis-reactive-core.js",
   "./cockpit-night-v48.webp"
 ];
 
