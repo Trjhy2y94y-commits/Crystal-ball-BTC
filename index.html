@@ -4442,6 +4442,15 @@ tech.innerHTML='<div class="jb-reticle"></div><div class="jb-crosshair"></div><d
 boot.insertBefore(tech,boot.querySelector('.jb-shell'));
 })();
 </script>
+<style id="jarvis-mobile-viewport-fix">
+/* iPhone viewport containment: prevent wide HUD children from expanding app flex width. */
+@media (max-width: 600px){
+ html,body,.app,.view,.page{max-width:100%;min-width:0;box-sizing:border-box}
+ .app,.view,.page{width:100%;overflow-x:clip}
+ .app > *, .view > *, .page > *{min-width:0;max-width:100%;box-sizing:border-box}
+ #vJarvis .jarvis-view,#vJarvis .jarvis-shell{min-width:0;max-width:100%;box-sizing:border-box}
+}
+</style>
 <script defer src="./jarvis-reactive-core.js"></script>
   </body>
 </html>
