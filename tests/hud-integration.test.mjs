@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const sw = readFileSync(new URL('../service-worker.js', import.meta.url), 'utf8');
-const ids = [...html.matchAll(/\\bid="([^"]+)"/g)].map(m => m[1]);
+const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
 
 test('five tabs and live panels exist', () => {
   for (const id of ['vHome','vChart','vCal','vJarvis','vStats','homeQtPrice','homeQtBias','homeQtWT','homeQtRSI','homeQtSource','prob30','prob90','prob365','qtPrice','qtWT','qtRSI','qtBias','jvPrice']) {
@@ -24,5 +24,5 @@ test('blue gold HUD modules and real-data mirrors exist', () => {
 });
 
 test('PWA cache has a versioned name', () => {
-  assert.match(sw,/const CACHE = "cristal-btc-v\\d+[-a-z0-9]+";/);
+  assert.match(sw,/const CACHE = "cristal-btc-v\d+[-a-z0-9]+";/);
 });
