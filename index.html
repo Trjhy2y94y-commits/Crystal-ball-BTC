@@ -1327,6 +1327,16 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 @media(max-width:430px){#vHome .hq-orbit{width:238px!important;height:238px!important}#vHome .hq-title{min-height:360px!important;gap:12px!important}.cb-module-head{min-height:95px!important}}
 @media(prefers-reduced-motion:reduce){.cb-motion-rig *,.tabbar button.on:after,#cbQuickNav button[aria-current="page"]:after,.tabbar button.on svg,#cbQuickNav button[aria-current="page"] span{animation:none!important}}
 
+
+/* V46: contain instrument panels inside the mobile viewport */
+.app{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+.app>.view{width:100%;max-width:100%;min-width:0;box-sizing:border-box;overflow-x:clip}
+.cb-motion-rig{min-width:0;max-width:100%;box-sizing:border-box}
+.cb-motion-rig svg{min-width:0;max-width:100%}
+#vStats #proj section,#vStats .stats-more,#vStats .stats-more-in,#vCal #cal .card{min-width:0;max-width:100%;box-sizing:border-box}
+#vStats #proj .k{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+#vStats #proj .k>span{min-width:0;overflow-wrap:anywhere}
+#vStats #proj table{display:block;max-width:100%;overflow-x:auto}
 </style>
 
 <div class="app">

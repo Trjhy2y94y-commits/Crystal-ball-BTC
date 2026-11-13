@@ -227,6 +227,15 @@ jobs:
               assert page.locator("#vStats").is_visible(), "Stats tab did not open"
               page.wait_for_timeout(500)
 
+              for tab, view in [("home", "vHome"), ("chart", "vChart"), ("cal", "vCal"), ("jarvis", "vJarvis"), ("stats", "vStats")]:
+                  page.locator(f'.tabbar button[data-tab="{tab}"]').click()
+                  page.wait_for_timeout(350)
+                  instrument = page.locator(f"#{view} .cb-reactor" if tab == "home" else f"#{view} .cb-motion-rig")
+                  assert instrument.is_visible(), f"Animated instrument hidden: {tab}"
+                  assert instrument.evaluate("el => el.getAnimations({subtree:true}).some(a => a.playState === 'running')"), f"No running animation: {tab}"
+                  assert page.locator(f"#{view}").evaluate("el => el.getBoundingClientRect().right <= innerWidth + 1"), f"View exceeds viewport: {tab}"
+                  page.screenshot(path=f"artifacts/iphone-{tab}.png")
+
               dimensions = page.evaluate("""() => ({
                 viewport: window.innerWidth,
                 document: document.documentElement.scrollWidth,
