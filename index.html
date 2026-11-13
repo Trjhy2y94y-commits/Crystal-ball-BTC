@@ -4225,6 +4225,55 @@ header,.toolbar{background:linear-gradient(110deg,rgba(8,22,45,.96),rgba(14,37,6
 @keyframes jarvis-live-pulse{0%,100%{box-shadow:0 0 4px #30d15833}50%{box-shadow:0 0 15px #30d15888}}
 @media(prefers-reduced-motion:reduce){.tabbar button.on svg,.badge.live{animation:none!important}*{scroll-behavior:auto!important}}
 </style>
+
+<!-- JARVIS HUD 2.0 / cinematic navigation and ambient reactor -->
+<style id="jarvis-hud-cinematic-v2">
+:root{--reactor-blue:#4d9dff;--reactor-gold:#f5bd52}
+.app:after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 50% 28%,rgba(30,112,255,.12),transparent 34%);animation:jarvis-atmosphere 9s ease-in-out infinite}
+@keyframes jarvis-atmosphere{0%,100%{opacity:.45;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+.tabbar{position:relative;isolation:isolate;overflow:visible}
+.tabbar:before{content:"";position:absolute;left:0;right:0;top:-2px;height:1px;background:linear-gradient(90deg,transparent,#5ca9ff,#f5bd52,#5ca9ff,transparent);box-shadow:0 0 15px #3c8fff;animation:jarvis-nav-trace 5s linear infinite}
+@keyframes jarvis-nav-trace{0%,100%{opacity:.45}50%{opacity:1}}
+.tabbar button{isolation:isolate;min-width:0;transform-style:preserve-3d}
+.tabbar button:after{content:"";position:absolute;inset:-45% -80%;z-index:-1;background:linear-gradient(110deg,transparent 37%,rgba(106,177,255,.20) 50%,transparent 63%);transform:translateX(-130%) rotate(-10deg);opacity:0}
+.tabbar button.on:after{animation:jarvis-tab-sweep 3.8s ease-in-out infinite;opacity:1}
+@keyframes jarvis-tab-sweep{0%,40%{transform:translateX(-130%) rotate(-10deg)}75%,100%{transform:translateX(130%) rotate(-10deg)}}
+.tabbar button.on svg{animation:jarvis-icon-breathe 2.6s ease-in-out infinite,jarvis-icon-hover 3.2s ease-in-out infinite}
+@keyframes jarvis-icon-hover{0%,100%{translate:0 0}50%{translate:0 -3px}}
+.tabbar button:focus-visible{outline:2px solid #f5bd52;outline-offset:2px}
+.page{animation:jarvis-page-appear .42s cubic-bezier(.2,.7,.2,1) both}
+@keyframes jarvis-page-appear{from{opacity:.6;filter:brightness(.65);transform:translateY(9px) scale(.992)}to{opacity:1;filter:brightness(1);transform:none}}
+.hm .card,.hm .tile,.orb .ball,.orb .ot,.orb .act{position:relative;overflow:hidden}
+.hm .card:before,.hm .tile:before,.orb .ball:before,.orb .ot:before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(125deg,rgba(107,175,255,.11),transparent 32%,transparent 70%,rgba(245,189,82,.07));z-index:0}
+.hm .card>* ,.hm .tile>* ,.orb .ball>* ,.orb .ot>*{position:relative;z-index:1}
+.orb .ball:after{content:"";position:absolute;pointer-events:none;inset:7px;border:1px solid rgba(96,165,250,.16);border-radius:17px;box-shadow:inset 0 0 20px rgba(51,128,250,.1);animation:jarvis-core-breathe 4s ease-in-out infinite}
+@keyframes jarvis-core-breathe{0%,100%{opacity:.35}50%{opacity:1}}
+header{position:relative}
+header:after{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:32%;background:linear-gradient(90deg,transparent,#f5bd52,transparent);box-shadow:0 0 9px #f5bd52;animation:jarvis-header-scan 7s ease-in-out infinite alternate;pointer-events:none}
+@keyframes jarvis-header-scan{from{left:0}to{left:68%}}
+@media(max-width:390px){.tabbar button{font-size:10px;letter-spacing:0}.tabbar svg{width:22px;height:22px}}
+@media(prefers-reduced-motion:reduce){.app:after,.tabbar:before,.tabbar button.on:after,.tabbar button.on svg,.page,.orb .ball:after,header:after{animation:none!important}.page{opacity:1;transform:none;filter:none}}
+</style>
+<script id="jarvis-hud-cinematic-v2-script">
+(function(){
+'use strict';
+const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const nav=document.querySelector('.tabbar');
+if(!nav)return;
+let last=null;
+function activate(){
+ const active=nav.querySelector('button.on');
+ if(!active||active===last)return;
+ last=active;
+ if(reduced)return;
+ const page=document.querySelector('.page:not([hidden])');
+ if(page){page.style.animation='none';void page.offsetWidth;page.style.animation='jarvis-page-appear .42s cubic-bezier(.2,.7,.2,1) both';}
+}
+const observer=new MutationObserver(activate);
+nav.querySelectorAll('button').forEach(button=>observer.observe(button,{attributes:true,attributeFilter:['class']}));
+activate();
+})();
+</script>
 </body>
 </html>
 ).join(' · '):'historique insuffisant pour comparer les découpages'}. Les IC Monte Carlo à 95 % quantifient uniquement l’erreur d’échantillonnage des simulations, pas l’incertitude du modèle ni sa capacité prédictive. Scénarios empiriques non calibrés : aucune fiabilité prédictive n’est revendiquée avant validation walk-forward indépendante.</p>
