@@ -4472,6 +4472,29 @@ boot.insertBefore(tech,boot.querySelector('.jb-shell'));
 @media(max-width:600px){#vJarvis .jarvis-reactor-v3{max-width:100%;transform-origin:center}.cb-unified-brand strong{letter-spacing:.06em!important}}
 @media(prefers-reduced-motion:reduce){#vJarvis .jarvis-reactor-v3{animation:none!important}}
 </style>
+<style id="cockpit-command-v54">
+/* V54: visual reconstruction rather than incremental HUD color overrides */
+#vHome #homeQuant .cb-flightdeck{position:relative!important;isolation:isolate!important;background:radial-gradient(ellipse 42% 52% at 50% 48%,rgba(24,77,174,.22),transparent 88%),linear-gradient(150deg,#020610,#07142d 54%,#020611)!important;border:1px solid rgba(255,184,70,.48)!important;border-radius:22px!important;box-shadow:inset 0 0 95px rgba(12,69,188,.24),0 0 55px rgba(12,72,188,.23),0 18px 70px #000a!important}
+#vHome #homeQuant .cb-flightdeck:before{content:"";position:absolute;inset:14px;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(39,117,255,.15) 1px,transparent 1px),linear-gradient(rgba(39,117,255,.12) 1px,transparent 1px);background-size:42px 42px;mask-image:radial-gradient(ellipse,#0007,transparent 72%);animation:cockpitGridDrift 18s linear infinite}
+#vHome #homeQuant .cb-flightdeck:after{content:"SYSTEM ONLINE  //  CRYSTAL INTELLIGENCE";position:absolute;top:1.3%;left:50%;transform:translateX(-50%);width:max-content;max-width:88%;font:600 clamp(8px,.9vw,12px)/1.4 monospace;letter-spacing:.24em;color:#ffc45f;text-shadow:0 0 14px #ffb13b99;background:#030c1bd9;border:1px solid #d69d4a66;padding:5px 13px;border-radius:2px;pointer-events:none;z-index:6}
+#vHome #homeQuant .hq-orbit{position:relative!important;filter:drop-shadow(0 0 24px #297dff88)!important}
+#vHome #homeQuant .hq-orbit:before{content:"";position:absolute;inset:4%;border-radius:50%;border:2px solid #ffca63a8;box-shadow:0 0 22px #f7b94d6b,inset 0 0 24px #286dff65;animation:cockpitOrbitalSpin 18s linear infinite;pointer-events:none;z-index:4}
+#vHome #homeQuant .hq-orbit:after{content:"₿"!important;font:800 clamp(32px,5vw,82px)/1 system-ui!important;color:#f9c66c!important;text-shadow:0 0 20px #ffb647,0 0 46px #287aff!important;border-radius:50%;background:radial-gradient(circle,#0d3273bb,transparent 68%);pointer-events:none}
+#vJarvis .jv-core{display:flex!important;position:relative!important;min-height:270px!important;align-items:center!important;justify-content:center!important;flex-direction:column!important;overflow:visible!important;isolation:isolate}
+#vJarvis .jv-orb{width:170px!important;height:170px!important;border-radius:50%!important;display:grid!important;place-items:center!important;background:radial-gradient(circle at 42% 35%,#2864d8,#0a235c 52%,#010614 75%)!important;border:2px solid #ffc55b!important;box-shadow:0 0 0 12px #0a2d6444,0 0 0 24px #287cff18,0 0 42px #2c83ffb8,inset 0 0 38px #2d83ffb3!important;animation:cockpitCorePulse 3.8s ease-in-out infinite}
+#vJarvis .jv-orb span{color:#ffca6b!important;font-size:70px!important;font-weight:300!important;text-shadow:0 0 25px #ffc05c!important}
+#vJarvis .jv-core:before{content:"";position:absolute;left:50%;top:50%;width:245px!important;height:245px!important;transform:translate(-50%,-50%);border:2px dashed #ffc765bb!important;border-radius:50%;box-shadow:0 0 26px #ffc7654d!important;animation:cockpitOrbitalSpin 14s linear infinite}
+#vJarvis .jv-core:after{content:"";position:absolute;left:50%;top:50%;width:290px!important;height:290px!important;transform:translate(-50%,-50%);border:1px solid #408dff9a!important;border-radius:50%;box-shadow:0 0 38px #2579ff44!important}
+#vJarvis .jv-core-label{z-index:2;color:#ffc66c!important;letter-spacing:.24em!important;text-shadow:0 0 12px #eab35e88!important}
+#vJarvis .jarvis-shell{background:radial-gradient(ellipse at 50% 24%,#173c8655,transparent 55%),linear-gradient(155deg,#020713ed,#07142ae8)!important;border:1px solid #ffc26788!important;border-radius:18px!important}
+#vJarvis .jv-tile{background:linear-gradient(130deg,#07162ae8,#091e3ac7)!important;border:1px solid #2c75d87d!important;box-shadow:inset 3px 0 #ffc36677,0 6px 25px #0005!important}
+#vJarvis .jv-tile small{color:#e9b968!important;letter-spacing:.12em}
+@keyframes cockpitOrbitalSpin{from{rotate:0deg}to{rotate:360deg}}
+@keyframes cockpitCorePulse{0%,100%{filter:brightness(.92)}50%{filter:brightness(1.35)}}
+@keyframes cockpitGridDrift{from{background-position:0 0,0 0}to{background-position:42px 42px,42px 42px}}
+@media(max-width:600px){#vHome #homeQuant .cb-flightdeck{border-radius:12px!important}#vHome #homeQuant .cb-flightdeck:after{font-size:7px;letter-spacing:.1em;padding:3px 5px}#vJarvis .jv-core{min-height:230px!important}#vJarvis .jv-orb{width:125px!important;height:125px!important}#vJarvis .jv-core:before{width:185px!important;height:185px!important}#vJarvis .jv-core:after{width:218px!important;height:218px!important}#vJarvis .jv-orb span{font-size:52px!important}}
+@media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-flightdeck:before,#vHome #homeQuant .hq-orbit:before,#vJarvis .jv-core:before,#vJarvis .jv-orb{animation:none!important}}
+</style>
 <script defer src="./jarvis-reactive-core.js"></script>
   </body>
 </html>
