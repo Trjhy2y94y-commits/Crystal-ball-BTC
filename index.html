@@ -4640,6 +4640,30 @@ html,body,.app{background-color:#010208!important;color:#dce7fc!important}
 @media(max-width:600px){#vHome #homeQuant .cb-cockpit-atmosphere{opacity:.55}#vHome #homeQuant .cb-atmosphere-beam{height:110%}#vHome #homeQuant .hq-orbit{animation:none!important}#vJarvis .jv-orb{animation:cbV59Hover 6s ease-in-out infinite!important}#vJarvis .jv-orb span{animation:none!important}}
 @media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-atmosphere-scan,#vHome #homeQuant .hq-orbit,#vJarvis .jv-orb,#vJarvis .jv-orb span{animation:none!important}}
 </style>
+<style id="mobile-command-deck-v61">
+/* V61: iPhone portrait command deck — real instruments, not a shrunk 16:10 postcard */
+@media (max-width:600px) and (orientation:portrait){
+ #vHome #homeQuant{width:calc(100% - 12px)!important;max-width:none!important}
+ #vHome #homeQuant .cb-flightdeck{aspect-ratio:auto!important;min-height:650px!important;display:flex!important;flex-direction:column!important;gap:0!important;padding:14px 12px 16px!important;border-radius:18px!important;overflow:hidden!important}
+ #vHome #homeQuant .hq-top{position:relative!important;inset:auto!important;width:100%!important;min-height:30px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;z-index:7!important}
+ #vHome #homeQuant .hq-title{position:relative!important;inset:auto!important;width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center!important;gap:6px!important;z-index:6!important;margin:8px 0 4px!important}
+ #vHome #homeQuant .hq-title>div:first-child{width:100%!important;min-width:0!important}
+ #vHome #homeQuant .hq-price{font-size:clamp(28px,9vw,44px)!important;line-height:1.1!important;overflow-wrap:anywhere!important}
+ #vHome #homeQuant .hq-change{font-size:12px!important}
+ #vHome #homeQuant .hq-orbit{position:relative!important;inset:auto!important;width:min(53vw,200px)!important;height:min(53vw,200px)!important;min-height:0!important;margin:3px auto 8px!important;transform:none!important}
+ #vHome #homeQuant .hq-orbit .cb-reactor,#vHome #homeQuant .hq-orbit .cb-scene{width:100%!important;height:100%!important}
+ #vHome #homeQuant .cb-command{position:relative!important;inset:auto!important;transform:none!important;width:100%!important;height:auto!important;display:block!important;z-index:8!important;margin:2px 0 0!important;padding:8px!important}
+ #vHome #homeQuant .cb-command-head{font-size:9px!important;gap:4px!important;flex-wrap:wrap!important}
+ #vHome #homeQuant .cb-command-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:auto!important;gap:8px!important}
+ #vHome #homeQuant .cb-command-panel{position:relative!important;inset:auto!important;min-width:0!important;min-height:100px!important;height:auto!important;padding:10px 8px!important}
+ #vHome #homeQuant .cb-command-panel strong{font-size:clamp(13px,4vw,19px)!important;overflow-wrap:anywhere!important}
+ #vHome #homeQuant .cb-command-panel small{font-size:9px!important;line-height:1.25!important}
+ #vHome #homeQuant .cb-command-bottom{font-size:9px!important;flex-wrap:wrap!important}
+ #vHome #homeQuant .cb-flight-caption{position:relative!important;inset:auto!important;margin:12px 0 0!important;text-align:center!important;z-index:7!important}
+ #vHome #homeQuant .cb-holo-reticle{inset:18% 4% 35%!important;opacity:.25!important}
+ #vHome #homeQuant .cb-cockpit-atmosphere{opacity:.35!important}
+}
+</style>
 <script defer src="./jarvis-reactive-core.js"></script>
   </body>
 </html>
