@@ -1408,11 +1408,49 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 #vHome .cb-mission,#vHome .hq-signal,#vHome .hq-metrics,#vHome .hq-foot{grid-column:1/-1}
 #vHome .cb-mission{grid-row:5;margin:2px 0!important}
 }
+
+/* V51: preserve the reference's complete panoramic cockpit composition */
+#vHome #homeQuant{display:block!important;width:calc(100% - 12px)!important;max-width:1500px!important;margin:6px auto!important;padding:0!important}
+#vHome #homeQuant .cb-flightdeck{position:relative;isolation:isolate;display:grid;grid-template-columns:24% 1fr 24%;grid-template-rows:12% 1fr 1fr 12%;gap:3%;aspect-ratio:16/10;width:100%;box-sizing:border-box;padding:5% 4% 4%;overflow:hidden;background:url('./cockpit-night-v48.webp') center/100% 100% no-repeat;border-radius:12px;box-shadow:0 0 30px #0009;container-type:inline-size}
+#vHome #homeQuant .cb-flightdeck:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0001,transparent 40%,#0002);pointer-events:none;z-index:-1}
+#vHome #homeQuant .hq-top{grid-column:2!important;grid-row:1!important;align-self:center;justify-content:center!important;display:flex!important;padding:0!important;margin:0!important;background:transparent!important;border:0!important;box-shadow:none!important;clip-path:none!important;min-height:0!important}
+#vHome #homeQuant .hq-brand{font-size:clamp(8px,2cqw,24px)!important;letter-spacing:.14em!important;font-style:normal!important;color:#98cbff!important;text-shadow:0 0 10px #2e83d5!important;white-space:nowrap}
+#vHome #homeQuant .hq-status{display:none!important}
+#vHome #homeQuant .hq-title{grid-column:2!important;grid-row:2/span 2!important;display:flex!important;flex-direction:column-reverse!important;justify-content:center!important;gap:5%!important;min-height:0!important;height:auto!important;width:100%!important;padding:0!important;margin:0!important;text-align:center!important;background:transparent!important;border:0!important;overflow:visible!important;clip-path:none!important}
+#vHome #homeQuant .hq-title:before,#vHome #homeQuant .hq-title:after{display:none!important}
+#vHome #homeQuant .hq-title>div:first-child{flex:0!important;width:100%;z-index:4}
+#vHome #homeQuant .hq-orbit{width:75%!important;height:auto!important;aspect-ratio:1;max-height:72%;min-width:0!important;min-height:0!important;margin:0!important;flex:0 1 auto!important;background:transparent!important}
+#vHome #homeQuant .hq-orbit b{display:none!important}
+#vHome #homeQuant .hq-orbit:after{display:block!important;content:"+"!important;inset:0!important;position:absolute;display:grid!important;place-items:center;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;font-size:clamp(22px,5cqw,70px);font-weight:200;color:#c4e4ff;transform:none!important;animation:none!important;text-shadow:0 0 12px #4d9fff}
+#vHome #homeQuant .cb-reactor{opacity:.85;filter:drop-shadow(0 0 3px #2677d2)}
+#vHome #homeQuant .cb-scene-home{opacity:.35}
+#vHome #homeQuant .hq-price{font-size:clamp(14px,3cqw,38px)!important;line-height:1.1!important;letter-spacing:0!important;color:#dceeff!important}
+#vHome #homeQuant .hq-eyebrow{font-size:clamp(6px,1cqw,12px)!important;margin:0 0 3px!important;letter-spacing:.1em!important;color:#8bbef0!important}
+#vHome #homeQuant .hq-change{font-size:clamp(6px,1cqw,12px)!important;margin-top:3px!important;line-height:1.2!important}
+#vHome #homeQuant .cb-command,#vHome #homeQuant .cb-command-grid{display:contents!important}
+#vHome #homeQuant .cb-command-head,#vHome #homeQuant .cb-command-bottom{display:none!important}
+#vHome #homeQuant .cb-command-panel{width:100%!important;min-width:0!important;min-height:0!important;height:auto!important;padding:7%!important;gap:5%!important;box-sizing:border-box;background:linear-gradient(130deg,#061425a6,#02081266)!important;border:1px solid #3b83bd99!important;backdrop-filter:blur(2px)!important;box-shadow:inset 0 1px #66c0ff33!important;clip-path:polygon(0 8px,8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%)!important}
+#vHome #homeQuant .cb-command-panel:nth-child(1){grid-column:1!important;grid-row:2!important}
+#vHome #homeQuant .cb-command-panel:nth-child(2){grid-column:1!important;grid-row:3!important}
+#vHome #homeQuant .cb-command-panel:nth-child(3){grid-column:3!important;grid-row:2!important}
+#vHome #homeQuant .cb-command-panel:nth-child(4){grid-column:3!important;grid-row:3!important}
+#vHome #homeQuant .cb-panel-label{font-size:clamp(6px,1cqw,12px)!important;letter-spacing:.04em!important;white-space:nowrap}
+#vHome #homeQuant .cb-command-panel strong{font-size:clamp(9px,1.8cqw,24px)!important;font-weight:600!important;line-height:1.2!important;overflow-wrap:anywhere}
+#vHome #homeQuant .cb-command-panel small{font-size:clamp(5px,.8cqw,10px)!important;line-height:1.2!important}
+#vHome #homeQuant .cb-rsi-ring{width:clamp(25px,6cqw,78px)!important;height:clamp(25px,6cqw,78px)!important;min-height:0!important;border-width:2px!important}
+#vHome #homeQuant .cb-mini-wave{height:25%!important;min-height:0!important}
+#vHome #homeQuant .cb-pulse-bars{height:25%!important;min-height:0!important}
+#vHome #homeQuant .cb-panel-track{height:5px!important}
+.cb-flight-caption{grid-column:1/-1;grid-row:4;text-align:center;align-self:center;font-size:clamp(6px,1cqw,12px);letter-spacing:.2em;color:#9bc5e8;text-shadow:0 0 8px #3a87d4}
+.cb-landscape-hint{margin:10px 8px 14px;font-size:11px;color:#9ab6d2;text-align:center;line-height:1.5}
+#vHome #homeQuant>.cb-mission,#vHome #homeQuant>.hq-signal,#vHome #homeQuant>.hq-metrics{margin:10px 6px!important}
+@media(orientation:landscape) and (max-height:550px){#cbUnifiedHeader,#cbQuickNav{display:none!important}#vHome #homeQuant{width:min(100%,calc((100dvh - 65px)*1.6))!important;margin:0 auto!important}.cb-landscape-hint{display:none}.tabbar{padding-top:3px!important;padding-bottom:max(3px,env(safe-area-inset-bottom))!important}.tabbar button{min-height:40px!important}}
+
 </style>
 
 <div class="app">
 <div class="cb-unified-header" id="cbUnifiedHeader" aria-label="État du marché Bitcoin">
-  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>COCKPIT IMMERSIF · V50</small></div></div>
+  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>COCKPIT PANORAMIQUE · V51</small></div></div>
   <div class="cb-unified-market"><small>BTC / USD <span id="cbUnifiedFeed">FLUX EN ATTENTE</span></small><strong id="cbUnifiedPrice">—</strong></div>
   <div class="cb-unified-state"><span class="cb-unified-dot"></span><span id="cbUnifiedRegime">ANALYSE EN COURS</span></div>
 </div>
@@ -1425,7 +1463,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 </div>
   <section class="view" id="vHome">
     <section class="home-quant" id="homeQuant" aria-label="Crystal Ball — terminal quantitatif">
-      <div class="hq-top"><span class="hq-brand"><i></i> CRYSTAL <b>BALL</b></span><span class="hq-status" id="homeQtFeed">SCAN EN ATTENTE</span></div>
+<div class="cb-flightdeck" aria-label="Cockpit panoramique animé">      <div class="hq-top"><span class="hq-brand"><i></i> CRYSTAL <b>BALL</b></span><span class="hq-status" id="homeQtFeed">SCAN EN ATTENTE</span></div>
       <div class="hq-title"><div><div class="hq-eyebrow">BITCOIN · MARKET INTELLIGENCE</div><div class="hq-price" id="homeQtPrice">—</div><div class="hq-change" id="homeQtChange">Prix de marché en attente</div></div><div class="hq-orbit" aria-hidden="true"><canvas class="cb-scene cb-scene-home" data-scene="sphere"></canvas><svg class="cb-reactor" viewBox="0 0 320 320" fill="none" aria-hidden="true"><defs><radialGradient id="cbCoreGlow"><stop stop-color="#287fff" stop-opacity=".55"/><stop offset="1" stop-color="#084ea8" stop-opacity="0"/></radialGradient></defs><circle cx="160" cy="160" r="145" fill="url(#cbCoreGlow)"/><g class="cb-ring-outer" stroke="#348cff"><circle cx="160" cy="160" r="147" stroke-width="3" stroke-dasharray="80 12 4 12"/><circle cx="160" cy="160" r="136" stroke-dasharray="1 9" stroke-width="6"/></g><g class="cb-ring-inner" stroke="#ffc342"><circle cx="160" cy="160" r="120" stroke-width="2" stroke-dasharray="120 45 12 45"/><path d="M160 32v15M160 273v15M32 160h15M273 160h15" stroke-width="3"/></g><g stroke="#428fff" opacity=".6"><circle cx="160" cy="160" r="103"/><ellipse cx="160" cy="160" rx="103" ry="38"/><ellipse cx="160" cy="160" rx="38" ry="103"/><ellipse cx="160" cy="160" rx="73" ry="103" transform="rotate(45 160 160)"/></g><circle cx="160" cy="160" r="84" stroke="#438fff" stroke-opacity=".35" stroke-width="12"/><g fill="#ffc342"><circle cx="160" cy="13" r="4"/><circle cx="307" cy="160" r="4"/><circle cx="160" cy="307" r="4"/><circle cx="13" cy="160" r="4"/></g></svg><b>₿</b></div></div>
       <div class="cb-command" aria-label="Tableau de bord holographique">
         <div class="cb-command-head"><span>◈ CRYSTAL BALL · QUANTUM COMMAND</span><span class="cb-live"><i></i> DONNÉES OBSERVÉES</span></div>
@@ -1437,7 +1475,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
         </div>
         <div class="cb-command-bottom"><span>◉ SCAN QUANTITATIF</span><span>WYCKOFF · SMC · ELLIOTT · FVG</span></div>
       </div>
-<section class="cb-mission" aria-label="Centre de commande Crystal Ball">
+<div class="cb-flight-caption">CRYSTAL BALL · JARVIS INTERFACE</div></div><p class="cb-landscape-hint">Cockpit complet · tournez votre iPhone en paysage pour agrandir les instruments.</p><section class="cb-mission" aria-label="Centre de commande Crystal Ball">
 <div class="cb-mission-heading"><span>◈ TERMINAL DE PROJECTION</span><span>HORIZONS CONDITIONNELS</span></div>
 <div class="cb-mission-grid">
 <article class="cb-mission-tile"><small>SCÉNARIO · 30 JOURS</small><strong id="cb30">—</strong><span id="cb30range">Fourchette en attente</span></article>
