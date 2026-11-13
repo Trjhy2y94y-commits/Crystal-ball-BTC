@@ -4354,6 +4354,54 @@ document.querySelectorAll('.tabbar button[data-tab="jarvis"]').forEach(b=>b.addE
 update();
 })();
 </script>
+
+<!-- JARVIS CINEMATIC BOOT V5: skippable opening spectacle, UI remains interactive after boot -->
+<style id="jarvis-cinematic-boot-v5">
+#jarvis-boot-v5{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 48%,#123768 0%,#06162e 37%,#01040c 80%);color:#eaf5ff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif;isolation:isolate;opacity:1;transition:opacity .6s ease,visibility .6s}
+#jarvis-boot-v5.jb-hide{opacity:0;visibility:hidden;pointer-events:none}
+#jarvis-boot-v5 .jb-grid{position:absolute;inset:-20%;background:repeating-linear-gradient(0deg,transparent 0 49px,#3d91ff12 50px),repeating-linear-gradient(90deg,transparent 0 49px,#3d91ff12 50px);transform:perspective(650px) rotateX(38deg) scale(1.4);animation:jb-grid-drift 6s linear infinite}
+#jarvis-boot-v5 .jb-rays{position:absolute;inset:-50%;background:conic-gradient(from 0deg,transparent 0deg,#3d8cff15 18deg,transparent 35deg,transparent 65deg,#ffc76412 80deg,transparent 100deg,transparent 180deg,#3d8cff1c 210deg,transparent 235deg);animation:jb-rotate 18s linear infinite}
+#jarvis-boot-v5 .jb-flare{position:absolute;top:50%;left:50%;width:130vmax;height:2px;transform:translate(-50%,-50%);background:linear-gradient(90deg,transparent,#75baffaa,#fff, #75baffaa,transparent);box-shadow:0 0 24px 5px #3d8cff66;animation:jb-flash 2.8s ease-in-out both}
+#jarvis-boot-v5 .jb-shell{position:relative;width:min(78vw,390px);aspect-ratio:1;filter:drop-shadow(0 0 30px #358aff55);animation:jb-arrive 1.2s cubic-bezier(.12,.7,.18,1) both}
+#jarvis-boot-v5 .jb-ring{position:absolute;border-radius:50%;border:2px solid #68b7ff;box-shadow:0 0 14px #3d9fff,inset 0 0 20px #3d9fff55}
+#jarvis-boot-v5 .jb-r1{inset:0;border:3px dashed #77bbff;animation:jb-rotate 8s linear infinite}
+#jarvis-boot-v5 .jb-r2{inset:9%;border:5px double #ffcf6b;animation:jb-rotate 6s linear infinite reverse}
+#jarvis-boot-v5 .jb-r3{inset:20%;border:2px dotted #9bd6ff;animation:jb-rotate 4s linear infinite}
+#jarvis-boot-v5 .jb-r4{inset:30%;border:3px solid #6fbaff;box-shadow:0 0 30px #5ba9ff,inset 0 0 35px #368bff}
+#jarvis-boot-v5 .jb-core{position:absolute;inset:36%;border-radius:50%;background:radial-gradient(circle at 43% 36%,#fff 0%,#d9f8ff 12%,#67c6ff 29%,#136bc5 55%,#031733 80%);box-shadow:0 0 35px 13px #3b95ff88,0 0 95px 28px #3b95ff55,inset 0 0 20px #fff;animation:jb-heart 1.4s ease-in-out infinite}
+#jarvis-boot-v5 .jb-mark{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(12px,4vw,20px);font-weight:900;letter-spacing:.22em;text-shadow:0 0 15px #fff;color:#fff}
+#jarvis-boot-v5 .jb-top{position:absolute;top:max(8%,env(safe-area-inset-top));width:100%;text-align:center;font-size:11px;letter-spacing:.45em;color:#86bfff}
+#jarvis-boot-v5 .jb-bottom{position:absolute;bottom:max(10%,calc(env(safe-area-inset-bottom) + 60px));left:0;right:0;text-align:center;padding:0 16px}
+#jarvis-boot-v5 .jb-title{font-size:clamp(24px,7vw,44px);font-weight:800;letter-spacing:.25em;text-shadow:0 0 25px #5daaff;margin:0 0 8px}
+#jarvis-boot-v5 .jb-sub{font-size:11px;letter-spacing:.26em;color:#f6c76d}
+#jarvis-boot-v5 .jb-progress{height:2px;width:min(68vw,310px);margin:20px auto 0;background:#28517e;overflow:hidden}
+#jarvis-boot-v5 .jb-progress:before{content:"";display:block;height:100%;background:linear-gradient(90deg,#3a8fff,#e7f6ff,#f8c15d);box-shadow:0 0 12px #6ab6ff;animation:jb-progress 2.5s ease-out both}
+#jarvis-boot-v5 .jb-skip{position:absolute;right:18px;bottom:max(16px,env(safe-area-inset-bottom));color:#d5eaff;background:#0e2c4c;border:1px solid #4d8bca;border-radius:999px;padding:10px 17px;font-size:12px;font-weight:700;letter-spacing:.08em;cursor:pointer}
+@keyframes jb-rotate{to{transform:rotate(360deg)}}
+@keyframes jb-grid-drift{to{background-position:0 50px,50px 0}}
+@keyframes jb-flash{0%,25%,100%{opacity:0}45%{opacity:1}}
+@keyframes jb-arrive{from{opacity:0;transform:scale(.25) rotate(-40deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes jb-heart{0%,100%{transform:scale(.94);filter:brightness(.85)}50%{transform:scale(1.08);filter:brightness(1.5)}}
+@keyframes jb-progress{from{width:0}to{width:100%}}
+@media(prefers-reduced-motion:reduce){#jarvis-boot-v5{display:none!important}}
+</style>
+<script id="jarvis-cinematic-boot-v5-script">
+(function(){
+'use strict';
+if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+if(document.getElementById('jarvis-boot-v5'))return;
+const overlay=document.createElement('div');
+overlay.id='jarvis-boot-v5';
+overlay.setAttribute('role','dialog');overlay.setAttribute('aria-label','Initialisation visuelle de Crystal Ball BTC');
+overlay.innerHTML='<div class="jb-grid"></div><div class="jb-rays"></div><div class="jb-flare"></div><div class="jb-top">STARK-STYLE HOLOGRAPHIC INTERFACE</div><div class="jb-shell"><div class="jb-ring jb-r1"></div><div class="jb-ring jb-r2"></div><div class="jb-ring jb-r3"></div><div class="jb-ring jb-r4"></div><div class="jb-core"></div><div class="jb-mark">BTC</div></div><div class="jb-bottom"><div class="jb-title">CRYSTAL BTC</div><div class="jb-sub">JARVIS · SYSTEM ONLINE</div><div class="jb-progress"></div></div><button class="jb-skip" type="button">PASSER L’INTRO</button>';
+document.body.appendChild(overlay);
+let finished=false;
+function finish(){if(finished)return;finished=true;overlay.classList.add('jb-hide');window.setTimeout(()=>overlay.remove(),650)}
+overlay.querySelector('.jb-skip').addEventListener('click',finish);
+window.setTimeout(finish,2900);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)finish()},{once:true});
+})();
+</script>
 </body>
 </html>
 ).join(' · '):'historique insuffisant pour comparer les découpages'}. Les IC Monte Carlo à 95 % quantifient uniquement l’erreur d’échantillonnage des simulations, pas l’incertitude du modèle ni sa capacité prédictive. Scénarios empiriques non calibrés : aucune fiabilité prédictive n’est revendiquée avant validation walk-forward indépendante.</p>
