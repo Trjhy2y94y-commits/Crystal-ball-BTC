@@ -1450,7 +1450,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
 
 <div class="app">
 <div class="cb-unified-header" id="cbUnifiedHeader" aria-label="État du marché Bitcoin">
-  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>COCKPIT PANORAMIQUE · V51</small></div></div>
+  <div class="cb-unified-brand"><span class="cb-unified-mark">₿</span><div><strong>CRYSTAL <em>BALL</em></strong><small>COCKPIT IMMERSIF · V55</small></div></div>
   <div class="cb-unified-market"><small>BTC / USD <span id="cbUnifiedFeed">FLUX EN ATTENTE</span></small><strong id="cbUnifiedPrice">—</strong></div>
   <div class="cb-unified-state"><span class="cb-unified-dot"></span><span id="cbUnifiedRegime">ANALYSE EN COURS</span></div>
 </div>
@@ -4393,11 +4393,11 @@ if(document.getElementById('jarvis-boot-v5'))return;
 const overlay=document.createElement('div');
 overlay.id='jarvis-boot-v5';
 overlay.setAttribute('role','dialog');overlay.setAttribute('aria-label','Initialisation visuelle de Crystal Ball BTC');
-overlay.innerHTML='<div class="jb-grid"></div><div class="jb-rays"></div><div class="jb-flare"></div><div class="jb-top">STARK-STYLE HOLOGRAPHIC INTERFACE</div><div class="jb-shell"><div class="jb-ring jb-r1"></div><div class="jb-ring jb-r2"></div><div class="jb-ring jb-r3"></div><div class="jb-ring jb-r4"></div><div class="jb-core"></div><div class="jb-mark">BTC</div></div><div class="jb-bottom"><div class="jb-title">CRYSTAL BTC</div><div class="jb-sub">JARVIS · SYSTEM ONLINE</div><div class="jb-progress"></div></div><button class="jb-skip" type="button">PASSER L’INTRO</button>';
+overlay.innerHTML='<div class="jb-grid"></div><div class="jb-rays"></div><div class="jb-flare"></div><div class="jb-top">STARK-STYLE HOLOGRAPHIC INTERFACE</div><div class="jb-shell"><div class="jb-ring jb-r1"></div><div class="jb-ring jb-r2"></div><div class="jb-ring jb-r3"></div><div class="jb-ring jb-r4"></div><div class="jb-core"></div><div class="jb-mark">BTC</div></div><div class="jb-bottom"><div class="jb-title">CRYSTAL BTC</div><div class="jb-sub">JARVIS · SYSTEM ONLINE</div><div class="jb-progress"></div></div>';
 document.body.appendChild(overlay);
 let finished=false;
 function finish(){if(finished)return;finished=true;overlay.classList.add('jb-hide');window.setTimeout(()=>overlay.remove(),650)}
-overlay.querySelector('.jb-skip').addEventListener('click',finish);
+
 window.setTimeout(finish,2900);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)finish()},{once:true});
 })();
@@ -4494,6 +4494,32 @@ boot.insertBefore(tech,boot.querySelector('.jb-shell'));
 @keyframes cockpitGridDrift{from{background-position:0 0,0 0}to{background-position:42px 42px,42px 42px}}
 @media(max-width:600px){#vHome #homeQuant .cb-flightdeck{border-radius:12px!important}#vHome #homeQuant .cb-flightdeck:after{font-size:7px;letter-spacing:.1em;padding:3px 5px}#vJarvis .jv-core{min-height:230px!important}#vJarvis .jv-orb{width:125px!important;height:125px!important}#vJarvis .jv-core:before{width:185px!important;height:185px!important}#vJarvis .jv-core:after{width:218px!important;height:218px!important}#vJarvis .jv-orb span{font-size:52px!important}}
 @media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-flightdeck:before,#vHome #homeQuant .hq-orbit:before,#vJarvis .jv-core:before,#vJarvis .jv-orb{animation:none!important}}
+</style>
+<style id="cockpit-depth-v55">
+/* V55: dark cinematic depth and layered cockpit, preserving live telemetry */
+:root{--cb-v55-ink:#01030b;--cb-v55-navy:#061126;--cb-v55-royal:#2c73ff;--cb-v55-amber:#f6b955}
+html,body{background:#01030b!important}
+#vHome #homeQuant .cb-flightdeck{perspective:1000px!important;background:radial-gradient(ellipse 48% 52% at 50% 48%,#163e8b4d,transparent 85%),radial-gradient(ellipse 80% 65% at 50% 120%,#0c2a6070,transparent 75%),linear-gradient(135deg,#01030b,#050c1b 53%,#01040c)!important;border:1px solid #b8823977!important;box-shadow:inset 0 0 0 1px #3269b52e,inset 0 0 125px #01040de0,0 0 65px #174da839,0 30px 75px #000c!important;transform-style:preserve-3d}
+#vHome #homeQuant .cb-flightdeck .hq-top,#vHome #homeQuant .cb-flightdeck .hq-title,#vHome #homeQuant .cb-flightdeck .cb-command{position:relative;z-index:3;transform:translateZ(12px)}
+#vHome #homeQuant .cb-flightdeck .hq-orbit{transform:translateZ(38px)!important;filter:drop-shadow(0 0 35px #2b6cff9c) drop-shadow(0 0 12px #f5bd5577)!important}
+#vHome #homeQuant .cb-flightdeck .cb-reactor{filter:drop-shadow(0 0 12px #316dffb0)!important}
+#vHome #homeQuant .cb-flightdeck .cb-ring-outer{transform-origin:160px 160px;animation:cbV55Spin 26s linear infinite}
+#vHome #homeQuant .cb-flightdeck .cb-ring-inner{transform-origin:160px 160px;animation:cbV55SpinReverse 19s linear infinite}
+#vHome #homeQuant .cb-flightdeck .cb-command-panel{background:linear-gradient(145deg,#030a18e8,#08172bdc)!important;border:1px solid #3268ae88!important;box-shadow:inset 2px 0 #dca95188,inset 0 0 35px #174fa51c,0 12px 30px #0008!important;backdrop-filter:blur(12px)}
+#vHome #homeQuant .cb-flightdeck .cb-command-panel:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 25%,#427cff0e 48%,transparent 68%);background-size:230% 100%;animation:cbV55Sweep 8s ease-in-out infinite}
+#vHome #homeQuant .cb-flightdeck .hq-price{color:#f3f7ff!important;text-shadow:0 0 16px #3279ff8a,0 0 32px #1440a255!important}
+#vHome #homeQuant .cb-flightdeck .cb-panel-label,#vHome #homeQuant .cb-flightdeck .cb-command-head{color:#f5bd60!important}
+#vJarvis .jarvis-shell{background:radial-gradient(ellipse at 50% 25%,#102c6666,transparent 58%),linear-gradient(150deg,#01040def,#071023ed)!important;box-shadow:inset 0 0 110px #000a,0 22px 60px #0009,0 0 40px #2456ae35!important}
+#vJarvis .jv-orb{box-shadow:0 0 0 10px #0a2d6444,0 0 0 22px #287cff15,0 0 60px #2c83ffb8,inset 0 0 45px #2d83ffb3!important}
+#vJarvis .jv-core:before{animation:cbV55Spin 12s linear infinite!important}
+#vJarvis .jv-core:after{border-style:dashed!important;border-color:#3a78e67d!important;animation:cbV55SpinReverse 28s linear infinite!important}
+.cb-unified-header{background:linear-gradient(90deg,#01040cf7,#07152bf2,#01040cf7)!important;box-shadow:0 10px 32px #000b,inset 0 -1px #d5a04d66!important}
+.cb-quick-nav{background:#030914ed!important;backdrop-filter:blur(20px)}
+@keyframes cbV55Spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes cbV55SpinReverse{from{transform:rotate(360deg)}to{transform:rotate(0deg)}}
+@keyframes cbV55Sweep{0%,100%{background-position:150% 0}50%{background-position:-70% 0}}
+@media(max-width:600px){#vHome #homeQuant .cb-flightdeck{perspective:none!important}#vHome #homeQuant .cb-flightdeck .hq-orbit{transform:none!important}#vHome #homeQuant .cb-flightdeck .hq-top,#vHome #homeQuant .cb-flightdeck .hq-title,#vHome #homeQuant .cb-flightdeck .cb-command{transform:none!important}}
+@media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-flightdeck .cb-ring-outer,#vHome #homeQuant .cb-flightdeck .cb-ring-inner,#vHome #homeQuant .cb-flightdeck .cb-command-panel:before,#vJarvis .jv-core:before,#vJarvis .jv-core:after{animation:none!important}}
 </style>
 <script defer src="./jarvis-reactive-core.js"></script>
   </body>
