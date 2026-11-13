@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v65-module-depth";
+const CACHE = "cristal-btc-v66-clean-document";
 const SHELL = [
   "./",
   "./index.html",

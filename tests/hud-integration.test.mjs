@@ -28,3 +28,10 @@ test('blue gold HUD modules and real-data mirrors exist', () => {
 test('PWA cache has a versioned name', () => {
   assert.match(sw,/const CACHE = "cristal-btc-v\d+[-a-z0-9]+";/);
 });
+
+// Content after the closing document was being rendered as raw template code.
+test('document ends without an orphaned legacy template', () => {
+  const source = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(source, /<\/html>\s*$/);
+  assert.equal(source.split('</html>').length, 2);
+});
