@@ -1465,6 +1465,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid
     <section class="home-quant" id="homeQuant" aria-label="Crystal Ball — terminal quantitatif">
 <div class="cb-flightdeck" aria-label="Cockpit panoramique animé">      <div class="hq-top"><span class="hq-brand"><i></i> CRYSTAL <b>BALL</b></span><span class="hq-status" id="homeQtFeed">SCAN EN ATTENTE</span></div>
       <div class="hq-title"><div><div class="hq-eyebrow">BITCOIN · MARKET INTELLIGENCE</div><div class="hq-price" id="homeQtPrice">—</div><div class="hq-change" id="homeQtChange">Prix de marché en attente</div></div><div class="hq-orbit" aria-hidden="true"><canvas class="cb-scene cb-scene-home" data-scene="sphere"></canvas><svg class="cb-reactor" viewBox="0 0 320 320" fill="none" aria-hidden="true"><defs><radialGradient id="cbCoreGlow"><stop stop-color="#287fff" stop-opacity=".55"/><stop offset="1" stop-color="#084ea8" stop-opacity="0"/></radialGradient></defs><circle cx="160" cy="160" r="145" fill="url(#cbCoreGlow)"/><g class="cb-ring-outer" stroke="#348cff"><circle cx="160" cy="160" r="147" stroke-width="3" stroke-dasharray="80 12 4 12"/><circle cx="160" cy="160" r="136" stroke-dasharray="1 9" stroke-width="6"/></g><g class="cb-ring-inner" stroke="#ffc342"><circle cx="160" cy="160" r="120" stroke-width="2" stroke-dasharray="120 45 12 45"/><path d="M160 32v15M160 273v15M32 160h15M273 160h15" stroke-width="3"/></g><g stroke="#428fff" opacity=".6"><circle cx="160" cy="160" r="103"/><ellipse cx="160" cy="160" rx="103" ry="38"/><ellipse cx="160" cy="160" rx="38" ry="103"/><ellipse cx="160" cy="160" rx="73" ry="103" transform="rotate(45 160 160)"/></g><circle cx="160" cy="160" r="84" stroke="#438fff" stroke-opacity=".35" stroke-width="12"/><g fill="#ffc342"><circle cx="160" cy="13" r="4"/><circle cx="307" cy="160" r="4"/><circle cx="160" cy="307" r="4"/><circle cx="13" cy="160" r="4"/></g></svg><b>₿</b></div></div>
+      <div class="cb-cockpit-atmosphere" aria-hidden="true"><span class="cb-atmosphere-beam cb-beam-left"></span><span class="cb-atmosphere-beam cb-beam-right"></span><span class="cb-atmosphere-horizon"></span><span class="cb-atmosphere-scan"></span></div>
       <div class="cb-holo-reticle" aria-hidden="true"><span class="cb-holo-reticle-ring"></span><span class="cb-holo-reticle-axis"></span><span class="cb-holo-reticle-cross"></span></div>
       <div class="cb-command" aria-label="Tableau de bord holographique">
         <div class="cb-command-head"><span>◈ CRYSTAL BALL · QUANTUM COMMAND</span><span class="cb-live"><i></i> DONNÉES OBSERVÉES</span></div>
@@ -4617,6 +4618,27 @@ html,body,.app{background-color:#010208!important;color:#dce7fc!important}
 @keyframes cbV58Orbit{to{rotate:360deg}}
 @media(max-width:600px){#vHome #homeQuant .cb-holo-reticle{inset:14% 16%;opacity:.46;transform:none}#vHome #homeQuant .cb-holo-reticle:before{width:80%}#vHome #homeQuant .cb-holo-reticle:after{width:65%}#vHome #homeQuant .cb-command-panel{clip-path:none!important}}
 @media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-holo-reticle:before,#vHome #homeQuant .cb-holo-reticle:after{animation:none!important}}
+</style>
+<style id="cockpit-atmosphere-v59">
+/* V59: true layered cockpit atmosphere, dark perspective and restrained motion */
+#vHome #homeQuant .cb-flightdeck{isolation:isolate!important}
+#vHome #homeQuant .cb-cockpit-atmosphere{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;opacity:.9}
+#vHome #homeQuant .cb-atmosphere-beam{position:absolute;top:-18%;width:2px;height:140%;background:linear-gradient(180deg,transparent,#376de755 38%,#f5b86277 53%,#286aff44 69%,transparent);box-shadow:0 0 18px #377bff88;transform-origin:top}
+#vHome #homeQuant .cb-beam-left{left:12%;transform:rotate(-22deg)}
+#vHome #homeQuant .cb-beam-right{right:12%;transform:rotate(22deg)}
+#vHome #homeQuant .cb-atmosphere-horizon{position:absolute;left:8%;right:8%;top:54%;height:1px;background:linear-gradient(90deg,transparent,#3878e566 18%,#f6bc6077 50%,#3878e566 82%,transparent);box-shadow:0 0 18px #2964d577}
+#vHome #homeQuant .cb-atmosphere-scan{position:absolute;left:4%;right:4%;top:0;height:18%;background:linear-gradient(180deg,transparent,#2c70f71c 80%,#f1b95c4d 99%,transparent);animation:cbV59Scan 11s linear infinite;mix-blend-mode:screen}
+#vHome #homeQuant .cb-command-panel{backdrop-filter:blur(14px)!important}
+#vHome #homeQuant .cb-holo-reticle{opacity:.55!important}
+#vHome #homeQuant .hq-orbit{animation:cbV59Hover 6s ease-in-out infinite}
+#vJarvis .jv-orb{animation:cbV59Hover 6s ease-in-out infinite,cbV55Spin 32s linear infinite!important}
+#vJarvis .jv-orb span{animation:cbV55SpinReverse 32s linear infinite}
+#vJarvis .jv-chat-head{color:#e9b768!important;text-shadow:0 0 15px #f0ae5366}
+#vJarvis .jv-status{border-left:2px solid #e7b15e!important;padding-left:10px}
+@keyframes cbV59Scan{0%{transform:translateY(-120%);opacity:0}10%{opacity:.8}75%{opacity:.6}100%{transform:translateY(650%);opacity:0}}
+@keyframes cbV59Hover{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@media(max-width:600px){#vHome #homeQuant .cb-cockpit-atmosphere{opacity:.55}#vHome #homeQuant .cb-atmosphere-beam{height:110%}#vHome #homeQuant .hq-orbit{animation:none!important}#vJarvis .jv-orb{animation:cbV59Hover 6s ease-in-out infinite!important}#vJarvis .jv-orb span{animation:none!important}}
+@media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-atmosphere-scan,#vHome #homeQuant .hq-orbit,#vJarvis .jv-orb,#vJarvis .jv-orb span{animation:none!important}}
 </style>
 <script defer src="./jarvis-reactive-core.js"></script>
   </body>
