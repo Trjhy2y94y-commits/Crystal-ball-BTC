@@ -4446,7 +4446,7 @@ boot.insertBefore(tech,boot.querySelector('.jb-shell'));
 /* Hard viewport clamp: CI measured .app at 402px on a 390px screen. */
 @media(max-width:600px){
  html,body{width:100%!important;max-width:100%!important;overflow-x:hidden!important}
- .app{position:relative!important;width:100vw!important;min-width:0!important;max-width:100vw!important;box-sizing:border-box!important;overflow-x:hidden!important}
+ .app{position:relative!important;width:100vw!important;min-width:0!important;max-width:100vw!important;box-sizing:border-box!important;overflow-x:hidden!important;contain:paint!important}
  .view,.page{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
 }
 /* iPhone viewport containment: prevent wide HUD children from expanding app flex width. */

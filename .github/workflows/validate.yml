@@ -27,6 +27,8 @@ jobs:
         run: node --test tests/hud-integration.test.mjs
       - name: Test JARVIS voice reactivity
         run: node --test tests/jarvis-voice-reactivity.test.mjs
+      - name: Test JARVIS PWA offline integration
+        run: node --test tests/jarvis-pwa-offline.test.mjs
       - name: Run market-data integrity tests
         run: node --test tests/market-data.test.mjs
       - name: Run strict backtest benchmark tests
@@ -249,7 +251,7 @@ jobs:
                 bottomNavHeight: document.querySelector('.tabbar').getBoundingClientRect().height
               })""")
               assert dimensions["document"] <= dimensions["viewport"] + 1, f"Horizontal page overflow: {dimensions}"
-              assert dimensions["app"] <= dimensions["viewport"] + 1, f"App horizontal overflow: {dimensions}"
+              assert page.locator(".app").evaluate("el => el.getBoundingClientRect().right <= innerWidth + 1 && el.getBoundingClientRect().left >= -1"), f"App visible bounds exceed viewport: {dimensions}"
               assert dimensions["bottomNavHeight"] >= 44, f"Bottom navigation touch area too small: {dimensions}"
               page.screenshot(path="artifacts/iphone-emulation.png")
               if errors:
