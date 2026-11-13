@@ -13,3 +13,16 @@ body{background:radial-gradient(ellipse at 50% -20%,#11234b 0%,#050b19 44%,#0103
 .page{animation:cockpit-arrive .5s cubic-bezier(.2,.8,.2,1) both}
 @keyframes cockpit-arrive{from{opacity:.5;filter:brightness(.65);transform:translateY(9px) scale(.985)}to{opacity:1;filter:brightness(1);transform:none}}
 @media(prefers-reduced-motion:reduce){.page{animation:none}.tabbar button{transition:none}}
+
+/* v2 — volumetric horizon and independent instrument motion */
+.app{background:radial-gradient(ellipse 95% 42% at 50% 34%,rgba(32,77,173,.12),transparent 72%)}
+.view{position:relative;isolation:isolate}
+.view::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;opacity:.6;background:radial-gradient(ellipse 70% 18% at 50% 78%,rgba(35,98,232,.2),transparent),repeating-linear-gradient(90deg,transparent 0 63px,rgba(73,116,223,.035) 64px);transform:perspective(520px) rotateX(18deg) scale(1.15);transform-origin:50% 100%}
+.hm .card,.hm .tile,.orb .ball,.orb .ot,.simple .card{position:relative;overflow:hidden;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.hm .card::before,.hm .tile::before,.orb .ball::before,.orb .ot::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(115deg,rgba(111,157,255,.09),transparent 36%,transparent 75%,rgba(255,179,47,.035))}
+.hm .card:hover,.hm .tile:hover,.orb .ot:hover{border-color:rgba(96,153,255,.56)}
+.tabbar button svg{transition:transform .35s ease,filter .35s ease}
+.tabbar button.on svg{transform:translateY(-2px) scale(1.12);filter:drop-shadow(0 0 10px rgba(255,181,44,.6))}
+.tabbar button.on::before{animation:gold-beacon 3.2s ease-in-out infinite}
+@keyframes gold-beacon{0%,100%{opacity:.55;box-shadow:0 0 7px var(--cockpit-gold)}50%{opacity:1;box-shadow:0 0 19px var(--cockpit-gold)}}
+@media(prefers-reduced-motion:reduce){.tabbar button.on::before{animation:none}.view::before{transform:none}}
