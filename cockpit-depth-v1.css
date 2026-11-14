@@ -254,3 +254,13 @@ body{background:radial-gradient(ellipse 90% 56% at 50% 38%,#12365b 0%,#07152a 38
 #vStats .cb-motion-rig{box-shadow:0 0 30px #5dc5ff33,inset 0 0 40px #245da744!important}
 @media(min-width:750px){#vChart .cb-motion-rig,#vCal .cb-motion-rig,#vStats .cb-motion-rig,#vJarvis .cb-motion-rig{height:clamp(230px,30vw,340px)!important}}
 @media(max-width:600px){#vChart .cb-motion-rig,#vCal .cb-motion-rig,#vStats .cb-motion-rig,#vJarvis .cb-motion-rig{height:210px!important}}
+
+/* V68 unmistakable cockpit revision: central stage and panoramic scale */
+#vHome #homeQuant .cb-flightdeck{min-height:clamp(420px,65vw,800px)!important;aspect-ratio:16/9!important;background-color:#020916!important;background-size:cover!important;background-position:center!important;border:1px solid #6aafff99!important;box-shadow:inset 0 0 95px #000c,0 0 65px #1b72dd55,0 28px 80px #000e!important}
+#vHome #homeQuant .cb-flightdeck:before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 43% 54% at 50% 48%,transparent 12%,#04112738 62%,#01040ab8 100%),linear-gradient(90deg,#061a2caa,transparent 29% 72%,#061a2caa),repeating-linear-gradient(0deg,transparent 0 38px,#77bfff08 39px 40px);box-shadow:inset 0 0 100px 25px #01040c!important}
+#vHome #homeQuant .hq-orbit{transform:scale(1.26)!important;transform-origin:center!important;z-index:6!important}
+#vHome #homeQuant .jrh-panel{border-radius:4px 16px 4px 16px!important;outline:1px solid #f2b94b44;outline-offset:3px;background:linear-gradient(125deg,#092442ed,#03101edb)!important}
+#vHome #homeQuant .jrh-top strong{color:#f5c86b!important;text-shadow:0 0 15px #ffc46c99!important;letter-spacing:.25em!important}
+#vHome #homeQuant .jrh-bottom{background:linear-gradient(180deg,#12385bdc,#020817f5)!important;backdrop-filter:blur(18px)}
+@media(max-width:700px){#vHome #homeQuant .cb-flightdeck{min-height:490px!important;aspect-ratio:auto!important;background-size:cover!important}#vHome #homeQuant .hq-orbit{transform:scale(1.12)!important}#vHome #homeQuant .jrh-panel{backdrop-filter:blur(5px)}}
+@media(prefers-reduced-motion:reduce){#vHome #homeQuant .hq-orbit{animation:none!important}}
