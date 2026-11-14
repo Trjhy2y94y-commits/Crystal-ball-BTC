@@ -4735,6 +4735,15 @@ deck.addEventListener('pointermove',move,{passive:true});deck.addEventListener('
 @media(max-width:600px){#vChart .cb-motion-rig,#vCal .cb-motion-rig,#vStats .cb-motion-rig,#vJarvis .cb-motion-rig{height:190px!important;margin:6px auto 10px;border-radius:10px}.cb-motion-rig:before{opacity:.62}}
 @media(prefers-reduced-motion:reduce){.cb-motion-rig:before,.cb-motion-rig canvas.cb-scene{animation:none!important}}
 </style>
+<style>
+#cbMacroHealth{margin:10px 0 14px;padding:12px;border:1px solid #397eae77;border-radius:12px;background:#071c2ce8;color:#dceeff;font:12px/1.5 system-ui}
+#cbMacroHealth .cb-macro-title{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#ffd083;letter-spacing:.07em}
+#cbMacroHealth button{background:#183954;color:#e5f5ff;border:1px solid #6aa4ca;border-radius:7px;padding:6px 10px;cursor:pointer}
+#cbMacroHealth button:disabled{opacity:.5}#cbMacroHealth .cb-macro-line{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #80aaca22;padding:4px 0;flex-wrap:wrap}
+#cbMacroHealth .cb-macro-ok{color:#a2e4ba}#cbMacroHealth .cb-macro-warn{color:#ffb47d}
+#cbMacroHealth .cb-macro-global{color:#ffcf93;font-size:11px}
+</style>
+<script defer src="./macro-source-health.js?v=1"></script>
 <script defer src="./jarvis-reactive-core.js"></script>
 <script defer src="./jarvis-voice-launch.js?v=1"></script>
 <script defer src="./cockpit-parallax.js?v=1"></script>
