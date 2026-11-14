@@ -68,3 +68,12 @@ header{background:linear-gradient(180deg,rgba(11,24,51,.9),rgba(3,8,19,.4));bord
 @keyframes cb-hud-scan{from{background-position:0 -120%}to{background-position:0 180%}}
 @media(max-width:600px){#vHome #homeQuant .cb-depth-world{transform:translateZ(-40px) scale(1.08)!important}#vHome #homeQuant .cb-depth-city{transform:scale(1.14)!important}}
 @media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-depth-haze,#vHome #homeQuant .cb-flightdeck .hq-orbit,#vChart .cb-motion-rig::after,#vJarvis .cb-motion-rig::after,#vStats .cb-motion-rig::after,#vCal .cb-motion-rig::after{animation:none!important}}
+
+/* v5 — iPhone navigation hit-target fix: never scale or translate the clickable tab. */
+.tabbar{display:flex!important;align-items:stretch!important;overflow:visible!important}
+.tabbar button{flex:1 1 0!important;min-width:0!important;max-width:100%!important;transform:none!important;scale:1!important;translate:none!important;box-sizing:border-box!important;isolation:isolate!important;touch-action:manipulation}
+.tabbar button.on,.tabbar button:not(.on):active{transform:none!important}
+.tabbar button svg{pointer-events:none}
+.tabbar button.on svg{transform:translateY(-2px) scale(1.08)!important}
+.tabbar button.on::before{pointer-events:none}
+@media(max-width:600px){.tabbar{width:100%!important}.tabbar button{padding-left:2px!important;padding-right:2px!important}}
