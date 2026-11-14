@@ -93,3 +93,11 @@ header{background:linear-gradient(180deg,rgba(11,24,51,.9),rgba(3,8,19,.4));bord
 #vHome #homeQuant .cb-depth-glass{transform:translate3d(var(--cb-glass-shift,0px),0,0)!important}
 @media(max-width:600px){#vHome #homeQuant .cb-depth-world{transform:translate3d(var(--cb-parallax-x,0px),var(--cb-parallax-y,0px),-40px) scale(1.08)!important}#vHome #homeQuant .cb-depth-city{transform:translate3d(var(--cb-city-shift,0px),0,0) scale(1.14)!important}}
 @media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-depth-world,#vHome #homeQuant .cb-depth-city,#vHome #homeQuant .cb-depth-glass{will-change:auto;transform:none!important}}
+
+/* v8 definitive navigation geometry: five tabs, five equal grid tracks */
+nav.tabbar{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-auto-flow:row!important;column-gap:0!important;width:100%!important;box-sizing:border-box!important}
+nav.tabbar>button{display:flex!important;flex:unset!important;width:100%!important;min-width:0!important;max-width:none!important;position:relative!important;grid-column:auto!important;grid-row:1!important;overflow:hidden!important;padding:5px 1px!important;transform:none!important;translate:none!important;scale:1!important}
+nav.tabbar>button::after{pointer-events:none!important;inset:0!important}
+nav.tabbar>button::before{pointer-events:none!important}
+nav.tabbar>button svg{flex-shrink:0!important;pointer-events:none!important}
+@media(max-width:420px){nav.tabbar>button{font-size:9px!important;letter-spacing:0!important}}
