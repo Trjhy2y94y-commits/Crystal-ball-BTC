@@ -274,3 +274,18 @@ body{background:radial-gradient(ellipse 90% 56% at 50% 38%,#12365b 0%,#07152a 38
 #vHome #homeQuant .hq-orbit::after{background:radial-gradient(circle,#fff4b780,#ffa63470 15%,#2d95ff3b 42%,transparent 72%)!important}
 #vHome #homeQuant .jrh-panel{background:linear-gradient(135deg,#09223bbd,#030d1c9c)!important;backdrop-filter:blur(4px)!important}
 @media(max-width:700px){#vHome #homeQuant .cb-flightdeck{filter:brightness(1.35) contrast(1.08) saturate(1.15)!important}#vHome #homeQuant .hq-orbit{transform:scale(1.4)!important}}
+
+/* V70 cockpit redesign — remove duplicate controls and recover panoramic depth. */
+#vHome #homeQuant .cb-flightdeck{background-size:100% 100%,cover!important;min-height:560px!important;overflow:hidden!important}
+#vHome #homeQuant .cb-flightdeck:before{background:linear-gradient(90deg,#020a1860,transparent 23% 77%,#020a1860),radial-gradient(ellipse 48% 55% at 50% 52%,transparent 48%,#02091555 100%)!important;box-shadow:inset 0 0 28px #0008!important}
+#vHome #homeQuant .hq-orbit{transform:scale(1.85)!important;filter:drop-shadow(0 0 12px #219cff80) drop-shadow(0 0 16px #e99b3370)!important}
+#vHome #homeQuant .hq-orbit .cb-hologram-3d{filter:brightness(.87) saturate(1.55) drop-shadow(0 0 9px #359dff88)!important;opacity:.85!important}
+#vHome #homeQuant .hq-orbit::after{opacity:.36!important;filter:blur(14px)!important}
+#vHome #homeQuant .hq-orbit .v70-reactor{position:absolute!important;inset:-48%!important;width:196%!important;height:196%!important;pointer-events:none!important;z-index:12!important;mix-blend-mode:screen!important;filter:drop-shadow(0 0 6px #ffac4677)}
+#vHome #homeQuant .jrh-bottom{display:none!important}
+#vHome #homeQuant .jrh-voice-launch{display:none!important}
+#vHome #homeQuant .jrh-panel{background:linear-gradient(120deg,#081d31a8,#0310208c)!important;box-shadow:0 0 20px #2a8bff3d,inset 0 0 20px #3f9bff20!important}
+#vHome #homeQuant .jrh-left,#vHome #homeQuant .jrh-right{z-index:16!important}
+#vHome #homeQuant .jrh-center-caption{opacity:.75}
+@media(max-width:700px){#vHome #homeQuant .cb-flightdeck{min-height:560px!important}#vHome #homeQuant .hq-orbit{transform:scale(1.72)!important}#vHome #homeQuant .jrh-panel{backdrop-filter:blur(3px)!important}}
+@media(prefers-reduced-motion:reduce){#vHome #homeQuant .v70-reactor{animation:none!important}}
