@@ -77,3 +77,12 @@ header{background:linear-gradient(180deg,rgba(11,24,51,.9),rgba(3,8,19,.4));bord
 .tabbar button.on svg{transform:translateY(-2px) scale(1.08)!important}
 .tabbar button.on::before{pointer-events:none}
 @media(max-width:600px){.tabbar{width:100%!important}.tabbar button{padding-left:2px!important;padding-right:2px!important}}
+
+/* JARVIS live voice control: unobstructed floating launch above tab bar */
+#cbVoiceLaunch{position:fixed;right:12px;bottom:calc(85px + env(safe-area-inset-bottom,0px));z-index:90;display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 13px;border:1px solid #ffb42caa;border-radius:30px;background:linear-gradient(135deg,#102b59f5,#050b1bf5);color:#ffcc69;font:700 11px/1.2 system-ui,sans-serif;letter-spacing:.09em;box-shadow:0 0 25px #316dff55,inset 0 0 14px #367cff33;cursor:pointer;touch-action:manipulation}
+#cbVoiceLaunch .cb-voice-icon{display:grid;place-items:center;width:27px;height:27px;border:1px solid #ffb42caa;border-radius:50%;color:#ffbf45;box-shadow:0 0 12px #ffb42c55;animation:cb-voice-pulse 2.8s ease-in-out infinite}
+#cbVoiceLaunch.cb-voice-engaged .cb-voice-icon{animation:cb-voice-pulse .8s ease-in-out infinite;background:#1a57ad}
+#cbVoiceLaunchStatus{position:fixed;right:13px;bottom:calc(137px + env(safe-area-inset-bottom,0px));z-index:90;max-width:min(70vw,260px);color:#d8e7ff;font:11px system-ui,sans-serif;text-shadow:0 1px 6px #000;pointer-events:none;text-align:right}
+@keyframes cb-voice-pulse{0%,100%{box-shadow:0 0 6px #ffb42c44}50%{box-shadow:0 0 19px #ffb42caa}}
+@media(max-width:420px){#cbVoiceLaunch{right:8px;bottom:calc(76px + env(safe-area-inset-bottom,0px));padding:7px 10px;font-size:10px}#cbVoiceLaunchStatus{bottom:calc(126px + env(safe-area-inset-bottom,0px))}}
+@media(prefers-reduced-motion:reduce){#cbVoiceLaunch .cb-voice-icon{animation:none}}
