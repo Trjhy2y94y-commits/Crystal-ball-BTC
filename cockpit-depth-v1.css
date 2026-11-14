@@ -194,3 +194,21 @@ nav.tabbar>button svg{flex-shrink:0!important;pointer-events:none!important}
 @keyframes cb-holo-pulse{from{opacity:.65;filter:drop-shadow(0 0 7px #1d8cff66)}to{opacity:.95;filter:drop-shadow(0 0 21px #288fffbb)}}
 @keyframes cb-hud-arrive{from{opacity:0;filter:blur(6px);transform:translateY(8px)}to{opacity:1;filter:none;transform:none}}
 @media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-flightdeck::before,#vHome #homeQuant .cb-flightdeck::after,#vHome #homeQuant .cb-flightdeck .hq-orbit,#vHome #homeQuant .jrh-panel{animation:none!important}#vHome #homeQuant .jarvis-reference-hud{transition:none!important}}
+
+/* V14: foreground holograms hover above the exact reference photo. */
+#vHome #homeQuant .jarvis-reference-hud{perspective:950px!important;transform-style:preserve-3d!important}
+#vHome #homeQuant .jrh-left{transform:perspective(900px) rotateY(9deg) translateZ(15px)!important;transform-origin:left center!important;filter:drop-shadow(10px 7px 10px #000a) drop-shadow(0 0 8px #1779d444)!important}
+#vHome #homeQuant .jrh-right{transform:perspective(900px) rotateY(-9deg) translateZ(15px)!important;transform-origin:right center!important;filter:drop-shadow(-10px 7px 10px #000a) drop-shadow(0 0 8px #1779d444)!important}
+#vHome #homeQuant .jrh-panel{position:relative!important;overflow:hidden!important;background:linear-gradient(125deg,#02152988,#04112433 48%,#041c3566)!important;box-shadow:inset 0 0 12px #2589e625,0 7px 24px #0008!important;border-left:1px solid #3d9bff33!important;border-top:1px solid #3d9bff22!important}
+#vHome #homeQuant .jrh-panel:after{content:"";position:absolute;inset:-60% auto -60% -70%;width:28%;pointer-events:none;background:linear-gradient(90deg,transparent,#a6d8ff1c,transparent);transform:skewX(-25deg);animation:cb-holo-glint 9s linear infinite!important}
+#vHome #homeQuant .jrh-panel:nth-child(2):after{animation-delay:-4s!important}
+#vHome #homeQuant .jrh-bottom{transform:perspective(700px) rotateX(12deg) translateZ(10px)!important;transform-origin:bottom center!important;box-shadow:0 9px 20px #0009,inset 0 0 10px #3688e62b!important}
+#vHome #homeQuant .jrh-bottom button{transition:color .2s,filter .2s,transform .2s!important}
+#vHome #homeQuant .jrh-bottom button:active{transform:translateY(-3px) scale(1.06)!important;filter:drop-shadow(0 0 8px #3da1ff)!important}
+#vHome #homeQuant .jrh-voice-launch{animation:cb-holo-voice 3.5s ease-in-out infinite!important}
+#vHome #homeQuant .jrh-listening .jrh-voice-launch{animation:cb-holo-voice .8s ease-in-out infinite!important}
+#vHome #homeQuant .jrh-radar-sweep{mix-blend-mode:screen!important}
+@keyframes cb-holo-glint{0%,22%{left:-70%}45%,100%{left:160%}}
+@keyframes cb-holo-voice{0%,100%{box-shadow:0 0 8px #1b80e755}50%{box-shadow:0 0 23px #338fff99}}
+@media(max-width:700px){#vHome #homeQuant .jrh-left{transform:perspective(450px) rotateY(5deg)!important}#vHome #homeQuant .jrh-right{transform:perspective(450px) rotateY(-5deg)!important}#vHome #homeQuant .jrh-bottom{transform:perspective(500px) rotateX(7deg)!important}#vHome #homeQuant .jrh-panel{box-shadow:none!important}}
+@media(prefers-reduced-motion:reduce){#vHome #homeQuant .jrh-panel:after,#vHome #homeQuant .jrh-voice-launch{animation:none!important}}
