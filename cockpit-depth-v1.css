@@ -101,3 +101,10 @@ nav.tabbar>button::after{pointer-events:none!important;inset:0!important}
 nav.tabbar>button::before{pointer-events:none!important}
 nav.tabbar>button svg{flex-shrink:0!important;pointer-events:none!important}
 @media(max-width:420px){nav.tabbar>button{font-size:9px!important;letter-spacing:0!important}}
+
+/* WebGL holographic reactor: real perspective depth, layered over the existing fallback */
+#vHome .hq-orbit{position:relative!important;isolation:isolate}
+#vHome .hq-orbit .cb-hologram-3d{position:absolute!important;inset:-23%!important;width:146%!important;height:146%!important;z-index:4!important;pointer-events:none!important;filter:drop-shadow(0 0 14px #286af9aa) drop-shadow(0 0 23px #e0a33b55);opacity:.95}
+#vHome .hq-orbit .cb-reactor{opacity:.38!important}
+#vHome .hq-orbit .cb-scene-home{opacity:.35!important}
+@media(prefers-reduced-motion:reduce){#vHome .hq-orbit .cb-hologram-3d{filter:none}}
