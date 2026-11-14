@@ -25,6 +25,11 @@ const start=()=>{
  const observer=new IntersectionObserver(e=>{visible=!!e[0]?.isIntersecting;if(visible)request();else if(raf){cancelAnimationFrame(raf);raf=0}},{threshold:.02});observer.observe(deck);
  deck.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const r=deck.getBoundingClientRect();targetX=Math.max(-1,Math.min(1,(e.clientX-r.left)/r.width*2-1));targetY=Math.max(-1,Math.min(1,(e.clientY-r.top)/r.height*2-1));request()},{passive:true});
  deck.addEventListener('pointerleave',()=>{targetX=0;targetY=0;request()},{passive:true});
+ // Touch-controlled parallax works on iPhone without gyroscope permission.
+ let touchOrigin=null;
+ deck.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;const p=e.touches[0];touchOrigin={x:p.clientX,y:p.clientY}},{passive:true});
+ deck.addEventListener('touchmove',e=>{if(!touchOrigin||e.touches.length!==1)return;const p=e.touches[0];targetX=Math.max(-1,Math.min(1,(p.clientX-touchOrigin.x)/90));targetY=Math.max(-1,Math.min(1,(p.clientY-touchOrigin.y)/110));request()},{passive:true});
+ deck.addEventListener('touchend',()=>{touchOrigin=null;targetX=0;targetY=0;request()},{passive:true});
  if(window.DeviceOrientationEvent){window.addEventListener('deviceorientation',e=>{if(!visible||e.gamma==null)return;targetX=Math.max(-1,Math.min(1,e.gamma/28));targetY=Math.max(-1,Math.min(1,(e.beta||0)/55));request()},{passive:true})}
  document.addEventListener('visibilitychange',request);window.addEventListener('resize',request,{passive:true});
  const media=()=>{if(raf)cancelAnimationFrame(raf);raf=0;request()};reduce.addEventListener?.('change',media);
