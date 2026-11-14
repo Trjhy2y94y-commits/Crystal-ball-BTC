@@ -4740,6 +4740,8 @@ deck.addEventListener('pointermove',move,{passive:true});deck.addEventListener('
 <script defer src="./cockpit-parallax.js?v=1"></script>
 <script defer src="./crystal-hologram-webgl.js?v=69"></script>
 <script defer src="./cinematic-reactor-v70.js?v=701"></script>
+<style id="v70-build-indicator">#v70Build{position:fixed;top:env(safe-area-inset-top,0px);right:9px;z-index:9999;padding:5px 9px;border:1px solid #ffc76888;border-radius:0 0 9px 9px;background:#061526ec;color:#ffce79;font:700 10px/1.2 system-ui;letter-spacing:.09em;pointer-events:none;box-shadow:0 0 12px #ffae4533}#v70Build small{display:block;color:#a8dcff;font-size:8px;letter-spacing:0}</style>
+<script>document.addEventListener('DOMContentLoaded',()=>{if(document.getElementById('v70Build'))return;const b=document.createElement('div');b.id='v70Build';b.textContent='CRYSTAL V70';const sub=document.createElement('small');sub.textContent='REACTOR ACTIVE';b.appendChild(sub);document.body.appendChild(b);});</script>
 <script defer src="./jarvis-reference-hud.js?v=67"></script>
 <script defer src="./cockpit-cinematic-depth.js?v=2"></script>
     <link rel="stylesheet" href="./cockpit-depth-v1.css?v=70">
