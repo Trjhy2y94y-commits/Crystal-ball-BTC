@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v72-global-m2";
+const CACHE = "cristal-btc-v73-global-m2-adapter";
 const SHELL = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const SHELL = [
   "./favicon.png",
   "./jarvis-reactive-core.js",
   "./macro-source-health.js?v=2",
+  "./global-m2-adapter.js?v=1",
   "./cockpit-night-v48.webp",
   "./cockpit-depth-v1.css?v=71",
   "./jarvis-reference-hud.js?v=67",
