@@ -26,3 +26,25 @@ body{background:radial-gradient(ellipse at 50% -20%,#11234b 0%,#050b19 44%,#0103
 .tabbar button.on::before{animation:gold-beacon 3.2s ease-in-out infinite}
 @keyframes gold-beacon{0%,100%{opacity:.55;box-shadow:0 0 7px var(--cockpit-gold)}50%{opacity:1;box-shadow:0 0 19px var(--cockpit-gold)}}
 @media(prefers-reduced-motion:reduce){.tabbar button.on::before{animation:none}.view::before{transform:none}}
+
+/* v3 — cinematic active dashboard, mobile GPU-friendly */
+:root{--accent:#ffb42c;--blue:#397dff;--panel:#081329;--panel2:#0c1b38;--line:rgba(70,123,235,.35);--muted:#a5b8da}
+body{background:#02050d}
+body::before{background:#02050d}
+.app::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse 58% 30% at 50% 37%,rgba(36,94,231,.18),transparent 75%);animation:reactor-breathe 7s ease-in-out infinite}
+@keyframes reactor-breathe{0%,100%{opacity:.5;transform:scale(.96)}50%{opacity:1;transform:scale(1.04)}}
+.page{background:transparent!important}
+.proj{background:linear-gradient(165deg,#071126,#02050d 70%)}
+header{background:linear-gradient(180deg,rgba(11,24,51,.9),rgba(3,8,19,.4));border-color:rgba(71,130,255,.4)}
+.toolbar{background:rgba(5,13,30,.8);border-color:rgba(71,130,255,.3)}
+.hm .price,.orb .price,.px{font-variant-numeric:tabular-nums;text-shadow:0 0 25px rgba(62,122,255,.22)}
+.hm .score,.orb .rp{filter:drop-shadow(0 0 15px rgba(50,115,255,.24))}
+.hm .card,.hm .tile,.orb .ot,.simple .card{transition:border-color .25s ease,box-shadow .25s ease}
+.hm .card:active,.hm .tile:active,.orb .ot:active{border-color:rgba(255,180,44,.65);box-shadow:inset 0 0 18px rgba(42,99,225,.15),0 0 24px rgba(38,95,224,.12)}
+.tabbar{position:relative;z-index:8}
+.tabbar button{overflow:visible}
+.tabbar button.on{color:#ffb42c}
+.tabbar button:not(.on):active{transform:translateY(-2px) scale(1.04)}
+.orb canvas#orb{filter:drop-shadow(0 0 18px rgba(48,112,255,.18))}
+@media(max-width:420px){.hm .card{border-radius:13px}.tabbar button{font-size:11px;min-height:48px}}
+@media(prefers-reduced-motion:reduce){.app::after{animation:none}.hm .card,.hm .tile,.orb .ot,.simple .card{transition:none}}
