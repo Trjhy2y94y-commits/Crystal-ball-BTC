@@ -264,3 +264,13 @@ body{background:radial-gradient(ellipse 90% 56% at 50% 38%,#12365b 0%,#07152a 38
 #vHome #homeQuant .jrh-bottom{background:linear-gradient(180deg,#12385bdc,#020817f5)!important;backdrop-filter:blur(18px)}
 @media(max-width:700px){#vHome #homeQuant .cb-flightdeck{min-height:490px!important;aspect-ratio:auto!important;background-size:cover!important}#vHome #homeQuant .hq-orbit{transform:scale(1.12)!important}#vHome #homeQuant .jrh-panel{backdrop-filter:blur(5px)}}
 @media(prefers-reduced-motion:reduce){#vHome #homeQuant .hq-orbit{animation:none!important}}
+
+/* V69: reveal panoramic background and increase plasma sphere visual depth. */
+#vHome #homeQuant .cb-flightdeck{background-image:linear-gradient(90deg,#0209182e,transparent 24% 76%,#02091838),url('./cockpit-night-v48.webp')!important;background-size:100% 100%,cover!important;background-position:center!important;filter:brightness(1.22) contrast(1.08) saturate(1.22)!important}
+#vHome #homeQuant .cb-flightdeck:before{background:radial-gradient(ellipse 35% 44% at 50% 51%,#18457b10,transparent 80%),linear-gradient(90deg,#0413224a,transparent 28% 72%,#0413224a)!important;box-shadow:inset 0 0 54px 8px #01040c70!important}
+#vHome #homeQuant .cb-flightdeck:after{opacity:.3!important}
+#vHome #homeQuant .hq-orbit{transform:scale(1.55)!important;filter:drop-shadow(0 0 22px #43c7ff) drop-shadow(0 0 36px #f88c35aa)!important}
+#vHome #homeQuant .hq-orbit .cb-hologram-3d{opacity:1!important;filter:brightness(1.65) saturate(1.55) drop-shadow(0 0 20px #54bcff) drop-shadow(0 0 26px #ff8b36)!important}
+#vHome #homeQuant .hq-orbit::after{background:radial-gradient(circle,#fff4b780,#ffa63470 15%,#2d95ff3b 42%,transparent 72%)!important}
+#vHome #homeQuant .jrh-panel{background:linear-gradient(135deg,#09223bbd,#030d1c9c)!important;backdrop-filter:blur(4px)!important}
+@media(max-width:700px){#vHome #homeQuant .cb-flightdeck{filter:brightness(1.35) contrast(1.08) saturate(1.15)!important}#vHome #homeQuant .hq-orbit{transform:scale(1.4)!important}}
