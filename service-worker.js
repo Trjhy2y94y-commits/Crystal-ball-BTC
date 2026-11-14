@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v74-macro-regime";
+const CACHE = "cristal-btc-v75-macro-backtest";
 const SHELL = [
   "./",
   "./index.html",
@@ -11,6 +11,7 @@ const SHELL = [
   "./macro-source-health.js?v=2",
   "./global-m2-adapter.js?v=1",
   "./macro-regime-engine.js?v=1",
+  "./macro-backtest.js?v=1",
   "./cockpit-night-v48.webp",
   "./cockpit-depth-v1.css?v=71",
   "./jarvis-reference-hud.js?v=67",
