@@ -242,3 +242,15 @@ body{background:radial-gradient(ellipse 90% 56% at 50% 38%,#12365b 0%,#07152a 38
 @keyframes v67-atmosphere{to{filter:brightness(1.3);transform:scale(1.03)}}
 @media(max-width:700px){#vHome #homeQuant .jrh-left{transform:perspective(480px) rotateY(3deg)!important}#vHome #homeQuant .jrh-right{transform:perspective(480px) rotateY(-3deg)!important}#vHome #homeQuant .jrh-panel{backdrop-filter:blur(6px)}}
 @media(prefers-reduced-motion:reduce){#vHome:before,#vHome #homeQuant .hq-orbit:before,#vHome #homeQuant .jrh-panel:before{animation:none!important}}
+
+/* V67 phase 2 — cinematic instruments on every functional tab. */
+#vChart,#vCal,#vStats,#vJarvis{background:radial-gradient(ellipse 85% 45% at 50% 30%,#133a6540,transparent 75%);isolation:isolate}
+#vChart .cb-motion-rig,#vCal .cb-motion-rig,#vStats .cb-motion-rig,#vJarvis .cb-motion-rig{position:relative;transform-style:preserve-3d;overflow:hidden}
+#vChart .cb-motion-rig:after,#vCal .cb-motion-rig:after,#vStats .cb-motion-rig:after,#vJarvis .cb-motion-rig:after{border-color:#6dbaff66!important;box-shadow:inset 0 0 26px #2887f944,0 0 12px #f3bd5933!important}
+#vChart .cb-motion-rig:before,#vCal .cb-motion-rig:before,#vStats .cb-motion-rig:before,#vJarvis .cb-motion-rig:before{opacity:.8!important;filter:contrast(1.1) saturate(1.2)}
+#vChart .cb-motion-rig canvas.cb-scene,#vCal .cb-motion-rig canvas.cb-scene,#vStats .cb-motion-rig canvas.cb-scene,#vJarvis .cb-motion-rig canvas.cb-scene{filter:drop-shadow(0 0 12px #47aaffaa)!important}
+#vJarvis .cb-motion-rig{box-shadow:0 0 34px #278cff50,inset 0 0 38px #124a9b55!important}
+#vCal .cb-motion-rig{box-shadow:0 0 32px #e9b64b2a,inset 0 0 35px #286ac644!important}
+#vStats .cb-motion-rig{box-shadow:0 0 30px #5dc5ff33,inset 0 0 40px #245da744!important}
+@media(min-width:750px){#vChart .cb-motion-rig,#vCal .cb-motion-rig,#vStats .cb-motion-rig,#vJarvis .cb-motion-rig{height:clamp(230px,30vw,340px)!important}}
+@media(max-width:600px){#vChart .cb-motion-rig,#vCal .cb-motion-rig,#vStats .cb-motion-rig,#vJarvis .cb-motion-rig{height:210px!important}}
