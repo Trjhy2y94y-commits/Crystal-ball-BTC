@@ -13,7 +13,7 @@ const start=()=>{
  raf=0;if(!visible||document.hidden||!active)return;
  if(now-last<33){raf=requestAnimationFrame(draw);return}last=now;resize();
  dx+=(targetX-dx)*.045;dy+=(targetY-dy)*.045;
- deck.style.setProperty('--cinema-x',dx.toFixed(3));deck.style.setProperty('--cinema-y',dy.toFixed(3));
+ deck.style.setProperty('--cinema-x',dx.toFixed(3));deck.style.setProperty('--cinema-y',dy.toFixed(3));deck.style.setProperty('--cinema-shift-bg-x',(-dx*4).toFixed(2)+'px');deck.style.setProperty('--cinema-shift-bg-y',(-dy*3).toFixed(2)+'px');deck.style.setProperty('--cinema-shift-hud-x',(dx*2).toFixed(2)+'px');deck.style.setProperty('--cinema-shift-hud-y',(dy*1.5).toFixed(2)+'px');
  ctx.clearRect(0,0,w,h);
  const t=now*.001;
  for(const p of particles){const y=((p.y-t*.006*p.depth)%1+1)%1,x=p.x+dx*.006*p.depth,r=.35+p.depth*.75;const alpha=(.16+.22*Math.sin(t*.8+p.phase)**2)*Math.min(1,y*7)*Math.min(1,(1-y)*7);
