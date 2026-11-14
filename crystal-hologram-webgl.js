@@ -17,6 +17,7 @@ function build(){
  for(let a=0;a<latitudes;a++){const latitude=(a/(latitudes-1)-.5)*Math.PI;const ring=[];for(let b=0;b<=longitudes*4;b++){const theta=b/(longitudes*4)*Math.PI*2;ring.push([Math.cos(latitude)*Math.cos(theta),Math.sin(latitude),Math.cos(latitude)*Math.sin(theta)])}rings.push(ring)}
  for(let a=0;a<18;a++){const longitude=a/18*Math.PI*2,ring=[];for(let b=0;b<=80;b++){const phi=b/80*Math.PI;ring.push([Math.sin(phi)*Math.cos(longitude),Math.cos(phi),Math.sin(phi)*Math.sin(longitude)])}rings.push(ring)}
  for(let i=0;i<280;i++){const z=1-2*(i+.5)/280,r=Math.sqrt(1-z*z),theta=i*2.399963;stars.push([r*Math.cos(theta),z,r*Math.sin(theta)])}
+ const filaments=[];for(let k=0;k<34;k++){const line=[];const phase=k*2.39996;for(let j=0;j<=56;j++){const u=j/56,phi=u*Math.PI*2*(1.4+(k%4)*.23)+phase;const rad=.45+u*.72+.09*Math.sin(u*19+k);line.push([rad*Math.cos(phi),rad*Math.sin(phi*.73+k*.17),rad*.65*Math.sin(phi*1.17+k*.11)])}filaments.push(line)}
  const orbit=[];for(let k=0;k<7;k++){const ring=[];for(let i=0;i<=160;i++){const a=i/160*Math.PI*2;ring.push([1.35*Math.cos(a),1.35*Math.sin(a),0])}orbit.push(ring)}
  let raf=0,visible=true,active=true,frame=0,lastDraw=0;const reduced=matchMedia('(prefers-reduced-motion: reduce)');
  const obs=new IntersectionObserver(e=>{visible=!!e[0]?.isIntersecting;if(visible)request()});obs.observe(target);
@@ -26,7 +27,8 @@ function build(){
  const t=reduced.matches?0:performance.now()*.00019,ca=Math.cos(t),sa=Math.sin(t),tilt=.26,ct=Math.cos(tilt),st=Math.sin(tilt);
  const view=new Float32Array([ca*1.1,sa*st,sa*ct,0,0,ct,-st,0,-sa*1.1,ca*st,ca*ct,0,0,0,-4.5,1]);gl.uniformMatrix4fv(loc.view,false,view);
  rings.forEach((ring,i)=>draw(ring,i%3===0?[.98,.64,.23]:[.17,.47,1],i%3===0?.35:.22,gl.LINE_STRIP));
- draw(stars,[.32,.62,1],.65,gl.POINTS,3.6);
+ draw(stars,[.32,.62,1],.85,gl.POINTS,4.4);
+ filaments.forEach((line,i)=>{const a=t*(i%2?-.9:1.2)+i*.23,c=Math.cos(a),sn=Math.sin(a);draw(line.map(p=>[p[0]*c-p[2]*sn,p[1],p[0]*sn+p[2]*c]),i%3===0?[1,.43,.13]:i%3===1?[1,.72,.35]:[.27,.86,1],i%3===0?.55:.44,gl.LINE_STRIP)});
  orbit.forEach((ring,i)=>{const a=t*(i%2?-.9:1.2)+i*.73,c=Math.cos(a),s=Math.sin(a),pitch=i*.33;draw(ring.map(p=>[p[0]*c-p[1]*Math.sin(pitch)*s,p[1]*Math.cos(pitch),p[0]*s+p[1]*Math.sin(pitch)*c]),i%3===0?[1,.68,.25]:[.23,.54,1],i%2?.30:.50,gl.LINE_STRIP)});
  // Volumetric core: nested orbiting latitude bands and a warm luminous nucleus.
  const core=[];for(let i=0;i<=100;i++){const a=i/100*Math.PI*2;core.push([.42*Math.cos(a),.42*Math.sin(a),.12*Math.sin(a*3+t*5)])}draw(core,[1,.72,.30],.75,gl.LINE_STRIP);
