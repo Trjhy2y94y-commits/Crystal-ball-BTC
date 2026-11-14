@@ -16,12 +16,21 @@ function init(){
   if(!w||!h)return;if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
   ctx.clearRect(0,0,w,h);const cx=w/2,cy=h/2,R=Math.min(w,h)*.37;
   const angle=reduce.matches?.3:t*.00016;
+  // Dark inner volume preserves distinct orange/blue layers instead of a white hotspot.
+  const nucleus=ctx.createRadialGradient(cx,cy,R*.08,cx,cy,R*.77);
+  nucleus.addColorStop(0,'rgba(8,23,48,.68)');nucleus.addColorStop(.52,'rgba(6,28,58,.40)');nucleus.addColorStop(1,'rgba(4,20,42,0)');
+  ctx.fillStyle=nucleus;ctx.beginPath();ctx.arc(cx,cy,R*.77,0,Math.PI*2);ctx.fill();
   const drawRing=(radius,tilt,phase,color,alpha,width)=>{ctx.beginPath();for(let i=0;i<=160;i++){const a=i/160*Math.PI*2+phase,pt=project(Math.cos(a)*radius,Math.sin(a)*radius*Math.cos(tilt),Math.sin(a)*radius*Math.sin(tilt),angle,R);if(i===0)ctx.moveTo(cx+pt[0],cy+pt[1]);else ctx.lineTo(cx+pt[0],cy+pt[1])}ctx.strokeStyle=color;ctx.globalAlpha=alpha;ctx.lineWidth=width*dpr;ctx.shadowBlur=10*dpr;ctx.shadowColor=color;ctx.stroke();ctx.globalAlpha=1};
   for(let k=0;k<11;k++)drawRing(1.12+(k%4)*.09,.28+k*.26,angle*(k%2?-1:1)*1.8+k*.38,k%3===0?'#ffab4c':'#39b9ff',.18+(k%3)*.09,.7);
   const sorted=particles.map(p=>({p,xyz:project(p.x,p.y,p.z,angle,R)})).sort((a,b)=>a.xyz[2]-b.xyz[2]);
   for(const {p,xyz} of sorted){const [x,y,z,scale]=xyz;const warm=(p.seed%5)<2;ctx.fillStyle=warm?'#ffb35e':'#70d7ff';ctx.globalAlpha=(.28+.5*(z+1)/2)*Math.min(1,scale);ctx.beginPath();ctx.arc(cx+x,cy+y,Math.max(.5,scale*1.35)*dpr,0,Math.PI*2);ctx.fill()}
   ctx.globalAlpha=1;
-  for(let k=0;k<24;k++){const a=k*2.39996+angle*.8,rad=.55+(k%9)*.065;ctx.beginPath();for(let j=0;j<=34;j++){const u=j/34,theta=a+u*1.9,pt=project(rad*Math.cos(theta),.75*Math.sin(theta*1.5+k*.3),rad*Math.sin(theta),angle,R);if(j===0)ctx.moveTo(cx+pt[0],cy+pt[1]);else ctx.lineTo(cx+pt[0],cy+pt[1])}ctx.strokeStyle=k%3?'#3dbaff':'#ff9139';ctx.globalAlpha=.28;ctx.lineWidth=.65*dpr;ctx.stroke()}ctx.globalAlpha=1;ctx.shadowBlur=0;
+  for(let k=0;k<24;k++){const a=k*2.39996+angle*.8,rad=.55+(k%9)*.065;ctx.beginPath();for(let j=0;j<=34;j++){const u=j/34,theta=a+u*1.9,pt=project(rad*Math.cos(theta),.75*Math.sin(theta*1.5+k*.3),rad*Math.sin(theta),angle,R);if(j===0)ctx.moveTo(cx+pt[0],cy+pt[1]);else ctx.lineTo(cx+pt[0],cy+pt[1])}ctx.strokeStyle=k%3?'#3dbaff':'#ff9139';ctx.globalAlpha=.28;ctx.lineWidth=.65*dpr;ctx.stroke()}ctx.globalAlpha=1;
+  // Distinct warm inner corona and a cool outer lens with depth-dependent intensity.
+  drawRing(.58,.22,angle*.7,'#ff9d43',.64,1.35);
+  drawRing(.76,1.18,-angle*.8,'#ffca72',.42,.9);
+  drawRing(1.27,.78,angle*.4,'#55caff',.55,1.2);
+  ctx.shadowBlur=0;
   if(!reduce.matches)request();
  }
  function request(){if(!raf&&visible&&!document.hidden)raf=requestAnimationFrame(frame)}
