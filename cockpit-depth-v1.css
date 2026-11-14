@@ -212,3 +212,11 @@ nav.tabbar>button svg{flex-shrink:0!important;pointer-events:none!important}
 @keyframes cb-holo-voice{0%,100%{box-shadow:0 0 8px #1b80e755}50%{box-shadow:0 0 23px #338fff99}}
 @media(max-width:700px){#vHome #homeQuant .jrh-left{transform:perspective(450px) rotateY(5deg)!important}#vHome #homeQuant .jrh-right{transform:perspective(450px) rotateY(-5deg)!important}#vHome #homeQuant .jrh-bottom{transform:perspective(500px) rotateX(7deg)!important}#vHome #homeQuant .jrh-panel{box-shadow:none!important}}
 @media(prefers-reduced-motion:reduce){#vHome #homeQuant .jrh-panel:after,#vHome #homeQuant .jrh-voice-launch{animation:none!important}}
+
+/* V15: stronger volumetric reactor while keeping the user's exact artwork visible. */
+#vHome #homeQuant .cb-flightdeck .hq-orbit{isolation:isolate!important;overflow:visible!important;opacity:1!important}
+#vHome #homeQuant .hq-orbit .cb-hologram-3d{inset:-34%!important;width:168%!important;height:168%!important;z-index:9!important;opacity:.94!important;filter:drop-shadow(0 0 15px #2d79ff99) drop-shadow(0 0 28px #b9872c55)!important}
+#vHome #homeQuant .hq-orbit::after{content:""!important;position:absolute!important;left:50%!important;top:50%!important;width:35%!important;aspect-ratio:1!important;transform:translate(-50%,-50%)!important;border-radius:50%!important;pointer-events:none!important;z-index:8!important;background:radial-gradient(circle,#e8c4746e 0%,#3579ff40 22%,#1d57c323 49%,transparent 70%)!important;mix-blend-mode:screen!important;animation:cb-core-bloom 3.4s ease-in-out infinite alternate!important}
+#vHome #homeQuant .jrh-radar-sweep{animation-duration:6s!important}
+@keyframes cb-core-bloom{from{opacity:.4;scale:.88}to{opacity:.9;scale:1.12}}
+@media(prefers-reduced-motion:reduce){#vHome #homeQuant .hq-orbit::after{animation:none!important}}
