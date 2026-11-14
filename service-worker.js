@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v66-clean-document";
+const CACHE = "cristal-btc-v67-holographic";
 const SHELL = [
   "./",
   "./index.html",
@@ -8,7 +8,10 @@ const SHELL = [
   "./apple-touch-icon.png",
   "./favicon.png",
   "./jarvis-reactive-core.js",
-  "./cockpit-night-v48.webp"
+  "./cockpit-night-v48.webp",
+  "./cockpit-depth-v1.css?v=67",
+  "./jarvis-reference-hud.js?v=67",
+  "./cockpit-cinematic-depth.js?v=2"
 ];
 
 self.addEventListener("install", (event) => {
