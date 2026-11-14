@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v71-macro-health";
+const CACHE = "cristal-btc-v72-global-m2";
 const SHELL = [
   "./",
   "./index.html",
@@ -8,7 +8,7 @@ const SHELL = [
   "./apple-touch-icon.png",
   "./favicon.png",
   "./jarvis-reactive-core.js",
-  "./macro-source-health.js?v=1",
+  "./macro-source-health.js?v=2",
   "./cockpit-night-v48.webp",
   "./cockpit-depth-v1.css?v=71",
   "./jarvis-reference-hud.js?v=67",
