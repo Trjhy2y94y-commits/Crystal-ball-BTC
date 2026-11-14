@@ -1,4 +1,4 @@
-const CACHE = "cristal-btc-v70-reactor-refined";
+const CACHE = "cristal-btc-v71-fullsize";
 const SHELL = [
   "./",
   "./index.html",
@@ -9,7 +9,7 @@ const SHELL = [
   "./favicon.png",
   "./jarvis-reactive-core.js",
   "./cockpit-night-v48.webp",
-  "./cockpit-depth-v1.css?v=70",
+  "./cockpit-depth-v1.css?v=71",
   "./jarvis-reference-hud.js?v=67",
   "./crystal-hologram-webgl.js?v=69",
   "./cinematic-reactor-v70.js?v=701",
