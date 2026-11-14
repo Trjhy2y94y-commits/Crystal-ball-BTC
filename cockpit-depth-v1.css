@@ -86,3 +86,10 @@ header{background:linear-gradient(180deg,rgba(11,24,51,.9),rgba(3,8,19,.4));bord
 @keyframes cb-voice-pulse{0%,100%{box-shadow:0 0 6px #ffb42c44}50%{box-shadow:0 0 19px #ffb42caa}}
 @media(max-width:420px){#cbVoiceLaunch{right:8px;bottom:calc(76px + env(safe-area-inset-bottom,0px));padding:7px 10px;font-size:10px}#cbVoiceLaunchStatus{bottom:calc(126px + env(safe-area-inset-bottom,0px))}}
 @media(prefers-reduced-motion:reduce){#cbVoiceLaunch .cb-voice-icon{animation:none}}
+
+/* Independent spatial layers controlled by cockpit-parallax.js */
+#vHome #homeQuant .cb-depth-world{transform:translate3d(var(--cb-parallax-x,0px),var(--cb-parallax-y,0px),-75px) scale(1.14)!important;will-change:transform}
+#vHome #homeQuant .cb-depth-city{transform:translate3d(var(--cb-city-shift,0px),0,-110px) scale(1.22)!important;will-change:transform}
+#vHome #homeQuant .cb-depth-glass{transform:translate3d(var(--cb-glass-shift,0px),0,0)!important}
+@media(max-width:600px){#vHome #homeQuant .cb-depth-world{transform:translate3d(var(--cb-parallax-x,0px),var(--cb-parallax-y,0px),-40px) scale(1.08)!important}#vHome #homeQuant .cb-depth-city{transform:translate3d(var(--cb-city-shift,0px),0,0) scale(1.14)!important}}
+@media(prefers-reduced-motion:reduce){#vHome #homeQuant .cb-depth-world,#vHome #homeQuant .cb-depth-city,#vHome #homeQuant .cb-depth-glass{will-change:auto;transform:none!important}}
